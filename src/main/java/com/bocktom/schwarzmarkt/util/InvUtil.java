@@ -7,10 +7,9 @@ import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.SimpleItem;
-import xyz.xenondevs.invui.item.impl.SuppliedItem;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class InvUtil {
@@ -18,13 +17,19 @@ public class InvUtil {
 	public static Item BORDER = new SimpleItem(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(""));
 	public static Item AIR = new SimpleItem(new ItemBuilder(Material.AIR));
 
-	public static List<Item> createItems(List<ItemStack> itemStacks) {
+	public static List<Item> createItems(List<ItemStack> itemStacks, Function<ItemStack, Item> itemCreator) {
 		if(itemStacks == null)
 			return List.of();
 		return itemStacks.stream()
 				.filter(Objects::nonNull)
-				.map(SetupItem::new)
+				.map(itemCreator)
 				.collect(Collectors.toList());
+	}
+
+	public static Map<Integer, Item> createItems(Map<Integer, ItemStack> itemStacks, Function<Map.Entry<Integer, ItemStack>, Item> itemCreator) {
+		return itemStacks.entrySet().stream()
+				.filter(entry -> entry.getValue() != null)
+				.collect(Collectors.toMap(Map.Entry::getKey, itemCreator, (a, b) -> a, TreeMap::new));
 	}
 
 	public static boolean isPlaceAction(InventoryAction action) {

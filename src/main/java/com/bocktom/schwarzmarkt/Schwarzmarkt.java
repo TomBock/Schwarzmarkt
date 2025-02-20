@@ -1,11 +1,10 @@
 package com.bocktom.schwarzmarkt;
 
 import com.bocktom.schwarzmarkt.inv.SetupInventory;
+import com.bocktom.schwarzmarkt.inv.WinningsInventory;
 import com.bocktom.schwarzmarkt.util.Config;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Schwarzmarkt extends JavaPlugin {
@@ -35,7 +34,7 @@ public final class Schwarzmarkt extends JavaPlugin {
 	}
 
 	public void openWinnings(Player player) {
-
+		new WinningsInventory(player);
 	}
 
 	public void startAuction() {

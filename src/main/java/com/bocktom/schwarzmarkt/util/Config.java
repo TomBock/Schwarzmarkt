@@ -1,21 +1,28 @@
 package com.bocktom.schwarzmarkt.util;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 public class Config {
 
-	private Schwarzmarkt plugin;
-	public FileConfiguration items;
-	public FileConfiguration auction;
+	public static InternalConfig items;
+	public static InternalConfig auction;
+	public static InternalConfig winnings;
+	public static InternalConfig msg;
 
-	private final String ITEMS_CFG = "items.yml";
-	private final String AUCTION_CFG = "auction.yml";
+	private Schwarzmarkt plugin;
 
 	public Config() {
 		this.plugin = Schwarzmarkt.plugin;
@@ -23,43 +30,63 @@ public class Config {
 	}
 
 	private void loadConfig() {
-		File itemsConfig = new File(plugin.getDataPath() + File.separator + ITEMS_CFG);
-		File auctionConfig = new File(plugin.getDataPath() + File.separator + AUCTION_CFG);
-
-		if(!Files.exists(itemsConfig.toPath()) || !itemsConfig.isFile()) {
-			plugin.getDataFolder().mkdirs();
-			copyDefaultConfig(ITEMS_CFG);
-		}
-		if(!Files.exists(auctionConfig.toPath()) || !auctionConfig.isFile()) {
-			plugin.getDataFolder().mkdirs();
-			copyDefaultConfig(AUCTION_CFG);
+		// Check if directory exists
+		if(!plugin.getDataFolder().exists()) {
+			plugin.getDataFolder().mkdir();
 		}
 
-		items = YamlConfiguration.loadConfiguration(itemsConfig);
-		auction = YamlConfiguration.loadConfiguration(auctionConfig);
+		items = new InternalConfig(plugin, "items.yml");
+		auction = new InternalConfig(plugin, "auction.yml");
+		winnings = new InternalConfig(plugin, "winnings.yml");
+		msg = new InternalConfig(plugin, "msg.yml");
 	}
 
-	private void copyDefaultConfig(String configName) {
-		try (InputStream inputStream = plugin.getResource(configName)) {
-			if(inputStream == null) {
-				plugin.getLogger().warning("Could not find default config file: " + configName);
-				return;
+	public static void save() {
+		items.save();
+		auction.save();
+		winnings.save();
+	}
+
+	public static class InternalConfig {
+
+		public final FileConfiguration get;
+		private final File file;
+		private final JavaPlugin plugin;
+
+		public InternalConfig(JavaPlugin plugin, String configFile) {
+			this.plugin = plugin;
+			this.file = new File(plugin.getDataPath() + File.separator + configFile);
+
+			if (!Files.exists(file.toPath()) || !file.isFile()) {
+				plugin.getDataFolder().mkdirs();
+				copyDefaultConfig(configFile);
 			}
 
-			Files.copy(inputStream, new File(plugin.getDataPath().toString(), configName).toPath());
-		} catch (Exception e) {
-			plugin.getLogger().warning("Could not copy default config file: " + configName);
-			e.printStackTrace();
+			this.get = YamlConfiguration.loadConfiguration(file);
+		}
+
+		private void copyDefaultConfig(String configName) {
+			try (InputStream inputStream = plugin.getResource(configName)) {
+				if (inputStream == null) {
+					plugin.getLogger().warning("Could not find default config file: " + configName);
+					return;
+				}
+
+				Files.copy(inputStream, new File(plugin.getDataPath().toString(), configName).toPath());
+			} catch (IOException e) {
+				plugin.getLogger().warning("Could not copy default config file: " + configName);
+				e.printStackTrace();
+			}
+		}
+
+		public void save() {
+			try {
+				get.save(file);
+			} catch (IOException e) {
+				plugin.getLogger().warning("Could not save config files");
+				e.printStackTrace();
+			}
 		}
 	}
 
-	public void save() {
-		try {
-			items.save(new File(plugin.getDataPath().toString(), ITEMS_CFG));
-			auction.save(new File(plugin.getDataPath().toString(), AUCTION_CFG));
-		} catch (Exception e) {
-			plugin.getLogger().warning("Could not save config files");
-			e.printStackTrace();
-		}
-	}
 }

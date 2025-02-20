@@ -1,11 +1,9 @@
 package com.bocktom.schwarzmarkt.util;
 
-import com.bocktom.schwarzmarkt.Schwarzmarkt;
-
 public class MSG {
 
 	public static String get(String path) {
-		return Schwarzmarkt.plugin.getConfig().getString("messages." + path);
+		return Config.msg.get.getString(path);
 	}
 
 	public static String get(String path, String... replaceVariables) {

@@ -1,6 +1,7 @@
 package com.bocktom.schwarzmarkt.inv;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
+import com.bocktom.schwarzmarkt.util.Config;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -17,14 +18,15 @@ import java.util.List;
 
 public class SetupInventory {
 
-	public static String title = "Schwarzmarkt - SETUP";
+	private static String title = "Schwarzmarkt - Setup";
 
 	private final Player player;
 
 	public SetupInventory(Player player) {
-		List<ItemStack> itemStacks = (List<ItemStack>) Schwarzmarkt.config.items.getList("items");
+		//noinspection unchecked
+		List<ItemStack> itemStacks = (List<ItemStack>) Config.items.get.getList("items");
 
-		List<Item> items = InvUtil.createItems(itemStacks);
+		List<Item> items = InvUtil.createItems(itemStacks, SetupItem::new);
 
 		int size = 8 * 5;
 		int emptySlots = size - items.size();
@@ -77,7 +79,7 @@ public class SetupInventory {
 
 			items.add(item);
 		}
-		Schwarzmarkt.config.items.set("items", items);
-		Schwarzmarkt.config.save();
+		Config.items.get.set("items", items);
+		Config.save();
 	}
 }

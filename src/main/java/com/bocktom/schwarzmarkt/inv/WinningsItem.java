@@ -2,6 +2,8 @@ package com.bocktom.schwarzmarkt.inv;
 
 import com.bocktom.schwarzmarkt.util.Config;
 import com.bocktom.schwarzmarkt.util.InvUtil;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -32,7 +34,14 @@ public class WinningsItem extends AbstractItem {
 			if(event.getCurrentItem() != null) {
 
 				event.setCancelled(false);
-				Config.winnings.get.set(player.getUniqueId().toString() + "." + key, null);
+
+				FileConfiguration config = Config.winnings.get;
+				config.set(player.getUniqueId() + "." + key, null);
+
+				ConfigurationSection playerConfig = config.getConfigurationSection(player.getUniqueId().toString());
+				if(playerConfig != null && playerConfig.getKeys(false).isEmpty()) {
+						config.set(player.getUniqueId().toString(), null);
+					}
 				Config.winnings.save();
 			}
 		}

@@ -1,0 +1,16 @@
+name: Schwarzmarkt
+version: '1.0-SNAPSHOT'
+main: com.bocktom.schwarzmarkt.Schwarzmarkt
+api-version: '1.21'
+commands:
+  schwarzmarkt:
+    description: Schwarzmarkt Befehl
+    usage: /schwarzmarkt <setup|start|stop|info|show>
+    permission: schwarzmarkt.use
+permissions:
+  schwarzmarkt.use:
+    description: Erlaubt die Nutzung des Schwarzmarkt Befehl für User
+    default: true
+  schwarzmarkt.admin:
+    description: Erlaubt die Nutzung der Schwarzmarkt Befehle für Admins
+    default: op

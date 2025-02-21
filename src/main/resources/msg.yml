@@ -1,4 +1,6 @@
 auction:
+  item.lore: "§7Klicke mich um zu bieten"
+  item.chat: "$7Wie viel möchtest du für §6%item% §7bieten?"
   title: "§8Schwarzmarkt"
 winnings:
   title: "§8Gewinne"

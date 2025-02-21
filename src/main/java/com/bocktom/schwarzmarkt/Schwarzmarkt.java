@@ -5,16 +5,20 @@ import com.bocktom.schwarzmarkt.inv.SetupInventory;
 import com.bocktom.schwarzmarkt.inv.WinningsInventory;
 import com.bocktom.schwarzmarkt.util.Config;
 import de.tr7zw.changeme.nbtapi.NBT;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Schwarzmarkt extends JavaPlugin {
 
 	public static Schwarzmarkt plugin;
-	public static Config config;
+
 	public static DatabaseManager db;
+	public static Config config;
+	public static Economy economy;
 
 	@Override
 	public void onEnable() {
@@ -26,6 +30,22 @@ public final class Schwarzmarkt extends JavaPlugin {
 		getCommand("schwarzmarkt").setExecutor(new SchwarzmarktCommand());
 
 		NBT.preloadApi();
+		if(!setupEconomy()) {
+			getLogger().severe("Vault not found! Disabling plugin...");
+			getServer().getPluginManager().disablePlugin(this);
+		}
+	}
+
+	private boolean setupEconomy() {
+		if (getServer().getPluginManager().getPlugin("Vault") == null) {
+			return false;
+		}
+		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+		if (rsp == null) {
+			return false;
+		}
+		economy = rsp.getProvider();
+		return true;
 	}
 
 	public void openAuction(String playerName) {

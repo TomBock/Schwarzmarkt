@@ -181,6 +181,27 @@ public class DatabaseManager {
 		return Map.of();
 	}
 
+	public List<ItemStack> getRandomItems(int amount) {
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/select_random_items.sql")
+					.setInt(1, amount)
+					.executeQuery()) {
+
+				List<ItemStack> items = new ArrayList<>();
+				while(set.next()) {
+					String json = set.getString("item_data");
+					ItemStack item = NBT.itemStackFromNBT(NBT.parseNBT(json));
+					items.add(item);
+				}
+				return items;
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to get random items: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return List.of();
+	}
+
 	public boolean addWinnings(UUID uuid, ItemStack item) {
 		try (Connection con = getConnection()) {
 			int result = new DBStatementBuilder(con, "sql/insert_winnings.sql")

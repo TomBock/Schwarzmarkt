@@ -1,0 +1,1 @@
+INSERT INTO items (item_data) VALUES (?);

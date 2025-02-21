@@ -1,0 +1,1 @@
+SELECT * FROM winnings WHERE player_uuid = ?;

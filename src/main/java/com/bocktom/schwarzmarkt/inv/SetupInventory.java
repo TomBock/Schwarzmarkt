@@ -1,11 +1,11 @@
 package com.bocktom.schwarzmarkt.inv;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
-import com.bocktom.schwarzmarkt.util.Config;
+import com.bocktom.schwarzmarkt.inv.items.*;
 import com.bocktom.schwarzmarkt.util.InvUtil;
+import com.bocktom.schwarzmarkt.util.MSG;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.gui.ScrollGui;
@@ -13,27 +13,24 @@ import xyz.xenondevs.invui.gui.structure.Markers;
 import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.window.Window;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class SetupInventory {
 
-	private static String title = "Schwarzmarkt - Setup";
-
-	private final Player player;
+	private List<ItemStack> itemsAdded = new ArrayList<>();
+	private List<Integer> itemsRemoved = new ArrayList<>();
 
 	public SetupInventory(Player player) {
-		//noinspection unchecked
-		List<ItemStack> itemStacks = (List<ItemStack>) Config.items.get.getList("items");
+		Map<Integer, ItemStack> itemMap = Schwarzmarkt.db.getItems();
 
-		List<Item> items = InvUtil.createItems(itemStacks, SetupItem::new);
+		List<Item> items = InvUtil.createItems(itemMap,
+				entry -> new PickableItem(entry.getKey(), entry.getValue(), this::tryAddItem, this::tryRemoveItem));
 
-		int size = 8 * 5;
-		int emptySlots = size - items.size();
-		emptySlots += 8 - (emptySlots % 8); // fill line
+		int rows = Math.max((int) Math.ceil(items.size() / 9.0), 5);
+		int emptySlots = (rows+1) * 8 - items.size(); // always one more row to have empty space
 
 		for (int i = 0; i < emptySlots; i++) {
-			items.add(SetupItem.empty());
+			items.add(PickableItem.empty(this::tryAddItem, this::tryRemoveItem));
 		}
 
 		Gui gui = ScrollGui.items()
@@ -54,32 +51,28 @@ public class SetupInventory {
 
 		Window window = Window.single()
 				.setViewer(player)
-				.setTitle(title)
+				.setTitle(MSG.get("setup.title"))
 				.setGui(gui)
 				.addCloseHandler(this::onClose)
 				.build();
 
 		window.open();
-		this.player = player;
+	}
+
+	private boolean tryAddItem(IdItem item) {
+		return itemsAdded.add(item.item);
+	}
+
+	private boolean tryRemoveItem(IdItem item) {
+		if(item.id >= 0)
+			itemsRemoved.add(item.id);
+
+		// Check if its a new one
+		itemsAdded.remove(item.item);
+		return true;
 	}
 
 	private void onClose() {
-		Inventory inv = player.getOpenInventory().getTopInventory();
-		List<ItemStack> items = new ArrayList<>();
-
-		for (int i = 0; i < inv.getSize(); i++) {
-			ItemStack item = inv.getItem(i);
-
-			// Skip GUI
-			if(InvUtil.isOnRightBorder(i))
-				continue;
-
-			if(item == null || item.getType() == Material.AIR)
-				continue;
-
-			items.add(item);
-		}
-		Config.items.get.set("items", items);
-		Config.save();
+		Schwarzmarkt.db.updateItems(itemsAdded, itemsRemoved);
 	}
 }

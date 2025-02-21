@@ -10,9 +10,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.function.Function;
 
 public class Config {
@@ -35,9 +37,6 @@ public class Config {
 			plugin.getDataFolder().mkdir();
 		}
 
-		items = new InternalConfig(plugin, "items.yml");
-		auction = new InternalConfig(plugin, "auction.yml");
-		winnings = new InternalConfig(plugin, "winnings.yml");
 		msg = new InternalConfig(plugin, "msg.yml");
 	}
 

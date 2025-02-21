@@ -1,6 +1,5 @@
 package com.bocktom.schwarzmarkt.util;
 
-import com.bocktom.schwarzmarkt.inv.SetupItem;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
@@ -26,10 +25,11 @@ public class InvUtil {
 				.collect(Collectors.toList());
 	}
 
-	public static Map<Integer, Item> createItems(Map<Integer, ItemStack> itemStacks, Function<Map.Entry<Integer, ItemStack>, Item> itemCreator) {
+	public static List<Item> createItems(Map<Integer, ItemStack> itemStacks, Function<Map.Entry<Integer, ItemStack>, Item> itemCreator) {
 		return itemStacks.entrySet().stream()
 				.filter(entry -> entry.getValue() != null)
-				.collect(Collectors.toMap(Map.Entry::getKey, itemCreator, (a, b) -> a, TreeMap::new));
+				.map(itemCreator)
+				.collect(Collectors.toList());
 	}
 
 	public static boolean isPlaceAction(InventoryAction action) {

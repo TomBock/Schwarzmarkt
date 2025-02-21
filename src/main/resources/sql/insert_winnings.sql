@@ -1,0 +1,1 @@
+INSERT INTO winnings (player_uuid, item_data) VALUES (?, ?);

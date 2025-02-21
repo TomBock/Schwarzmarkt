@@ -1,0 +1,25 @@
+CREATE TABLE IF NOT EXISTS items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_data TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS winnings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_uuid BINARY(16) NOT NULL,
+    item_data TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS auctions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_data TEXT NOT NULL,
+    highest_bid INTEGER DEFAULT 0,
+    highest_bidder_uuid BINARY(16)
+);
+
+CREATE TABLE IF NOT EXISTS auction_bids (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    auction_id INTEGER NOT NULL,
+    player_uuid BINARY(16) NOT NULL,
+    bid_amount INTEGER NOT NULL,
+    FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE
+);

@@ -1,38 +1,34 @@
 package com.bocktom.schwarzmarkt.inv;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
-import com.bocktom.schwarzmarkt.util.Config;
+import com.bocktom.schwarzmarkt.inv.items.IdItem;
+import com.bocktom.schwarzmarkt.inv.items.PickableItem;
 import com.bocktom.schwarzmarkt.util.InvUtil;
+import com.bocktom.schwarzmarkt.util.MSG;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.item.Item;
+import xyz.xenondevs.invui.item.impl.SimpleItem;
 import xyz.xenondevs.invui.window.Window;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class WinningsInventory {
 
-	private static String title = "Schwarzmarkt - Gewinne";
+	private final Player player;
 
 	public WinningsInventory(Player player) {
 
-		//noinspection unchecked
-		Map<Integer, ItemStack> itemStackMap = loadWinnings(player);
-		Map<Integer, Item> itemMap = InvUtil.createItems(itemStackMap, entry -> new WinningsItem(entry.getKey(), entry.getValue()));
+		Map<Integer, ItemStack> itemStackMap = Schwarzmarkt.db.getWinnings(player.getUniqueId());
+		List<Item> items = InvUtil.createItems(itemStackMap,
+				entry -> new PickableItem(entry.getKey(), entry.getValue(), null, this::tryItemRemove));
 
-		List<Item> items = new ArrayList<>();
-
-		for (Map.Entry<Integer, Item> item : itemMap.entrySet()) {
-			items.add(item.getValue());
-		}
-		for (int i = 0; i < 9; i++) {
-			items.add(new WinningsItem(i, new ItemStack(Material.AIR)));
+		//fill up to 9 with air
+		for (int i = 0; i < 9 - items.size(); i++) {
+			items.add(new SimpleItem(new ItemStack(Material.AIR)));
 		}
 
 		Gui gui = Gui.normal()
@@ -53,33 +49,19 @@ public class WinningsInventory {
 
 		Window window = Window.single()
 				.setViewer(player)
-				.setTitle(title)
+				.setTitle(MSG.get("winnings.title"))
 				.setGui(gui)
-				.addCloseHandler(this::onClose)
 				.build();
 
 		window.open();
+		this.player = player;
 	}
 
-	private Map<Integer, ItemStack> loadWinnings(Player player) {
-		Map<Integer, ItemStack> winnings = new HashMap<>();
-
-		ConfigurationSection config = Config.winnings.get.getConfigurationSection(player.getUniqueId().toString());
-		if (config == null) return winnings;
-
-		for (String key : config.getKeys(false)) {
-			try {
-				int slot = Integer.parseInt(key);
-				ItemStack item = config.getItemStack(key);
-				winnings.put(slot, item);
-			} catch (NumberFormatException e) {
-				Schwarzmarkt.plugin.getLogger().warning("Invalid slot key in config: " + key);
-			}
+	private boolean tryItemRemove(IdItem item) {
+		boolean removed = Schwarzmarkt.db.removeWinnings(item.id);
+		if(!removed) {
+			player.sendMessage(MSG.get("error"));
 		}
-		return winnings;
-	}
-
-	private void onClose() {
-
+		return true;
 	}
 }

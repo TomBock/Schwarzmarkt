@@ -1,4 +1,4 @@
-package com.bocktom.schwarzmarkt.inv;
+package com.bocktom.schwarzmarkt.inv.items;
 
 import org.bukkit.Material;
 import xyz.xenondevs.invui.gui.ScrollGui;
@@ -14,7 +14,7 @@ public class ScrollUpItem extends ScrollItem {
 
 	@Override
 	public ItemProvider getItemProvider(ScrollGui<?> gui) {
-		ItemBuilder builder = new ItemBuilder(Material.FEATHER);
+		ItemBuilder builder = new ItemBuilder(Material.WHITE_STAINED_GLASS_PANE);
 		builder.setDisplayName("§e§l▲");
 		if(!gui.canScroll(-1))
 			builder.addLoreLines("§7Du kannst nicht weiter nach oben scrollen");

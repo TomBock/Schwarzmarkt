@@ -1,0 +1,1 @@
+SELECT id, item_data FROM auctions;

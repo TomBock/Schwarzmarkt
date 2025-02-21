@@ -1,4 +1,4 @@
-package com.bocktom.schwarzmarkt.inv;
+package com.bocktom.schwarzmarkt.inv.items;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,7 +13,7 @@ public class CloseItem extends AbstractItem {
 
 	@Override
 	public ItemProvider getItemProvider() {
-		return new ItemBuilder(Material.PAPER).setDisplayName("§cSchließen");
+		return new ItemBuilder(Material.RED_STAINED_GLASS_PANE).setDisplayName("§cSchließen");
 	}
 
 	@Override

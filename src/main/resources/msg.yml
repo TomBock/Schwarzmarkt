@@ -1,0 +1,7 @@
+auction:
+  title: "§8Schwarzmarkt"
+winnings:
+  title: "§8Gewinne"
+setup:
+  title: "§8Auktion einrichten"
+error: "§cEs ist ein Fehler aufgetreten. Bitte versuche es später erneut."

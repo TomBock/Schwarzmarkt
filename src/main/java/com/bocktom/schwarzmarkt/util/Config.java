@@ -1,27 +1,17 @@
 package com.bocktom.schwarzmarkt.util;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.function.Function;
 
 public class Config {
 
-	public static InternalConfig items;
-	public static InternalConfig auction;
-	public static InternalConfig winnings;
 	public static InternalConfig msg;
 
 	private Schwarzmarkt plugin;
@@ -38,12 +28,6 @@ public class Config {
 		}
 
 		msg = new InternalConfig(plugin, "msg.yml");
-	}
-
-	public static void save() {
-		items.save();
-		auction.save();
-		winnings.save();
 	}
 
 	public static class InternalConfig {

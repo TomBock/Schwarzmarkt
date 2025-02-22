@@ -7,7 +7,7 @@ depend:
 commands:
   schwarzmarkt:
     description: Schwarzmarkt Befehl
-    usage: /schwarzmarkt <setup|start|stop|info|show|bieten|gewinne> [args]
+    usage: /schwarzmarkt <setup|start|stop|info|show|bieten|gewinne|titel> [args]
     permission: schwarzmarkt.use
 permissions:
   schwarzmarkt.use:

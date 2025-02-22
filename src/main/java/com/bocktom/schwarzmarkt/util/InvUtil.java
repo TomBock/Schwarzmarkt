@@ -5,6 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.item.Item;
@@ -58,5 +59,14 @@ public class InvUtil {
 
 	public static boolean isOnRightBorder(int slot) {
 		return slot % 9 == 8;
+	}
+
+	public static ItemStack createTitleItem(String title, String perm) {
+		ItemStack item = new ItemStack(Material.NAME_TAG);
+		item.editMeta(meta -> {
+			meta.displayName(Component.text(title));
+			meta.lore(Collections.singletonList(Component.text("§7" + perm)));
+		});
+		return item;
 	}
 }

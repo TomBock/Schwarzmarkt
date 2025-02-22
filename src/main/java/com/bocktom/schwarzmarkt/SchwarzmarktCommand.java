@@ -1,12 +1,15 @@
 package com.bocktom.schwarzmarkt;
 
+import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
+import com.bocktom.schwarzmarkt.util.PlayerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,8 +91,16 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 			}
 		}
 
+		if(args.length == 3) {
+			if(isAdmin && args[0].equals("titel")) {
+				ItemStack item = InvUtil.createTitleItem(args[1], args[2]);
+				PlayerUtil.give(player, item);
+				return true;
+			}
+		}
+
 		if(isAdmin)
-			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt <setup|start|stop|info|gewinne|bieten> [betrag]");
+			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt <setup|start|stop|info|gewinne|bieten|titel> [args]");
 		else
 			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt <gewinne|bieten> [betrag]");
 		return true;

@@ -21,4 +21,4 @@ bid:
   invalidamount: "§cHaha, Witzbold" #When the user attempts to bid 0 or negative
   broke: "§cDu hast nicht genug Geld"
   noauction: "§cDu hast keine Auktion ausgewählt"
-  success: "§aDu hast erfolgreich %item% §afür §e%amount% §ageboten"
+  success: "§aDu hast erfolgreich §e%amount% §afür %item% §ageboten"

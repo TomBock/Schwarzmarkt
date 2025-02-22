@@ -1,4 +1,4 @@
-name: Schwarzmarkt
+name: PhoenixSchwarzmarkt
 version: '1.0-SNAPSHOT'
 main: com.bocktom.schwarzmarkt.Schwarzmarkt
 api-version: '1.21'

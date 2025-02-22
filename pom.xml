@@ -141,7 +141,6 @@
             <scope>provided</scope>
         </dependency>
 
-
         <!-- SQLite -->
         <dependency>
             <groupId>org.xerial</groupId>

@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS winnings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_uuid BINARY(16) NOT NULL,
+    item_data TEXT NOT NULL
+);

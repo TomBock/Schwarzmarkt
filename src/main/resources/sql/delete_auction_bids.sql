@@ -1,0 +1,1 @@
+DELETE FROM auction_bids WHERE auction_id = ?;

@@ -16,6 +16,11 @@ public class AuctionItem extends IdItem {
 
 	private final Consumer<AuctionItem> clickHandler;
 
+	public AuctionItem(int id) {
+		super(id, null);
+		clickHandler = item -> {};
+	}
+
 	public AuctionItem(int id, ItemStack item, Consumer<AuctionItem> clickHandler) {
 		super(id, item);
 		this.clickHandler = clickHandler;
@@ -28,6 +33,8 @@ public class AuctionItem extends IdItem {
 
 		lore.addFirst("");
 		lore.addFirst(MSG.get("auction.item.lore"));
+		meta.setLore(lore);
+		item.setItemMeta(meta);
 	}
 
 	@Override

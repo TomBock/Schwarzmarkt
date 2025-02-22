@@ -1,5 +1,9 @@
 package com.bocktom.schwarzmarkt.util;
 
+import com.bocktom.schwarzmarkt.inv.Auction;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TranslatableComponent;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
@@ -16,20 +20,21 @@ public class InvUtil {
 	public static Item BORDER = new SimpleItem(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(""));
 	public static Item AIR = new SimpleItem(new ItemBuilder(Material.AIR));
 
-	public static List<Item> createItems(List<ItemStack> itemStacks, Function<ItemStack, Item> itemCreator) {
-		if(itemStacks == null)
-			return List.of();
-		return itemStacks.stream()
-				.filter(Objects::nonNull)
-				.map(itemCreator)
-				.collect(Collectors.toList());
-	}
-
 	public static List<Item> createItems(Map<Integer, ItemStack> itemStacks, Function<Map.Entry<Integer, ItemStack>, Item> itemCreator) {
 		return itemStacks.entrySet().stream()
 				.filter(entry -> entry.getValue() != null)
 				.map(itemCreator)
 				.collect(Collectors.toList());
+	}
+
+	public static <T> List<Item> createItems(List<T> auctions, Function<T, Item> itemCreator) {
+		return auctions.stream()
+				.map(itemCreator)
+				.collect(Collectors.toList());
+	}
+
+	public static String getName(ItemStack item) {
+		return item.hasItemMeta() && item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item.getType().name();
 	}
 
 	public static boolean isPlaceAction(InventoryAction action) {

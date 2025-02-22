@@ -1,0 +1,1 @@
+SELECT * FROM returned_bids WHERE player_uuid = ?;

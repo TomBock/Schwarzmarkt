@@ -1,5 +1,6 @@
 package com.bocktom.schwarzmarkt;
 
+import com.bocktom.schwarzmarkt.util.MSG;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -7,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
@@ -25,39 +27,71 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 			return true;
 		}
 
-		if(args.length == 0) {
-			Schwarzmarkt.plugin.openWinnings(player);
-			return true;
-		}
-
-		if(!player.hasPermission("schwarzmarkt.admin")) {
-			player.sendMessage("Du hast keine Berechtigung für diesen Befehl");
-			return true;
-		}
+		boolean isAdmin = player.hasPermission("schwarzmarkt.admin");
 
 		if(args.length == 1) {
+
+			// USER
 			switch (args[0]) {
-				case "setup":
-					Schwarzmarkt.plugin.openSetup(player);
+				case "gewinne":
+					Schwarzmarkt.plugin.openWinnings(player);
 					return true;
-				case "info":
-					Schwarzmarkt.plugin.openInfo(player);
+				case "bieten":
+					player.sendMessage(MSG.get("bid.noamount"));
 					return true;
-				case "start":
-					Schwarzmarkt.plugin.startAuction();
-					return true;
-				case "stop":
-					Schwarzmarkt.plugin.stopAuction();
-					return true;
+			}
+
+			// ADMIN
+			if(isAdmin) {
+				switch (args[0]) {
+					case "setup":
+						Schwarzmarkt.plugin.openSetup(player);
+						return true;
+					case "info":
+						Schwarzmarkt.plugin.openInfo(player);
+						return true;
+					case "start":
+						Schwarzmarkt.plugin.startAuction(player);
+						return true;
+					case "stop":
+						Schwarzmarkt.plugin.stopAuction(player);
+						return true;
+				}
 			}
 		}
 
-		if(args.length == 2 && args[0].equals("show")) {
-			Schwarzmarkt.plugin.openAuction(args[1]);
-			return true;
+		if(args.length == 2) {
+
+			// ADMIN
+			if(args[0].equals("show") && isAdmin) {
+				Schwarzmarkt.plugin.openAuction(args[1]);
+				return true;
+			}
+
+			// USER
+			if(args[0].equals("bieten")) {
+				int amount = 0;
+				try {
+					amount = Integer.parseInt(args[1]);
+
+				} catch(NumberFormatException e) {
+					player.sendMessage(MSG.get("bid.noamount"));
+					return true;
+				}
+				if(amount <= 0) {
+					player.sendMessage(MSG.get("bid.invalidamount"));
+					return true;
+				}
+
+				Schwarzmarkt.plugin.bid(player, amount);
+				return true;
+			}
 		}
 
-		player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt <setup|info|start|stop|show>");
+		if(isAdmin)
+			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt <setup|start|stop|info|gewinne|bieten> [betrag]");
+		else
+			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt <gewinne|bieten> [betrag]");
 		return true;
 	}
 
@@ -65,10 +99,10 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 		if(args.length == 1) {
 			switch (args[0]) {
 				case "start":
-					Schwarzmarkt.plugin.startAuction();
+					Schwarzmarkt.plugin.startAuction(null);
 					return true;
 				case "stop":
-					Schwarzmarkt.plugin.stopAuction();
+					Schwarzmarkt.plugin.stopAuction(null);
 					return true;
 				case "info":
 					Schwarzmarkt.plugin.openInfo(sender);
@@ -81,7 +115,7 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 			return true;
 		}
 
-		sender.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt <start|stop|info>");
+		sender.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt <start|stop|info|show> [args]");
 		return true;
 	}
 
@@ -89,18 +123,29 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if(!(sender instanceof Player player))
 			return List.of();
+		boolean isAdmin = player.hasPermission("schwarzmarkt.admin");
 
-		if(!player.hasPermission("schwarzmarkt.admin"))
-			return List.of();
+		List<String> completions = new ArrayList<>();
+
 
 		if(args.length == 1) {
-			return List.of("setup", "start", "stop", "info", "show");
+			completions.add("gewinne");
+			completions.add("bieten");
+
+			if(isAdmin) {
+				completions.add("setup");
+				completions.add("start");
+				completions.add("stop");
+				completions.add("info");
+				completions.add("show");
+			}
+		} else if(args.length == 2) {
+			if(args[0].equals("show") && isAdmin) {
+				Bukkit.getOnlinePlayers().stream().map(Player::getName).forEach(completions::add);
+			}
 		}
 
-		if(args.length == 2 && args[0].equals("show")) {
-			return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
-		}
-
-		return List.of();
+		completions.sort(String::compareToIgnoreCase);
+		return completions;
 	}
 }

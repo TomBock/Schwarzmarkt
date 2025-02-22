@@ -5,14 +5,15 @@ import com.bocktom.schwarzmarkt.inv.items.AuctionItem;
 import com.bocktom.schwarzmarkt.inv.items.CloseItem;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.window.Window;
 
 import java.util.List;
-import java.util.Map;
 
 public class AuctionInventory {
 
@@ -20,9 +21,9 @@ public class AuctionInventory {
 
 	public AuctionInventory(Player player) {
 
-		Map<Integer, ItemStack> itemStacks = Schwarzmarkt.db.getAuctions();
-		List<Item> items = InvUtil.createItems(itemStacks,
-				entry -> new AuctionItem(entry.getKey(), entry.getValue(), this::onBid));
+		List<Auction> auctions = Schwarzmarkt.db.getAuctions();
+		List<Item> items = InvUtil.createItems(auctions,
+				auction -> new AuctionItem(auction.id, auction.item, this::onBid));
 
 		for (int i = items.size(); i < 3; i++) {
 			items.add(InvUtil.AIR);
@@ -53,9 +54,22 @@ public class AuctionInventory {
 	}
 
 	private void onBid(AuctionItem item) {
+		// Check if player already bid
+		int amount = Schwarzmarkt.db.getBid(item.id, player.getUniqueId());
 
+		player.closeInventory();
 
+		TextComponent msg = Component.empty()
+				.content(MSG.get("bid.info", "%item%", InvUtil.getName(item.item)))
+				.clickEvent(ClickEvent.suggestCommand("/schwarzmarkt bieten "));
+		player.sendMessage(msg);
 
+		if(amount > 0) {
+			player.sendMessage(MSG.get("bid.currentbid", "%amount%", String.valueOf(amount)));
+			return;
+		}
+
+		Schwarzmarkt.plugin.registerForBidding(player, item);
 	}
 
 	private void onClose() {

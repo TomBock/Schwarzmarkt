@@ -2,10 +2,12 @@ name: Schwarzmarkt
 version: '1.0-SNAPSHOT'
 main: com.bocktom.schwarzmarkt.Schwarzmarkt
 api-version: '1.21'
+depend:
+  - Vault
 commands:
   schwarzmarkt:
     description: Schwarzmarkt Befehl
-    usage: /schwarzmarkt <setup|start|stop|info|show>
+    usage: /schwarzmarkt <setup|start|stop|info|show|bieten|gewinne> [args]
     permission: schwarzmarkt.use
 permissions:
   schwarzmarkt.use:

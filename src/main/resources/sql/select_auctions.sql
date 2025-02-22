@@ -1,1 +1,1 @@
-SELECT id, item_data FROM auctions;
+SELECT * FROM auctions;

@@ -1,0 +1,1 @@
+DELETE FROM returned_bids WHERE player_uuid = ?;

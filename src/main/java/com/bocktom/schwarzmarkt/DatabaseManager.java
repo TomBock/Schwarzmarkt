@@ -1,5 +1,6 @@
 package com.bocktom.schwarzmarkt;
 
+import com.bocktom.schwarzmarkt.inv.Auction;
 import com.bocktom.schwarzmarkt.util.DBStatementBuilder;
 import de.tr7zw.changeme.nbtapi.NBT;
 import org.bukkit.inventory.ItemStack;
@@ -29,31 +30,45 @@ public class DatabaseManager {
 		this.dbUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
 
 		try (Connection con = getConnection()) {
-			int result = new DBStatementBuilder(con, "sql/create_tables.sql")
-					.executeUpdate();
+			con.setAutoCommit(false);
+			int result = new DBStatementBuilder(con, "sql/create_items.sql").executeUpdate();
+			result += new DBStatementBuilder(con, "sql/create_auctions.sql").executeUpdate();
+			result += new DBStatementBuilder(con, "sql/create_auction_bids.sql").executeUpdate();
+			result += new DBStatementBuilder(con, "sql/create_winnings.sql").executeUpdate();
+			result += new DBStatementBuilder(con, "sql/create_returned_bids.sql").executeUpdate();
 
+			con.commit();
 			if(result > 0)
-				plugin.getLogger().info("Created tables");
+				plugin.getLogger().info("Created " + result + " tables");
 		} catch (SQLException | IOException e) {
 			plugin.getLogger().warning("Failed to setup database: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
-	public void addAuctions(Collection<ItemStack> items) {
+	public List<Integer> addAuctions(Collection<ItemStack> items) {
+		List<Integer> auctionIds = new ArrayList<>();
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
 			for(ItemStack item : items) {
 				String json = NBT.itemStackToNBT(item).toString();
-				new DBStatementBuilder(con, "sql/insert_auction.sql")
+				try(ResultSet set = new DBStatementBuilder(con, "sql/insert_auction.sql")
 						.setString(1, json)
-						.executeUpdate();
+						.executeQuery()) {
+
+					if(set.next()) {
+						int id = set.getInt(1);
+						auctionIds.add(id);
+					}
+				}
 			}
 			con.commit();
+			plugin.getLogger().info("Added " + items.size() + " auctions");
 		} catch (SQLException | IOException e) {
 			plugin.getLogger().warning("Failed to add auction: " + e.getMessage());
 			e.printStackTrace();
 		}
+		return auctionIds;
 	}
 
 	public void removeAuctions() {
@@ -66,17 +81,21 @@ public class DatabaseManager {
 		}
 	}
 
-	public Map<Integer, ItemStack> getAuctions() {
+	public List<Auction> getAuctions() {
 		try (Connection con = getConnection()) {
 			try(ResultSet set = new DBStatementBuilder(con, "sql/select_auctions.sql")
 					.executeQuery()) {
 
-				Map<Integer, ItemStack> auctions = new TreeMap<>();
+				List<Auction> auctions = new ArrayList<>();
 				while(set.next()) {
-					int id = set.getInt("id");
-					String json = set.getString("item_data");
-					ItemStack item = NBT.itemStackFromNBT(NBT.parseNBT(json));
-					auctions.put(id, item);
+					byte[] highestBidder = set.getBytes("highest_bidder_uuid");
+					UUID uuid = highestBidder != null ? UUID.fromString(new String(highestBidder)) : null;
+					Auction auction = new Auction(
+							set.getInt("id"),
+							NBT.itemStackFromNBT(NBT.parseNBT(set.getString("item_data"))),
+							set.getInt("highest_bid"),
+							uuid);
+					auctions.add(auction);
 				}
 				return auctions;
 			}
@@ -84,7 +103,25 @@ public class DatabaseManager {
 			plugin.getLogger().warning("Failed to get auctions: " + e.getMessage());
 			e.printStackTrace();
 		}
-		return Map.of();
+		return List.of();
+	}
+
+	public int getBid(int auctionId, UUID playerUuid) {
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/select_bid.sql")
+					.setInt(1, auctionId)
+					.setBytes(2, playerUuid.toString().getBytes())
+					.executeQuery()) {
+
+				if(set.next()) {
+					return set.getInt("bid_amount");
+				}
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to get bid: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return 0;
 	}
 
 	public boolean placeBid(int auctionId, UUID playerUuid, int amount) {
@@ -114,6 +151,28 @@ public class DatabaseManager {
 		return false;
 	}
 
+	public boolean rollbackBid(int auctionId, UUID playerUuid, int amount) {
+		try (Connection con = getConnection()) {
+			con.setAutoCommit(false);
+
+			byte[] uuid = playerUuid.toString().getBytes();
+			int result = new DBStatementBuilder(con, "sql/rollback_bid.sql")
+					.setInt(1, amount)
+					.setInt(2, auctionId)
+					.setBytes(3, uuid)
+					.setInt(4, auctionId)
+					.setBytes(5, uuid)
+					.executeUpdate();
+
+			con.commit();
+			return result > 0;
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to rollback bid: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	public Map<ItemStack, Map<UUID, Integer>> getBids() {
 		try (Connection con = getConnection()) {
 			try(ResultSet set = new DBStatementBuilder(con, "sql/select_bids.sql")
@@ -135,6 +194,45 @@ public class DatabaseManager {
 			e.printStackTrace();
 		}
 		return Map.of();
+	}
+
+	public Map<UUID, Integer> getBids(int auctionId) {
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/select_bids_by_auction.sql")
+					.setInt(1, auctionId)
+					.executeQuery()) {
+
+				Map<UUID, Integer> bids = new HashMap<>();
+				while(set.next()) {
+					UUID playerUuid = UUID.fromString(new String(set.getBytes("player_uuid")));
+					int amount = set.getInt("bid_amount");
+					bids.put(playerUuid, amount);
+				}
+				return bids;
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to get bids: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return Map.of();
+	}
+
+	public boolean removeBids(List<Integer> auctionId) {
+		try (Connection con = getConnection()) {
+			con.setAutoCommit(false);
+
+			for(int id : auctionId) {
+				new DBStatementBuilder(con, "sql/delete_auction_bids.sql")
+						.setInt(1, id)
+						.executeUpdate();
+			}
+			con.commit();
+			return true;
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to delete bids: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	public boolean updateItems(Collection<ItemStack> added, Collection<Integer> removed) {
@@ -250,7 +348,50 @@ public class DatabaseManager {
 		return Map.of();
 	}
 
+	public void addReturnedBids(Map<UUID, Integer> bids) {
+		try (Connection con = getConnection()) {
+			con.setAutoCommit(false);
+			for (Map.Entry<UUID, Integer> entry : bids.entrySet()) {
+				new DBStatementBuilder(con, "sql/insert_or_update_returned_bids.sql")
+						.setBytes(1, entry.getKey().toString().getBytes())
+						.setInt(2, entry.getValue())
+						.executeUpdate();
+			}
+			con.commit();
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to add return bid: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	public int getAndClearReturnedBids(UUID playerUuid) {
+		int amount = 0;
+		try (Connection con = getConnection()) {
+			con.setAutoCommit(false);
+
+			try(ResultSet set = new DBStatementBuilder(con, "sql/select_returned_bids.sql")
+					.setBytes(1, playerUuid.toString().getBytes())
+					.executeQuery()) {
+
+				if(set.next()) {
+					 amount = set.getInt("amount");
+				}
+			}
+
+			new DBStatementBuilder(con, "sql/delete_returned_bids.sql")
+					.setBytes(1, playerUuid.toString().getBytes())
+					.executeUpdate();
+
+			con.commit();
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to get returned bids: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return amount;
+	}
+
 	public Connection getConnection() throws SQLException {
 		return DriverManager.getConnection(this.dbUrl);
 	}
+
 }

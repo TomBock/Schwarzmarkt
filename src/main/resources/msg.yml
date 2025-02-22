@@ -1,9 +1,17 @@
-auction:
-  item.lore: "§7Klicke mich um zu bieten"
-  item.chat: "$7Wie viel möchtest du für §6%item% §7bieten?"
-  title: "§8Schwarzmarkt"
-winnings:
-  title: "§8Gewinne"
-setup:
-  title: "§8Auktion einrichten"
 error: "§cEs ist ein Fehler aufgetreten. Bitte versuche es später erneut."
+setup.title: "§8Auktion einrichten"
+auction:
+  title: "§8Schwarzmarkt"
+  item.lore: "§7Klicke mich um zu bieten"
+winnings.title: "§8Gewinne"
+onjoin:
+  won: "§6Glückwunsch! §7Du hast bei der Auktion abgeräumt! Klicke hier oder gib §e/schwarzmarkt gewinne §7ein um deine Gewinne abzuholen."
+  lost: "§5Schade! §7Du hast bei der Auktion nichts gewonnen. Deine Rubine %amount% wurden dir zurückgegeben."
+bid:
+  info: "§7Klicke hier um für %item% §7zu bieten oder gib §e/schwarzmarkt bieten <betrag> §7ein"
+  currentbid: "§7Aktuelles Gebot: §e%amount%" #Will be send with the info if there is an existing bid
+  noamount: "§cDu musst einen korrekten Betrag angeben"
+  invalidamount: "§cHaha, Witzbold" #When the user attempts to bid 0 or negative
+  broke: "§cDu hast nicht genug Geld"
+  noauction: "§cDu hast keine Auktion ausgewählt"
+  success: "§aDu hast erfolgreich %item% für %amount% geboten"

@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS returned_bids (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_uuid BINARY(16) NOT NULL,
+    amount INTEGER NOT NULL
+);

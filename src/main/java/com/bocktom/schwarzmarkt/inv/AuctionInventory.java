@@ -66,7 +66,6 @@ public class AuctionInventory {
 
 		if(amount > 0) {
 			player.sendMessage(MSG.get("bid.currentbid", "%amount%", String.valueOf(amount)));
-			return;
 		}
 
 		Schwarzmarkt.plugin.registerForBidding(player, item);

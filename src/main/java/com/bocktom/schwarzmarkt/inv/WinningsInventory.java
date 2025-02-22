@@ -27,7 +27,7 @@ public class WinningsInventory {
 				entry -> new PickableItem(entry.getKey(), entry.getValue(), null, this::tryItemRemove));
 
 		//fill up to 9 with air
-		for (int i = 0; i < 9 - items.size(); i++) {
+		while(items.size() < 9) {
 			items.add(new SimpleItem(new ItemStack(Material.AIR)));
 		}
 

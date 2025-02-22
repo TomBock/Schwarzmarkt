@@ -10,6 +10,8 @@ import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import com.bocktom.schwarzmarkt.util.PersistentLogger;
 import de.tr7zw.changeme.nbtapi.NBT;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -149,6 +151,12 @@ public final class Schwarzmarkt extends JavaPlugin {
 					PersistentLogger.logWinningsFailed(auction.id, auction.highestBidder, auction.item);
 				} else {
 					PersistentLogger.logAuctionEnd(auction.id, auction.highestBidder, auction.highestBid);
+
+					// Inform directly
+					Player winner = Bukkit.getPlayer(auction.highestBidder);
+					if(winner != null) {
+						winner.sendMessage(Component.text(MSG.get("onjoin.won")).clickEvent(ClickEvent.runCommand("/schwarzmarkt gewinne")));
+					}
 				}
 			}
 

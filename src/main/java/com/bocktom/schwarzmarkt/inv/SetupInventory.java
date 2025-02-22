@@ -26,10 +26,10 @@ public class SetupInventory {
 		List<Item> items = InvUtil.createItems(itemMap,
 				entry -> new PickableItem(entry.getKey(), entry.getValue(), this::tryAddItem, this::tryRemoveItem));
 
-		int rows = Math.max((int) Math.ceil(items.size() / 9.0), 5);
+		int rows = Math.max((int) Math.ceil(items.size() / 8.0), 5);
 		int emptySlots = (rows+1) * 8 - items.size(); // always one more row to have empty space
 
-		for (int i = 0; i < emptySlots; i++) {
+		while(emptySlots-- > 0) {
 			items.add(PickableItem.empty(this::tryAddItem, this::tryRemoveItem));
 		}
 

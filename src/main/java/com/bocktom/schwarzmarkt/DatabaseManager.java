@@ -340,6 +340,7 @@ public class DatabaseManager {
 					ItemStack item = NBT.itemStackFromNBT(NBT.parseNBT(json));
 					winnings.put(id, item);
 				}
+				return winnings;
 			}
 		} catch (SQLException | IOException e) {
 			plugin.getLogger().warning("Failed to get winnings: " + e.getMessage());

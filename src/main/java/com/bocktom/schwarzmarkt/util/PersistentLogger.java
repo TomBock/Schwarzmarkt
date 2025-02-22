@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 public class PersistentLogger {
 
-	private static final String FILE = "bids.log";
+	private static final String FILE = Path.of(Schwarzmarkt.plugin.getDataPath().toString(), "bids.log").toString();
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
 
 	public static void logBid(int auctionId, UUID uuid, int amount) {

@@ -3,6 +3,7 @@ package com.bocktom.schwarzmarkt.inv;
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.inv.items.IdItem;
 import com.bocktom.schwarzmarkt.inv.items.PickableItem;
+import com.bocktom.schwarzmarkt.inv.items.WinningsItem;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import org.bukkit.Material;
@@ -24,7 +25,7 @@ public class WinningsInventory {
 
 		Map<Integer, ItemStack> itemStackMap = Schwarzmarkt.db.getWinnings(player.getUniqueId());
 		List<Item> items = InvUtil.createItems(itemStackMap,
-				entry -> new PickableItem(entry.getKey(), entry.getValue(), null, this::tryItemRemove));
+				entry -> new WinningsItem(entry.getKey(), entry.getValue(), null, this::tryItemRemove));
 
 		//fill up to 9 with air
 		while(items.size() < 9) {
@@ -49,7 +50,7 @@ public class WinningsInventory {
 
 		Window window = Window.single()
 				.setViewer(player)
-				.setTitle(MSG.get("winnings.title"))
+				.setTitle(MSG.get("winnings.name"))
 				.setGui(gui)
 				.build();
 

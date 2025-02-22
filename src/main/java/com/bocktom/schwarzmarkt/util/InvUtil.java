@@ -1,11 +1,8 @@
 package com.bocktom.schwarzmarkt.util;
 
-import com.bocktom.schwarzmarkt.inv.Auction;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.TranslatableComponent;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.item.Item;
@@ -64,9 +61,17 @@ public class InvUtil {
 	public static ItemStack createTitleItem(String title, String perm) {
 		ItemStack item = new ItemStack(Material.NAME_TAG);
 		item.editMeta(meta -> {
-			meta.displayName(Component.text(title));
+			meta.displayName(Component.text(ChatColor.translateAlternateColorCodes('&', title)));
 			meta.lore(Collections.singletonList(Component.text("§7" + perm)));
 		});
 		return item;
+	}
+
+	public static boolean isTitleItem(ItemStack item) {
+		return item.getType() == Material.NAME_TAG && item.hasItemMeta() && item.getItemMeta().hasLore();
+	}
+
+	public static String getTitlePerm(ItemStack item) {
+		return item.getItemMeta().getLore().getLast();
 	}
 }

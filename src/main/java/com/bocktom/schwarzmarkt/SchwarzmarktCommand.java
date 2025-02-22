@@ -54,10 +54,10 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 						Schwarzmarkt.plugin.openInfo(player);
 						return true;
 					case "start":
-						Schwarzmarkt.plugin.startAuction(player);
+						Schwarzmarkt.auctions.startAuctions(player);
 						return true;
 					case "stop":
-						Schwarzmarkt.plugin.stopAuction(player);
+						Schwarzmarkt.auctions.stopAuctions(player);
 						return true;
 				}
 			}
@@ -86,7 +86,7 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 					return true;
 				}
 
-				Schwarzmarkt.plugin.bid(player, amount);
+				Schwarzmarkt.auctions.bid(player, amount);
 				return true;
 			}
 		}
@@ -110,10 +110,10 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 		if(args.length == 1) {
 			switch (args[0]) {
 				case "start":
-					Schwarzmarkt.plugin.startAuction(null);
+					Schwarzmarkt.auctions.startAuctions(null);
 					return true;
 				case "stop":
-					Schwarzmarkt.plugin.stopAuction(null);
+					Schwarzmarkt.auctions.stopAuctions(null);
 					return true;
 				case "info":
 					Schwarzmarkt.plugin.openInfo(sender);
@@ -149,9 +149,10 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 				completions.add("stop");
 				completions.add("info");
 				completions.add("show");
+				completions.add("titel");
 			}
-		} else if(args.length == 2) {
-			if(args[0].equals("show") && isAdmin) {
+		} else if(args.length == 2 && isAdmin) {
+			if(args[0].equals("show")) {
 				Bukkit.getOnlinePlayers().stream().map(Player::getName).forEach(completions::add);
 			}
 		}

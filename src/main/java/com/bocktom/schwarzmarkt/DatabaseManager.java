@@ -217,6 +217,27 @@ public class DatabaseManager {
 		return Map.of();
 	}
 
+	public Map<Integer, Integer> getBids(UUID playerUuid) {
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/select_bids_by_player.sql")
+					.setBytes(1, playerUuid.toString().getBytes())
+					.executeQuery()) {
+
+				Map<Integer, Integer> bids = new HashMap<>();
+				while(set.next()) {
+					int auctionId = set.getInt("auction_id");
+					int amount = set.getInt("bid_amount");
+					bids.put(auctionId, amount);
+				}
+				return bids;
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to get bids: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return Map.of();
+	}
+
 	public boolean removeBids(List<Integer> auctionId) {
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);

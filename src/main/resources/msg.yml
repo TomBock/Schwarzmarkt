@@ -1,17 +1,24 @@
 error: "§cEs ist ein Fehler aufgetreten. Bitte versuche es später erneut."
-setup.title: "§8Auktion einrichten"
+setup.name: "§8Auktion einrichten"
 auction:
-  title: "§8Schwarzmarkt"
-  item.lore: "§7Klicke mich um zu bieten"
-winnings.title: "§8Gewinne"
+  name: "§8Schwarzmarkt"
+  item.lore:
+    info: "§7Klicke mich um zu bieten"
+    currentbid: "§7Aktuelles Gebot: §e%amount%"
+    title: "§7Kaufbarer Titel"
+winnings:
+  name: "§8Gewinne"
+  title:
+    lore: "§7Klicke mich um den Titel zu erhalten"
+    onclick: "§7Du hast den Titel %titel% §7erhalten"
 onjoin:
   won: "§6Glückwunsch! §7Du hast bei der Auktion abgeräumt! Klicke hier oder gib §e/schwarzmarkt gewinne §7ein um deine Gewinne abzuholen."
   lost: "§5Schade! §7Du hast bei der Auktion nichts gewonnen. Deine Rubine %amount% wurden dir zurückgegeben."
 bid:
   info: "§7Klicke hier um für %item% §7zu bieten oder gib §e/schwarzmarkt bieten <betrag> §7ein"
-  currentbid: "§7Aktuelles Gebot: §e%amount%" #Will be send with the info if there is an existing bid
+  infowithbid: "§7Klicke hier um noch mehr für %item% §7zu bieten oder gib §e/schwarzmarkt bieten <betrag> §7ein. Aktuelles Gebot: §e%amount%"
   noamount: "§cDu musst einen korrekten Betrag angeben"
   invalidamount: "§cHaha, Witzbold" #When the user attempts to bid 0 or negative
   broke: "§cDu hast nicht genug Geld"
   noauction: "§cDu hast keine Auktion ausgewählt"
-  success: "§aDu hast erfolgreich %item% für %amount% geboten"
+  success: "§aDu hast erfolgreich %item% §afür §e%amount% §ageboten"

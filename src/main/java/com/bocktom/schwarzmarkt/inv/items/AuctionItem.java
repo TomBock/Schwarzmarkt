@@ -1,5 +1,6 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
+import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -15,24 +16,35 @@ import java.util.function.Consumer;
 public class AuctionItem extends IdItem {
 
 	private final Consumer<AuctionItem> clickHandler;
+	public final int currentBid;
 
 	public AuctionItem(int id) {
 		super(id, null);
 		clickHandler = item -> {};
+		currentBid = 0;
 	}
 
-	public AuctionItem(int id, ItemStack item, Consumer<AuctionItem> clickHandler) {
+	public AuctionItem(int id, ItemStack item, int currentBid, Consumer<AuctionItem> clickHandler) {
 		super(id, item);
 		this.clickHandler = clickHandler;
+		this.currentBid = currentBid;
 
 		ItemMeta meta = item.getItemMeta();
-		// add lore
 		List<String> lore = meta.getLore();
+		// add lore
 		if(lore == null)
 			lore = new ArrayList<>();
 
+		boolean isTitle = InvUtil.isTitleItem(item);
+		if(isTitle)
+			lore.clear();
 		lore.addFirst("");
-		lore.addFirst(MSG.get("auction.item.lore"));
+		if(currentBid > 0)
+			lore.addFirst(MSG.get("auction.item.lore.currentbid", "%amount%", String.valueOf(currentBid)));
+		if(isTitle)
+			lore.addFirst(MSG.get("auction.item.lore.title"));
+		lore.addFirst(MSG.get("auction.item.lore.info"));
+
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 	}

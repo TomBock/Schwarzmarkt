@@ -51,7 +51,7 @@ public class SetupInventory {
 
 		Window window = Window.single()
 				.setViewer(player)
-				.setTitle(MSG.get("setup.title"))
+				.setTitle(MSG.get("setup.name"))
 				.setGui(gui)
 				.addCloseHandler(this::onClose)
 				.build();

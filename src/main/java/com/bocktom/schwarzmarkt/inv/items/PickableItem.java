@@ -2,7 +2,6 @@ package com.bocktom.schwarzmarkt.inv.items;
 
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import org.bukkit.Material;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -13,8 +12,8 @@ import java.util.function.Function;
 
 public class PickableItem extends IdItem {
 
-	private final Function<PickableItem, Boolean> tryAdd;
-	private final Function<PickableItem, Boolean> tryRemove;
+	protected final Function<PickableItem, Boolean> tryAdd;
+	protected final Function<PickableItem, Boolean> tryRemove;
 
 	public PickableItem(int id, ItemStack item, Function<PickableItem, Boolean> onAdded, Function<PickableItem, Boolean> tryRemove) {
 		super(id, item);
@@ -32,22 +31,33 @@ public class PickableItem extends IdItem {
 
 			if(InvUtil.isPlaceAction(event.getAction())) {
 
-				ItemStack previous = item;
-				item = event.getCursor();
-				if(tryAdd != null && tryAdd.apply(this)) {
-					event.setCancelled(true);
-					event.setCursor(new ItemStack(Material.AIR));
-				} else {
-					item = previous;
-				}
+				handlePlace(event);
 
 			} else if(InvUtil.isPickupAction(event.getAction())) {
-				if(tryRemove != null && tryRemove.apply(this)) {
-					event.setCancelled(false);
-					id = -1;
-				}
+
+				handlePickup(event);
+
 			}
 		}
 		notifyWindows();
+	}
+
+
+	protected void handlePlace(@NotNull InventoryClickEvent event) {
+		ItemStack previous = item;
+		item = event.getCursor();
+		if(tryAdd != null && tryAdd.apply(this)) {
+			event.setCancelled(true);
+			event.setCursor(new ItemStack(Material.AIR));
+		} else {
+			item = previous;
+		}
+	}
+
+	protected void handlePickup(@NotNull InventoryClickEvent event) {
+		if(tryRemove != null && tryRemove.apply(this)) {
+			event.setCancelled(false);
+			id = -1;
+		}
 	}
 }

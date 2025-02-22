@@ -1,0 +1,1 @@
+SELECT * FROM auction_bids WHERE player_uuid = ?;

@@ -14,16 +14,18 @@ import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.window.Window;
 
 import java.util.List;
+import java.util.Map;
 
 public class AuctionInventory {
 
 	private final Player player;
 
 	public AuctionInventory(Player player) {
-
 		List<Auction> auctions = Schwarzmarkt.db.getAuctions();
+		Map<Integer, Integer> bidsPerAuction = Schwarzmarkt.db.getBids(player.getUniqueId());
+
 		List<Item> items = InvUtil.createItems(auctions,
-				auction -> new AuctionItem(auction.id, auction.item, this::onBid));
+				auction -> new AuctionItem(auction.id, auction.item, bidsPerAuction.getOrDefault(auction.id, 0), this::onBid));
 
 		for (int i = items.size(); i < 3; i++) {
 			items.add(InvUtil.AIR);
@@ -44,7 +46,7 @@ public class AuctionInventory {
 
 		Window window = Window.single()
 				.setViewer(player)
-				.setTitle(MSG.get("auction.title"))
+				.setTitle(MSG.get("auction.name"))
 				.setGui(gui)
 				.addCloseHandler(this::onClose)
 				.build();
@@ -54,21 +56,23 @@ public class AuctionInventory {
 	}
 
 	private void onBid(AuctionItem item) {
-		// Check if player already bid
-		int amount = Schwarzmarkt.db.getBid(item.id, player.getUniqueId());
-
 		player.closeInventory();
 
-		TextComponent msg = Component.empty()
-				.content(MSG.get("bid.info", "%item%", InvUtil.getName(item.item)))
-				.clickEvent(ClickEvent.suggestCommand("/schwarzmarkt bieten "));
-		player.sendMessage(msg);
-
-		if(amount > 0) {
-			player.sendMessage(MSG.get("bid.currentbid", "%amount%", String.valueOf(amount)));
+		TextComponent msg;
+		if(item.currentBid == 0) {
+			msg = Component.empty()
+					.content(MSG.get("bid.info", "%item%", InvUtil.getName(item.item)))
+					.clickEvent(ClickEvent.suggestCommand("/schwarzmarkt bieten "));
+		} else {
+			msg = Component.empty()
+					.content(MSG.get("bid.infowithbid",
+							"%item%", InvUtil.getName(item.item),
+							"%amount%", String.valueOf(item.currentBid)))
+					.clickEvent(ClickEvent.suggestCommand("/schwarzmarkt bieten "));
 		}
 
-		Schwarzmarkt.plugin.registerForBidding(player, item);
+		player.sendMessage(msg);
+		Schwarzmarkt.auctions.registerForBidding(player, item);
 	}
 
 	private void onClose() {

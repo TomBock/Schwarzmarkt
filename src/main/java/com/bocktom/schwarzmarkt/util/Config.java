@@ -9,16 +9,27 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Optional;
 
 public class Config {
 
 	public static InternalConfig msg;
+	public static InternalConfig gui;
 
 	private Schwarzmarkt plugin;
 
 	public Config() {
 		this.plugin = Schwarzmarkt.plugin;
 		loadConfig();
+	}
+
+	public static Optional<InternalConfig> getInv(String arg) {
+		switch (arg) {
+			case "auctioninv":
+				return Optional.of(gui);
+			default:
+				return Optional.empty();
+		}
 	}
 
 	private void loadConfig() {
@@ -28,6 +39,7 @@ public class Config {
 		}
 
 		msg = new InternalConfig(plugin, "msg.yml");
+		gui = new InternalConfig(plugin, "gui.yml");
 	}
 
 	public static class InternalConfig {

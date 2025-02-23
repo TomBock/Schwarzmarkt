@@ -13,9 +13,11 @@
 - /schwarzmarkt stop - Stoppt den Schwarzmarkt (via Cron Job)
 - /schwarzmarkt show \<player> - Öffnet den Marktplatz (von citizen auszuführen)
 - /schwarzmarkt titel \<displayname> \<permission> - Hilfe command um titel zu erstellen
+- /schwarzmarkt setinvitem \<inventary> \<key> - Setzt ein item in einer inventar gui yml
 
 ### Configs:
 - _msg.yml_ defines texts & chat messages for the plugin
+- _gui.yml_ defines the GUIs for the plugin
 - _bids.log_ logs all bids
 
 ### Permissions:

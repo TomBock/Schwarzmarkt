@@ -1,8 +1,10 @@
 package com.bocktom.schwarzmarkt;
 
+import com.bocktom.schwarzmarkt.util.Config;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import com.bocktom.schwarzmarkt.util.PlayerUtil;
+import de.tr7zw.changeme.nbtapi.NBT;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 
@@ -66,9 +69,14 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 		if(args.length == 2) {
 
 			// ADMIN
-			if(args[0].equals("show") && isAdmin) {
-				Schwarzmarkt.plugin.openAuction(args[1]);
-				return true;
+			if(isAdmin) {
+				if(args[0].equals("show")) {
+					Schwarzmarkt.plugin.openAuction(args[1]);
+					return true;
+				} else if(args[0].equals("setinvitem")) {
+					setInvItem(player, args[1]);
+					return true;
+				}
 			}
 
 			// USER
@@ -100,10 +108,24 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 		}
 
 		if(isAdmin)
-			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt <setup|start|stop|info|gewinne|bieten|titel> [args]");
+			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt (setup | start | stop | info | gewinne | bieten [amount] | show [player] | titel [displayname] [permission] | setinvitem [slotkey])");
 		else
-			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt <gewinne|bieten> [betrag]");
+			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt (gewinne | bieten [betrag])");
 		return true;
+	}
+
+	private void setInvItem(Player player, String key) {
+		Config.InternalConfig config = Config.gui;
+
+		ItemStack item = player.getItemInHand();
+		if(item == null) {
+			player.sendMessage("No item in hand");
+			return;
+		}
+
+		config.get.set("slots." + key, item);
+		config.save();
+		player.sendMessage("Item " + key + " set");
 	}
 
 	private boolean onConsoleCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -126,7 +148,7 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 			return true;
 		}
 
-		sender.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt <start|stop|info|show> [args]");
+		sender.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt (start | stop | info | show [player])");
 		return true;
 	}
 
@@ -150,6 +172,7 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 				completions.add("info");
 				completions.add("show");
 				completions.add("titel");
+				completions.add("setinvitem");
 			}
 		} else if(args.length == 2 && isAdmin) {
 			if(args[0].equals("show")) {

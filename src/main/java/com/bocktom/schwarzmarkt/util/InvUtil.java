@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class InvUtil {
 
-	public static Item BORDER = new SimpleItem(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(""));
+	public static Item BORDER = new SimpleItem(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE));
 	public static Item AIR = new SimpleItem(new ItemBuilder(Material.AIR));
 
 	public static List<Item> createItems(Map<Integer, ItemStack> itemStacks, Function<Map.Entry<Integer, ItemStack>, Item> itemCreator) {

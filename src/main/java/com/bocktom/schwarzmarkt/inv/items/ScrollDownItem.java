@@ -1,23 +1,28 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.gui.ScrollGui;
 import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.controlitem.ScrollItem;
 
+import java.util.List;
+
 public class ScrollDownItem extends ScrollItem {
 
-	public ScrollDownItem() {
+	private final ItemStack item;
+
+	public ScrollDownItem(ItemStack item) {
 		super(1);
+		this.item = item;
 	}
 
 	@Override
 	public ItemProvider getItemProvider(ScrollGui<?> gui) {
-		ItemBuilder builder = new ItemBuilder(Material.WHITE_STAINED_GLASS_PANE);
-		builder.setDisplayName("§e§l▼");
-		if(!gui.canScroll(1))
-			builder.addLoreLines("§7Du kannst nicht weiter nach unten scrollen");
-		return builder;
+		ItemStack item = this.item.clone();
+		if(gui.canScroll(1))
+			item.setLore(List.of());
+		return new ItemBuilder(item);
 	}
 }

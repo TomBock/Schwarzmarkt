@@ -15,48 +15,30 @@ import xyz.xenondevs.invui.window.Window;
 
 import java.util.*;
 
-public class SetupInventory {
+public class SetupInventory extends ConfigInventory {
 
-	private List<ItemStack> itemsAdded = new ArrayList<>();
-	private List<Integer> itemsRemoved = new ArrayList<>();
+	private final List<ItemStack> itemsAdded = new ArrayList<>();
+	private final List<Integer> itemsRemoved = new ArrayList<>();
 
 	public SetupInventory(Player player) {
+		super(player, "setup", MSG.get("setup.name"));
+	}
+
+	@Override
+	protected List<Item> getItems() {
 		Map<Integer, ItemStack> itemMap = Schwarzmarkt.db.getItems();
 
 		List<Item> items = InvUtil.createItems(itemMap,
 				entry -> new PickableItem(entry.getKey(), entry.getValue(), this::tryAddItem, this::tryRemoveItem));
 
-		int rows = Math.max((int) Math.ceil(items.size() / 8.0), 5);
-		int emptySlots = (rows+1) * 8 - items.size(); // always one more row to have empty space
+		// One fallback to always have space for new items
+		items.add(getFallback());
+		return items;
+	}
 
-		while(emptySlots-- > 0) {
-			items.add(PickableItem.empty(this::tryAddItem, this::tryRemoveItem));
-		}
-
-		Gui gui = ScrollGui.items()
-				.setStructure(
-						"x x x x x x x x u",
-						"x x x x x x x x #",
-						"x x x x x x x x e",
-						"x x x x x x x x #",
-						"x x x x x x x x d")
-				.addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
-				.addIngredient('#', InvUtil.BORDER)
-				.addIngredient('a', InvUtil.AIR)
-				.addIngredient('u', new ScrollUpItem())
-				.addIngredient('d', new ScrollDownItem())
-				.addIngredient('e', new CloseItem())
-				.setContent(items)
-				.build();
-
-		Window window = Window.single()
-				.setViewer(player)
-				.setTitle(MSG.get("setup.name"))
-				.setGui(gui)
-				.addCloseHandler(this::onClose)
-				.build();
-
-		window.open();
+	@Override
+	protected Item getFallback() {
+		return PickableItem.empty(this::tryAddItem, this::tryRemoveItem);
 	}
 
 	private boolean tryAddItem(IdItem item) {
@@ -72,7 +54,8 @@ public class SetupInventory {
 		return true;
 	}
 
-	private void onClose() {
+	@Override
+	protected void onClose() {
 		Schwarzmarkt.db.updateItems(itemsAdded, itemsRemoved);
 	}
 }

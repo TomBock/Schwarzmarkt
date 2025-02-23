@@ -1,0 +1,59 @@
+auction:
+  type: normal
+  structure:
+    - x x x x x x x x x
+    - x x x i i i x x x
+    - x x x x x x x x x
+    - x x x x c x x x x
+winnings:
+  type: normal
+  structure:
+    - i i i
+    - i i i
+    - i i i
+setup:
+  type: scroll
+  structure:
+    - i i i i i i i i u
+    - i i i i i i i i x
+    - i i i i i i i i c
+    - i i i i i i i i x
+    - i i i i i i i i d
+# Reserved or special behaviour:
+# i = items filled dynamically
+# c = Closes on click
+# u = Scroll up button (only works in scroll invs)
+# d = Scroll down button (only works in scroll invs)
+slots:
+  x:
+    ==: org.bukkit.inventory.ItemStack
+    v: 4189
+    type: BLACK_STAINED_GLASS_PANE
+  c:
+    ==: org.bukkit.inventory.ItemStack
+    v: 4189
+    type: RED_STAINED_GLASS_PANE
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"text":"Schließen","italic":false,"color":"red"}'
+  u:
+    ==: org.bukkit.inventory.ItemStack
+    v: 4189
+    type: WHITE_STAINED_GLASS_PANE
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"text":"▲","bold":true,"color":"yellow"}'
+      lore:
+        - '{"text":"Du kannst nicht weiter nach oben scrollen","color":"gray"}'
+  d:
+    ==: org.bukkit.inventory.ItemStack
+    v: 4189
+    type: WHITE_STAINED_GLASS_PANE
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: '{"text":"▼","bold":true,"color":"yellow"}'
+      lore:
+        - '{"text":"Du kannst nicht weiter nach unten scrollen","color":"gray"}'

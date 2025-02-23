@@ -2,6 +2,7 @@ package com.bocktom.schwarzmarkt;
 
 import com.bocktom.schwarzmarkt.inv.Auction;
 import com.bocktom.schwarzmarkt.inv.items.AuctionItem;
+import com.bocktom.schwarzmarkt.util.Config;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import com.bocktom.schwarzmarkt.util.PersistentLogger;
@@ -17,7 +18,6 @@ import java.util.*;
 
 public class AuctionManager {
 	private static final int BID_TIME = 60 * 2; // 2 Minutes for players to bid via command
-	private static final int AUCTION_ITEMS = 3; // Remember to update inventory if changed
 
 	private final Schwarzmarkt plugin;
 	private final Map<Player, AuctionItem> biddingPlayers  = new HashMap<>();
@@ -29,17 +29,18 @@ public class AuctionManager {
 	public void startAuctions(@Nullable Player player) {
 		List<Auction> auctions = Schwarzmarkt.db.getAuctions();
 		if(!auctions.isEmpty()) {
-			sendMessage("§cAuction already running", player);
+			sendMessage(MSG.get("auction.alreadyrunning"), player);
 			return;
 		}
 
-		List<ItemStack> items = Schwarzmarkt.db.getRandomItems(AUCTION_ITEMS);
+		int auctionItems = Config.gui.get.getInt("auction.items");
+		List<ItemStack> items = Schwarzmarkt.db.getRandomItems(auctionItems);
 		List<Integer> auctionIds = Schwarzmarkt.db.addAuctions(items);
 
 		if(!auctionIds.isEmpty())
-			sendMessage("§aAuctions started (" + auctionIds.size() + "/" + AUCTION_ITEMS + ")", player);
+			sendMessage(MSG.get("auction.started", "%amount%", String.valueOf(auctionItems)), player);
 		else
-			sendMessage("§cFailed to start any auction. See console for errors", player);
+			sendMessage(MSG.get("auction.error"), player);
 
 		for (int i = 0; i < auctionIds.size(); i++) {
 			PersistentLogger.logAuctionStart(auctionIds.get(i), items.get(i));
@@ -50,7 +51,7 @@ public class AuctionManager {
 		// Check if running
 		List<Auction> auctions = Schwarzmarkt.db.getAuctions();
 		if(auctions.isEmpty()) {
-			sendMessage("§cAuction not running", player);
+			sendMessage(MSG.get("auction.notrunning"), player);
 			return;
 		}
 
@@ -63,7 +64,7 @@ public class AuctionManager {
 		Schwarzmarkt.db.removeAuctions();
 		Schwarzmarkt.db.removeBids(auctions.stream().map(auction -> auction.id).toList());
 
-		sendMessage("§aAuctions stopped", player);
+		sendMessage(MSG.get("auction.ended"), player);
 	}
 
 	private Map<UUID, Integer> processAuctionWinners(List<Auction> auctions) {

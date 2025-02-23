@@ -1,4 +1,5 @@
 auction:
+  items: 3
   type: normal
   structure:
     - x x x x x x x x x

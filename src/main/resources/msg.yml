@@ -6,6 +6,11 @@ auction:
     info: "§7Klicke mich um zu bieten"
     currentbid: "§7Aktuelles Gebot: §e%amount%"
     title: "§7Kaufbarer Titel"
+  started: "§aDie Auktion wurde gestartet. Es sind %amount% items im Angebot"
+  ended: "§cDie Auktion wurde beendet"
+  alreadyrunning: "§cEs läuft bereits eine Auktion"
+  notrunning: "§cEs läuft keine Auktion"
+  error: "§cEs ist ein Fehler aufgetreten. Überprüfe die Konsole für den Fehler"
 winnings:
   name: "§8Gewinne"
   title:

@@ -28,6 +28,9 @@ public class PlayerListener implements Listener {
 
 	private void sendMessage(Player player, String msg) {
 		int delay = Config.msg.get.getInt("onjoin.delay");
-		Bukkit.getScheduler().runTaskLaterAsynchronously(Schwarzmarkt.plugin, () -> player.sendMessage(Component.text(msg)), 20L * delay);
+		Bukkit.getScheduler().runTaskLaterAsynchronously(Schwarzmarkt.plugin, () -> {
+			if(player != null && player.isOnline())
+				player.sendMessage(Component.text(msg));
+		}, 20L * delay);
 	}
 }

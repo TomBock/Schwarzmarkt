@@ -4,22 +4,16 @@ import com.bocktom.schwarzmarkt.util.Config;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import com.bocktom.schwarzmarkt.util.PlayerUtil;
-import de.tr7zw.changeme.nbtapi.NBT;
-import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 
@@ -36,14 +30,6 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 			player.sendMessage("Du hast keine Berechtigung für diesen Befehl");
 			return true;
 		}
-
-		ItemStack item2 = new ItemStack(Material.FEATHER);
-		ItemMeta meta = item2.getItemMeta();
-		meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
-		meta.setHideTooltip(true);
-		item2.setItemMeta(meta);
-
-		PlayerUtil.give(player, item2);
 
 		boolean isAdmin = player.hasPermission("schwarzmarkt.admin");
 

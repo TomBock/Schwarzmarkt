@@ -19,6 +19,7 @@ winnings:
 onjoin:
   won: "§6Glückwunsch! §7Du hast bei der Auktion abgeräumt! Klicke hier oder gib §e/schwarzmarkt gewinne §7ein um deine Gewinne abzuholen."
   lost: "§5Schade! §7Du hast bei der Auktion nichts gewonnen. Deine Rubine %amount% wurden dir zurückgegeben."
+  delay: 6 # Seconds delay
 bid:
   info: "§7Klicke hier um für %item% §7zu bieten oder gib §e/schwarzmarkt bieten <betrag> §7ein"
   infowithbid: "§7Klicke hier um noch mehr für %item% §7zu bieten oder gib §e/schwarzmarkt bieten <betrag> §7ein. Aktuelles Gebot: §e%amount%"

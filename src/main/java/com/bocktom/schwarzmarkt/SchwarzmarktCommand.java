@@ -5,13 +5,17 @@ import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import com.bocktom.schwarzmarkt.util.PlayerUtil;
 import de.tr7zw.changeme.nbtapi.NBT;
+import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,15 +37,20 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 			return true;
 		}
 
+		ItemStack item2 = new ItemStack(Material.FEATHER);
+		ItemMeta meta = item2.getItemMeta();
+		meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+		meta.setHideTooltip(true);
+		item2.setItemMeta(meta);
+
+		PlayerUtil.give(player, item2);
+
 		boolean isAdmin = player.hasPermission("schwarzmarkt.admin");
 
 		if(args.length == 1) {
 
 			// USER
 			switch (args[0]) {
-				case "gewinne":
-					Schwarzmarkt.plugin.openWinnings(player);
-					return true;
 				case "bieten":
 					player.sendMessage(MSG.get("bid.noamount"));
 					return true;
@@ -76,6 +85,9 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 				} else if(args[0].equals("setinvitem")) {
 					setInvItem(player, args[1]);
 					return true;
+				} else if(args[0].equals("gewinne")) {
+					Schwarzmarkt.plugin.openWinnings(args[1]);
+					return true;
 				}
 			}
 
@@ -108,9 +120,9 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 		}
 
 		if(isAdmin)
-			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt (setup | start | stop | info | gewinne | bieten [amount] | show [player] | titel [displayname] [permission] | setinvitem [slotkey])");
+			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt (setup | start | stop | info | gewinne [player] | bieten [amount] | show [player] | titel [displayname] [permission] | setinvitem [slotkey])");
 		else
-			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt (gewinne | bieten [betrag])");
+			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt bieten [betrag]");
 		return true;
 	}
 

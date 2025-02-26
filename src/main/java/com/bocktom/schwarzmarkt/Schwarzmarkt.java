@@ -87,8 +87,11 @@ public final class Schwarzmarkt extends JavaPlugin {
 		}
 	}
 
-	public void openWinnings(Player player) {
-		new WinningsInventory(player);
+	public void openWinnings(String playerName) {
+		Player player = Bukkit.getPlayer(playerName);
+		if(player != null) {
+			new WinningsInventory(player);
+		}
 	}
 
 }

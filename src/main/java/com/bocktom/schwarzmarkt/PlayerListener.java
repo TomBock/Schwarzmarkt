@@ -1,8 +1,9 @@
 package com.bocktom.schwarzmarkt;
 
+import com.bocktom.schwarzmarkt.util.Config;
 import com.bocktom.schwarzmarkt.util.MSG;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,12 +17,17 @@ public class PlayerListener implements Listener {
 		Player player = event.getPlayer();
 
 		if(!Schwarzmarkt.db.getWinnings(player.getUniqueId()).isEmpty()) {
-			player.sendMessage(Component.text(MSG.get("onjoin.won")).clickEvent(ClickEvent.runCommand("/schwarzmarkt gewinne")));
+			sendMessage(player, MSG.get("onjoin.won"));
 		}
 
 		int returnedBids = Schwarzmarkt.db.getAndClearReturnedBids(player.getUniqueId());
 		if(returnedBids > 0) {
-			player.sendMessage(MSG.get("onjoin.returned", "%amount%", String.valueOf(returnedBids)));
+			sendMessage(player, MSG.get("onjoin.returned", "%amount%", String.valueOf(returnedBids)));
 		}
+	}
+
+	private void sendMessage(Player player, String msg) {
+		int delay = Config.msg.get.getInt("onjoin.delay");
+		Bukkit.getScheduler().runTaskLaterAsynchronously(Schwarzmarkt.plugin, () -> player.sendMessage(Component.text(msg)), 20L * delay);
 	}
 }

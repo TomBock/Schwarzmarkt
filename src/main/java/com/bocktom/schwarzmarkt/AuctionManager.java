@@ -126,7 +126,7 @@ public class AuctionManager {
 		// Inform directly
 		Player winner = Bukkit.getPlayer(auction.highestBidder);
 		if(winner != null) {
-			winner.sendMessage(Component.text(MSG.get("onjoin.won")).clickEvent(ClickEvent.runCommand("/schwarzmarkt gewinne")));
+			winner.sendMessage(Component.text(MSG.get("onjoin.won")));
 		}
 	}
 

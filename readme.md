@@ -3,7 +3,6 @@
 
 ### Commands:
 #### USER
-- /schwarzmarkt gewinne #User können ihr item abholen
 - /schwarzmarkt bieten \<anzahl> #Bieten für die ausgewählte auktion (klappt nur nach auswahl eines im menu)
 
 #### ADMIN
@@ -12,6 +11,7 @@
 - /schwarzmarkt start - Startet den Schwarzmarkt (via Cron Job)
 - /schwarzmarkt stop - Stoppt den Schwarzmarkt (via Cron Job)
 - /schwarzmarkt show \<player> - Öffnet den Marktplatz (von citizen auszuführen)
+- /schwarzmarkt gewinne \<player> Zum abholen der gewinne
 - /schwarzmarkt titel \<displayname> \<permission> - Hilfe command um titel zu erstellen
 - /schwarzmarkt setinvitem \<inventary> \<key> - Setzt ein item in einer inventar gui yml
 

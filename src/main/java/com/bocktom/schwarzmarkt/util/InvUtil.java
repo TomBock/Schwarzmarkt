@@ -39,9 +39,6 @@ public class InvUtil {
 		return action == InventoryAction.PLACE_ALL
 				|| action == InventoryAction.PLACE_ONE
 				|| action == InventoryAction.PLACE_SOME
-				|| action == InventoryAction.PLACE_FROM_BUNDLE
-				|| action == InventoryAction.PLACE_ALL_INTO_BUNDLE
-				|| action == InventoryAction.PLACE_SOME_INTO_BUNDLE
 				|| action == InventoryAction.SWAP_WITH_CURSOR;
 	}
 
@@ -50,12 +47,7 @@ public class InvUtil {
 				|| action == InventoryAction.PICKUP_HALF
 				|| action == InventoryAction.PICKUP_ONE
 				|| action == InventoryAction.PICKUP_SOME
-				|| action == InventoryAction.COLLECT_TO_CURSOR
 				|| action == InventoryAction.MOVE_TO_OTHER_INVENTORY;
-	}
-
-	public static boolean isOnRightBorder(int slot) {
-		return slot % 9 == 8;
 	}
 
 	public static ItemStack createTitleItem(String title, String perm) {

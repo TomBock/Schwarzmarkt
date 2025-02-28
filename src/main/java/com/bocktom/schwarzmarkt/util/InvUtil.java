@@ -1,7 +1,8 @@
 package com.bocktom.schwarzmarkt.util;
 
 import net.kyori.adventure.text.Component;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
@@ -9,11 +10,17 @@ import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.SimpleItem;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class InvUtil {
+
+	private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
 
 	public static Item BORDER = new SimpleItem(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE));
 	public static Item AIR = new SimpleItem(new ItemBuilder(Material.AIR));
@@ -53,10 +60,23 @@ public class InvUtil {
 	public static ItemStack createTitleItem(String title, String perm) {
 		ItemStack item = new ItemStack(Material.NAME_TAG);
 		item.editMeta(meta -> {
-			meta.displayName(Component.text(ChatColor.translateAlternateColorCodes('&', title)));
+			meta.displayName(parseHexColors(title));
 			meta.lore(Collections.singletonList(Component.text("§7" + perm)));
 		});
 		return item;
+	}
+
+	private static Component parseHexColors(String input) {
+		Matcher matcher = HEX_PATTERN.matcher(input);
+		StringBuffer result = new StringBuffer();
+
+		while (matcher.find()) {
+			String hexCode = matcher.group(1);
+			matcher.appendReplacement(result, ChatColor.of("#" + hexCode).toString());
+		}
+		matcher.appendTail(result);
+
+		return LegacyComponentSerializer.legacyAmpersand().deserialize(result.toString());
 	}
 
 	public static boolean isTitleItem(ItemStack item) {

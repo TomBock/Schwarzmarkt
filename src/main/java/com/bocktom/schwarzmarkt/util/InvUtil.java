@@ -1,8 +1,8 @@
 package com.bocktom.schwarzmarkt.util;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
@@ -72,11 +72,12 @@ public class InvUtil {
 
 		while (matcher.find()) {
 			String hexCode = matcher.group(1);
-			matcher.appendReplacement(result, ChatColor.of("#" + hexCode).toString());
+			matcher.appendReplacement(result, "<#" + hexCode + ">");
 		}
 		matcher.appendTail(result);
 
-		return LegacyComponentSerializer.legacyAmpersand().deserialize(result.toString());
+		return MiniMessage.miniMessage().deserialize(result.toString())
+				.decoration(TextDecoration.ITALIC, false);
 	}
 
 	public static boolean isTitleItem(ItemStack item) {

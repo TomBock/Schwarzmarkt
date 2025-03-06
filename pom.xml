@@ -6,7 +6,7 @@
 
     <groupId>com.bocktom</groupId>
     <artifactId>phoenixschwarzmarkt</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -148,6 +148,92 @@
             <artifactId>invui</artifactId>
             <version>1.44</version>
             <type>pom</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r1</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r2</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r3</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r4</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r5</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r6</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r7</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r8</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r9</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r10</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r11</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r13</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r15</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r16</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r17</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r18</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r19</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r20</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xyz.xenondevs.invui</groupId>
+                    <artifactId>inventory-access-r21</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Vault -->

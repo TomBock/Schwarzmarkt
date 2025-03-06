@@ -30,7 +30,7 @@ public class WinningsItem extends PickableItem {
 			ItemMeta meta = item.getItemMeta();
 			List<String> lore = meta.getLore();
 			title = meta.getDisplayName();
-			titlePerm = lore.getLast();
+			titlePerm = lore.getLast().replace("§7", "");
 			lore.clear();
 			lore.add(MSG.get("winnings.title.lore"));
 			meta.setLore(lore);
@@ -48,6 +48,7 @@ public class WinningsItem extends PickableItem {
 			Player player = (Player) event.getWhoClicked();
 			PermissionAttachment perm = player.addAttachment(Schwarzmarkt.plugin);
 			perm.setPermission(titlePerm, true);
+			player.recalculatePermissions();
 			player.sendMessage(MSG.get("winnings.title.onclick", "%titel%", title));
 
 			// Remove item

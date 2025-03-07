@@ -7,6 +7,7 @@ import com.bocktom.schwarzmarkt.util.MSG;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import xyz.xenondevs.invui.item.Item;
 
@@ -33,14 +34,13 @@ public class AuctionInventory extends ConfigInventory {
 
 		TextComponent msg;
 		if(item.currentBid == 0) {
-			msg = Component.empty()
-					.content(MSG.get("bid.info", "%item%", InvUtil.getName(item.item)))
+			msg = MSG.get("bid.info",
+							Component.text("%item%"), InvUtil.getName(item.item))
 					.clickEvent(ClickEvent.suggestCommand("/schwarzmarkt bieten "));
 		} else {
-			msg = Component.empty()
-					.content(MSG.get("bid.infowithbid",
-							"%item%", InvUtil.getName(item.item),
-							"%amount%", String.valueOf(item.currentBid)))
+			msg = MSG.get("bid.infowithbid",
+							Component.text("%item%"), InvUtil.getName(item.item),
+							Component.text("%amount%"), Component.text(item.currentBid))
 					.clickEvent(ClickEvent.suggestCommand("/schwarzmarkt bieten "));
 		}
 

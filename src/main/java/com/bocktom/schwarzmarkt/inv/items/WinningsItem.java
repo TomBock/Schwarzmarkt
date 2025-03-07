@@ -4,21 +4,25 @@ import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import net.kyori.adventure.text.Component;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.permissions.PermissionAttachment;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public class WinningsItem extends PickableItem {
 
 	private boolean isTitle;
+	private boolean isTitleAssigned;
+
 	private String titlePerm;
 	private String title;
 
@@ -40,22 +44,42 @@ public class WinningsItem extends PickableItem {
 
 	@Override
 	protected void handlePickup(@NotNull InventoryClickEvent event) {
-		super.handlePickup(event);
 
-		if(isTitle && !event.isCancelled()) {
-			event.setCancelled(true);
-
-			Player player = (Player) event.getWhoClicked();
-			PermissionAttachment perm = player.addAttachment(Schwarzmarkt.plugin);
-			perm.setPermission(titlePerm, true);
-			player.recalculatePermissions();
-			player.sendMessage(MSG.get("winnings.title.onclick", "%titel%", title));
-
-			// Remove item
-			Bukkit.getScheduler().runTask(Schwarzmarkt.plugin, () -> {
-				event.getClickedInventory().setItem(event.getSlot(), null);
-				player.updateInventory(); // Force update
-			});
+		if(isTitle) {
+			handleTitle(event);
+		} else {
+			super.handlePickup(event);
 		}
+	}
+
+	private void handleTitle(@NotNull InventoryClickEvent event) {
+		event.setCancelled(true);
+		Player player = (Player) event.getWhoClicked();
+
+		if(isTitleAssigned) {
+			player.sendMessage(MSG.get("winnings.title.assigned"));
+			return;
+		}
+
+		grantPermission(player).thenAccept(result -> {
+			if(!result) {
+				player.sendMessage(MSG.get("error"));
+				return;
+			}
+			player.sendMessage(MSG.get("winnings.title.onclick", "%titel%", title));
+			isTitleAssigned = true;
+
+			super.handlePickup(event);
+		});
+	}
+
+	private CompletableFuture<Boolean> grantPermission(Player player) {
+		User permUser = Schwarzmarkt.perms.getUserManager().getUser(player.getUniqueId());
+		if(permUser == null)
+			return CompletableFuture.completedFuture(false);
+
+		permUser.data().add(Node.builder(titlePerm).value(true).build());
+		CompletableFuture<Void> future = Schwarzmarkt.perms.getUserManager().saveUser(permUser);
+		return future.thenApply(v -> true);
 	}
 }

@@ -8,6 +8,7 @@ import com.bocktom.schwarzmarkt.util.Config;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.PersistentLogger;
 import de.tr7zw.changeme.nbtapi.NBT;
+import net.luckperms.api.LuckPerms;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -27,6 +28,7 @@ public final class Schwarzmarkt extends JavaPlugin {
 	public static DatabaseManager db;
 	public static Economy economy;
 	public static Config config;
+	public static LuckPerms perms;
 
 	@Override
 	public void onEnable() {
@@ -45,6 +47,10 @@ public final class Schwarzmarkt extends JavaPlugin {
 		if(!setupEconomy()) {
 			getServer().getPluginManager().disablePlugin(this);
 		}
+
+		if(!setupLuckPerms()) {
+			getServer().getPluginManager().disablePlugin(this);
+		}
 	}
 
 	private boolean setupEconomy() {
@@ -58,6 +64,16 @@ public final class Schwarzmarkt extends JavaPlugin {
 			return false;
 		}
 		economy = rsp.getProvider();
+		return true;
+	}
+
+	private boolean setupLuckPerms() {
+		RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+		if (provider == null) {
+			getLogger().severe("LuckPerms not found! Disabling plugin...");
+			return false;
+		}
+		perms = provider.getProvider();
 		return true;
 	}
 

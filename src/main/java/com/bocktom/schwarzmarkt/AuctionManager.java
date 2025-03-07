@@ -166,8 +166,8 @@ public class AuctionManager {
 		// Bid successfully placed
 		PersistentLogger.logBid(auction.id, player.getUniqueId(), amount);
 		player.sendMessage(MSG.get("bid.success",
-				"%amount%", String.valueOf(amount),
-				"%item%", InvUtil.getName(auction.item)));
+				Component.text("%amount%"), Component.text(amount),
+				Component.text("%item%"), InvUtil.getName(auction.item)));
 
 		biddingPlayers.remove(player);
 	}

@@ -38,8 +38,8 @@ public class InvUtil {
 				.collect(Collectors.toList());
 	}
 
-	public static String getName(ItemStack item) {
-		return item.hasItemMeta() && item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item.getType().name();
+	public static Component getName(ItemStack item) {
+		return item.getItemMeta().displayName() != null ? item.getItemMeta().displayName() : item.displayName();
 	}
 
 	public static boolean isPlaceAction(InventoryAction action) {

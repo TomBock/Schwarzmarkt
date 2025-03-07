@@ -3,10 +3,8 @@ package com.bocktom.schwarzmarkt.inv.items;
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
-import net.kyori.adventure.text.Component;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -43,22 +41,21 @@ public class WinningsItem extends PickableItem {
 	}
 
 	@Override
-	protected void handlePickup(@NotNull InventoryClickEvent event) {
-
+	protected boolean handlePickup(@NotNull InventoryClickEvent event) {
 		if(isTitle) {
-			handleTitle(event);
+			return handleTitle(event);
 		} else {
-			super.handlePickup(event);
+			return super.handlePickup(event);
 		}
 	}
 
-	private void handleTitle(@NotNull InventoryClickEvent event) {
+	private boolean handleTitle(@NotNull InventoryClickEvent event) {
 		event.setCancelled(true);
 		Player player = (Player) event.getWhoClicked();
 
 		if(isTitleAssigned) {
 			player.sendMessage(MSG.get("winnings.title.assigned"));
-			return;
+			return false;
 		}
 
 		grantPermission(player).thenAccept(result -> {
@@ -66,11 +63,14 @@ public class WinningsItem extends PickableItem {
 				player.sendMessage(MSG.get("error"));
 				return;
 			}
+
+			if(!super.handlePickup(event))
+				return;
+
 			player.sendMessage(MSG.get("winnings.title.onclick", "%titel%", title));
 			isTitleAssigned = true;
-
-			super.handlePickup(event);
 		});
+		return true;
 	}
 
 	private CompletableFuture<Boolean> grantPermission(Player player) {

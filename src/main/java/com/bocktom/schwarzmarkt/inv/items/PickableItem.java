@@ -1,6 +1,8 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
+import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.util.InvUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -54,10 +56,13 @@ public class PickableItem extends IdItem {
 		}
 	}
 
-	protected void handlePickup(@NotNull InventoryClickEvent event) {
+	protected boolean handlePickup(@NotNull InventoryClickEvent event) {
 		if(tryRemove != null && tryRemove.apply(this)) {
 			event.setCancelled(false);
 			id = -1;
+			Bukkit.getScheduler().runTask(Schwarzmarkt.plugin, () -> item = new ItemStack(Material.AIR));
+			return true;
 		}
+		return false;
 	}
 }

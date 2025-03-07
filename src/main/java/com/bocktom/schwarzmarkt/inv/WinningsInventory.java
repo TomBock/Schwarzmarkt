@@ -29,6 +29,7 @@ public class WinningsInventory extends ConfigInventory {
 		boolean removed = Schwarzmarkt.db.removeWinnings(item.id);
 		if(!removed) {
 			player.sendMessage(MSG.get("error"));
+			return false;
 		}
 		return true;
 	}

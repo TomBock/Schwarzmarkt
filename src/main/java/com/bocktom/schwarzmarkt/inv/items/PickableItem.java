@@ -60,7 +60,10 @@ public class PickableItem extends IdItem {
 		if(tryRemove != null && tryRemove.apply(this)) {
 			event.setCancelled(false);
 			id = -1;
-			Bukkit.getScheduler().runTask(Schwarzmarkt.plugin, () -> item = new ItemStack(Material.AIR));
+			Bukkit.getScheduler().runTask(Schwarzmarkt.plugin, () -> {
+				item = new ItemStack(Material.AIR);
+				notifyWindows();
+			});
 			return true;
 		}
 		return false;

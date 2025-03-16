@@ -164,7 +164,7 @@ public class AuctionManager {
 		}
 
 		// Bid successfully placed
-		PersistentLogger.logBid(auction.id, player.getUniqueId(), amount);
+		PersistentLogger.logBid(auction.id, player, amount);
 		player.sendMessage(MSG.get("bid.success",
 				Component.text("%amount%"), Component.text(amount),
 				Component.text("%item%"), InvUtil.getName(auction.item)));
@@ -180,7 +180,7 @@ public class AuctionManager {
 			// Rollback if withdraw failed
 			boolean rollbackResponse = Schwarzmarkt.db.rollbackBid(auction.id, player.getUniqueId(), amount);
 			if(!rollbackResponse) {
-				PersistentLogger.logBidRollbackFailed(auction.id, player.getUniqueId(), amount);
+				PersistentLogger.logBidRollbackFailed(auction.id, player, amount);
 			}
 			return false;
 		}

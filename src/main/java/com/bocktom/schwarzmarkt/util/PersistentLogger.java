@@ -2,8 +2,10 @@ package com.bocktom.schwarzmarkt.util;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import de.tr7zw.changeme.nbtapi.NBT;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -23,12 +25,12 @@ public class PersistentLogger {
 	private static final String FILE = Path.of(Schwarzmarkt.plugin.getDataPath().toString(), "bids.log").toString();
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
 
-	public static void logBid(int auctionId, UUID uuid, int amount) {
-		log("BID | Auction ID: " + auctionId + " | Player: " + uuid + " | Bid Amount: " + amount);
+	public static void logBid(int auctionId, Player player, int amount) {
+		log("BID | Auction ID: " + auctionId + " | Bid Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
 	}
 
-	public static void logBidRollbackFailed(int auctionId, @NotNull UUID uniqueId, int amount) {
-		log("ROLLBACK FAILED | Auction ID: " + auctionId + " | Player: " + uniqueId + " | Bid Amount: " + amount);
+	public static void logBidRollbackFailed(int auctionId, Player player, int amount) {
+		log("ROLLBACK FAILED | Auction ID: " + auctionId + " | Bid Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
 	}
 
 	public static void logAuctionStart(int auctionId, ItemStack item) {
@@ -36,15 +38,18 @@ public class PersistentLogger {
 	}
 
 	public static void logWinningsFailed(int id, UUID highestBidder, ItemStack item) {
-		log("WINNINGS FAILED | Auction ID: " + id + " | Winner: " + highestBidder + " | Item: " + NBT.itemStackToNBT(item).toString());
+		OfflinePlayer player = Bukkit.getOfflinePlayer(highestBidder);
+		log("WINNINGS FAILED | Auction ID: " + id + " | Winner: " + player.getName() + " (" + highestBidder + ")" + " | Item: " + NBT.itemStackToNBT(item).toString());
 	}
 
 	public static void logAuctionEnd(int auctionId, UUID winner, int amount) {
-		log("AUCTION END | Auction ID: " + auctionId + " | Winner: " + winner + " | Bid Amount: " + amount);
+		OfflinePlayer player = Bukkit.getOfflinePlayer(winner);
+		log("AUCTION END | Auction ID: " + auctionId + " | Bid Amount: " + amount + " | Winner: " + player.getName() + " (" + winner + ")");
 	}
 
 	public static void logReturnBidFailed(UUID key, Integer value) {
-		log("RETURN BID FAILED | Player: " + key + " | Amount: " + value);
+		OfflinePlayer player = Bukkit.getOfflinePlayer(key);
+		log("RETURN BID FAILED | Amount: " + value + " | Player: " + player.getName() + " (" + key + ")");
 	}
 
 	private static void log(String message) {

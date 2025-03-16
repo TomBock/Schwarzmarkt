@@ -15,6 +15,8 @@ import java.util.*;
 
 public class DatabaseManager {
 
+	private static final int DB_VERSION = 1;
+
 	private final Schwarzmarkt plugin;
 	private String dbUrl;
 
@@ -29,13 +31,28 @@ public class DatabaseManager {
 			plugin.getDataFolder().mkdirs();
 		this.dbUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
 
+		// Versioning
+		int version = getDbVersion();
+
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
-			int result = new DBStatementBuilder(con, "sql/create_items.sql").executeUpdate();
-			result += new DBStatementBuilder(con, "sql/create_auctions.sql").executeUpdate();
-			result += new DBStatementBuilder(con, "sql/create_auction_bids.sql").executeUpdate();
-			result += new DBStatementBuilder(con, "sql/create_winnings.sql").executeUpdate();
-			result += new DBStatementBuilder(con, "sql/create_returned_bids.sql").executeUpdate();
+
+			int result = 0;
+
+			// Versioning
+			if(version == 0) {
+				createVersionTable();
+				version = setDbVersion(DB_VERSION);
+
+				result += new DBStatementBuilder(con, "sql/create_items.sql").executeUpdate();
+				result += new DBStatementBuilder(con, "sql/create_auctions.sql").executeUpdate();
+				result += new DBStatementBuilder(con, "sql/create_auction_bids.sql").executeUpdate();
+				result += new DBStatementBuilder(con, "sql/create_winnings.sql").executeUpdate();
+				result += new DBStatementBuilder(con, "sql/create_return_bids.sql").executeUpdate();
+
+				// Migrate from v0 to v1
+				result += new DBStatementBuilder(con, "sql/v1/drop_returned_bids.sql").executeUpdate();
+			}
 
 			con.commit();
 			if(result > 0)
@@ -44,6 +61,45 @@ public class DatabaseManager {
 			plugin.getLogger().warning("Failed to setup database: " + e.getMessage());
 			e.printStackTrace();
 		}
+	}
+
+	private void createVersionTable() {
+		try (Connection con = getConnection()) {
+			new DBStatementBuilder(con, "sql/v1/create_schema_version.sql")
+					.executeUpdate();
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to create version table: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	private int setDbVersion(int version) {
+		try (Connection con = getConnection()) {
+			int result = new DBStatementBuilder(con, "sql/v1/insert_or_update_schema_version.sql")
+					.setInt(1, version)
+					.executeUpdate();
+			return result;
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to set db version: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	private int getDbVersion() {
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v1/select_schema_version.sql")
+					.executeQuery()) {
+
+				if(set.next()) {
+					return set.getInt("version");
+				}
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to get db version: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return 0;
 	}
 
 	public List<Integer> addAuctions(Collection<ItemStack> items) {
@@ -135,11 +191,22 @@ public class DatabaseManager {
 					.setInt(3, amount)
 					.executeUpdate();
 
+			int totalBid = 0;
+			try(ResultSet set = new DBStatementBuilder(con, "sql/select_bid.sql")
+					.setInt(1, auctionId)
+					.setBytes(2, playerUuid.toString().getBytes())
+					.executeQuery()) {
+
+				if(set.next()) {
+					totalBid = set.getInt("bid_amount");
+				}
+			}
+
 			result += new DBStatementBuilder(con, "sql/update_highest_bid.sql")
-					.setInt(1, amount)
+					.setInt(1, totalBid)
 					.setBytes(2, uuid)
 					.setInt(3, auctionId)
-					.setInt(4, amount)
+					.setInt(4, totalBid)
 					.executeUpdate();
 
 			con.commit();
@@ -374,7 +441,7 @@ public class DatabaseManager {
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
 			for (Map.Entry<UUID, Integer> entry : bids.entrySet()) {
-				new DBStatementBuilder(con, "sql/insert_or_update_returned_bids.sql")
+				new DBStatementBuilder(con, "sql/insert_or_update_return_bids.sql")
 						.setBytes(1, entry.getKey().toString().getBytes())
 						.setInt(2, entry.getValue())
 						.executeUpdate();
@@ -391,7 +458,7 @@ public class DatabaseManager {
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
 
-			try(ResultSet set = new DBStatementBuilder(con, "sql/select_returned_bids.sql")
+			try(ResultSet set = new DBStatementBuilder(con, "sql/select_return_bids.sql")
 					.setBytes(1, playerUuid.toString().getBytes())
 					.executeQuery()) {
 
@@ -400,7 +467,7 @@ public class DatabaseManager {
 				}
 			}
 
-			new DBStatementBuilder(con, "sql/delete_returned_bids.sql")
+			new DBStatementBuilder(con, "sql/delete_return_bids.sql")
 					.setBytes(1, playerUuid.toString().getBytes())
 					.executeUpdate();
 

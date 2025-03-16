@@ -22,7 +22,7 @@ public class PlayerListener implements Listener {
 
 		int returnedBids = Schwarzmarkt.db.getAndClearReturnedBids(player.getUniqueId());
 		if(returnedBids > 0) {
-			sendMessage(player, MSG.get("onjoin.returned", "%amount%", String.valueOf(returnedBids)));
+			sendMessage(player, MSG.get("onjoin.lost", "%amount%", String.valueOf(returnedBids)));
 		}
 	}
 

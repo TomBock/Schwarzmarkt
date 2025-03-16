@@ -32,7 +32,11 @@ public class DatabaseManager {
 		this.dbUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
 
 		// Versioning
-		int version = getDbVersion();
+		createVersionTable();
+		int curVersion = getDbVersion();
+		if(curVersion != DB_VERSION) {
+			setDbVersion(DB_VERSION);
+		}
 
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
@@ -40,10 +44,7 @@ public class DatabaseManager {
 			int result = 0;
 
 			// Versioning
-			if(version == 0) {
-				createVersionTable();
-				version = setDbVersion(DB_VERSION);
-
+			if(curVersion == 0) {
 				result += new DBStatementBuilder(con, "sql/create_items.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/create_auctions.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/create_auction_bids.sql").executeUpdate();

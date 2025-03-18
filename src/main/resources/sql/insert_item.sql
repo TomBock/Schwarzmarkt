@@ -1,1 +1,1 @@
-INSERT INTO items (item_data) VALUES (?);
+INSERT INTO items (item_data, amount) VALUES (?, ?);

@@ -2,7 +2,10 @@ package com.bocktom.schwarzmarkt;
 
 import com.bocktom.schwarzmarkt.inv.Auction;
 import com.bocktom.schwarzmarkt.util.DBStatementBuilder;
+import com.bocktom.schwarzmarkt.util.DbItem;
+import com.bocktom.schwarzmarkt.util.InvUtil;
 import de.tr7zw.changeme.nbtapi.NBT;
+import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
@@ -15,7 +18,7 @@ import java.util.*;
 
 public class DatabaseManager {
 
-	private static final int DB_VERSION = 1;
+	private static final int DB_VERSION = 2;
 
 	private final Schwarzmarkt plugin;
 	private String dbUrl;
@@ -50,9 +53,8 @@ public class DatabaseManager {
 				result += new DBStatementBuilder(con, "sql/create_auction_bids.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/create_winnings.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/create_return_bids.sql").executeUpdate();
-
-				// Migrate from v0 to v1
-				result += new DBStatementBuilder(con, "sql/v1/drop_returned_bids.sql").executeUpdate();
+			} else if (curVersion == 1) {
+				result += new DBStatementBuilder(con, "sql/v2/migrate_items.sql").executeUpdate();
 			}
 
 			con.commit();
@@ -93,7 +95,7 @@ public class DatabaseManager {
 					.executeQuery()) {
 
 				if(set.next()) {
-					return set.getInt("version");
+					return set.getInt("latest_version");
 				}
 			}
 		} catch (SQLException | IOException e) {
@@ -324,7 +326,42 @@ public class DatabaseManager {
 		return false;
 	}
 
-	public boolean updateItems(Collection<ItemStack> added, Collection<Integer> removed) {
+	public boolean updateItems(List<DbItem> added, List<DbItem> updated, ArrayList<Integer> removed) {
+		try (Connection con = getConnection()) {
+			con.setAutoCommit(false);
+
+			for(int id : removed) {
+				new DBStatementBuilder(con, "sql/delete_item.sql")
+						.setInt(1, id)
+						.executeUpdate();
+			}
+
+			for(DbItem item : added) {
+				String json = NBT.itemStackToNBT(item.item).toString();
+				new DBStatementBuilder(con, "sql/insert_item.sql")
+						.setString(1, json)
+						.setInt(2, item.amount)
+						.executeUpdate();
+			}
+
+			for(DbItem item : updated) {
+				String json = NBT.itemStackToNBT(item.item).toString();
+				new DBStatementBuilder(con, "sql/v1/update_item.sql")
+						.setString(1, json)
+						.setInt(2, item.amount)
+						.setInt(3, item.id)
+						.executeUpdate();
+			}
+
+
+			con.commit();
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to update items: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+
+		/*
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
 			for(ItemStack item : added) {
@@ -343,21 +380,23 @@ public class DatabaseManager {
 		} catch (SQLException | IOException e) {
 			plugin.getLogger().warning("Failed to update items: " + e.getMessage());
 			e.printStackTrace();
-		}
+		}*/
 		return false;
 	}
 
-	public Map<Integer, ItemStack> getItems() {
+	public List<DbItem> getItems() {
+		List<DbItem> items = new ArrayList<>();
+
 		try (Connection con = getConnection()) {
 			try(ResultSet set = new DBStatementBuilder(con, "sql/select_items.sql")
 					.executeQuery()) {
 
-				Map<Integer, ItemStack> items = new TreeMap<>();
 				while(set.next()) {
 					int id = set.getInt("id");
+					int amount = set.getInt("amount");
 					String json = set.getString("item_data");
-					ItemStack item = NBT.itemStackFromNBT(NBT.parseNBT(json));
-					items.put(id, item);
+					ReadWriteNBT nbt = NBT.parseNBT(json);
+					items.add(new DbItem(id, NBT.itemStackFromNBT(nbt), amount));
 				}
 				return items;
 			}
@@ -365,28 +404,12 @@ public class DatabaseManager {
 			plugin.getLogger().warning("Failed to get items: " + e.getMessage());
 			e.printStackTrace();
 		}
-		return Map.of();
+		return List.of();
 	}
 
 	public List<ItemStack> getRandomItems(int amount) {
-		try (Connection con = getConnection()) {
-			try(ResultSet set = new DBStatementBuilder(con, "sql/select_random_items.sql")
-					.setInt(1, amount)
-					.executeQuery()) {
-
-				List<ItemStack> items = new ArrayList<>();
-				while(set.next()) {
-					String json = set.getString("item_data");
-					ItemStack item = NBT.itemStackFromNBT(NBT.parseNBT(json));
-					items.add(item);
-				}
-				return items;
-			}
-		} catch (SQLException | IOException e) {
-			plugin.getLogger().warning("Failed to get random items: " + e.getMessage());
-			e.printStackTrace();
-		}
-		return List.of();
+		List<DbItem> items = getItems();
+		return InvUtil.getWeighedRandomSelection(items, amount, dbItem -> dbItem.item);
 	}
 
 	public boolean addWinnings(UUID uuid, ItemStack item) {

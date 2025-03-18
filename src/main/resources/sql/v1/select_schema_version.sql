@@ -1,1 +1,1 @@
-SELECT version FROM schema_version;
+SELECT MAX(version) AS latest_version FROM schema_version;

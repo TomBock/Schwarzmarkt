@@ -29,18 +29,17 @@ public class PickableItem extends IdItem {
 
 	@Override
 	public void handleClick(@NotNull ClickType clicktype, @NotNull Player player, @NotNull InventoryClickEvent event) {
-		//if(!InvUtil.isOnRightBorder(event.getSlot())) {
 
-			if(InvUtil.isPlaceAction(event.getAction())) {
+		if(InvUtil.isPlaceAction(event.getAction())) {
 
-				handlePlace(event);
+			handlePlace(event);
 
-			} else if(InvUtil.isPickupAction(event.getAction())) {
+		} else if(InvUtil.isPickupAction(event.getAction())) {
 
-				handlePickup(event);
+			handlePickup(event);
 
-			}
-		//}
+		}
+
 		notifyWindows();
 	}
 

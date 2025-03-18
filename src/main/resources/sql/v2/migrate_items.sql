@@ -1,0 +1,2 @@
+ALTER TABLE items
+ADD COLUMN amount INT DEFAULT 1;

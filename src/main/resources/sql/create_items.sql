@@ -1,4 +1,5 @@
 CREATE TABLE IF NOT EXISTS items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_data TEXT NOT NULL
+    item_data TEXT NOT NULL,
+    amount INT DEFAULT 1
 );

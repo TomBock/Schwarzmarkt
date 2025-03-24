@@ -7,9 +7,9 @@ import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import com.bocktom.schwarzmarkt.util.PersistentLogger;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -34,6 +34,19 @@ public class AuctionManager {
 		}
 
 		int auctionItems = Config.gui.get.getInt("auction.items");
+
+		// Random amount of additional items
+		Random random = new Random();
+		ConfigurationSection randomItems = Config.gui.get.getConfigurationSection("auction.randomitems");
+		if(randomItems != null) {
+			for (String key : randomItems.getKeys(false)) {
+				double percentage = randomItems.getDouble(key);
+				if((random.nextDouble() * 100) < percentage) {
+					auctionItems++;
+				}
+			}
+		}
+
 		List<ItemStack> items = Schwarzmarkt.db.getRandomItems(auctionItems);
 		List<Integer> auctionIds = Schwarzmarkt.db.addAuctions(items);
 

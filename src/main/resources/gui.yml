@@ -1,10 +1,14 @@
 auction:
   items: 3
+  randomitems:
+    1: 50
+    2: 25
+    3: 12.5
   type: normal
   structure:
     - x x x x x x x x x
     - x x x i i i x x x
-    - x x x x x x x x x
+    - x x x i i i x x x
     - x x x x c x x x x
 winnings:
   type: normal

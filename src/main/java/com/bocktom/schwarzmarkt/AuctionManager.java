@@ -21,9 +21,21 @@ public class AuctionManager {
 
 	private final Schwarzmarkt plugin;
 	private final Map<Player, AuctionItem> biddingPlayers  = new HashMap<>();
+	private final Random random = new Random();
 
 	public AuctionManager() {
 		this.plugin = Schwarzmarkt.plugin;
+	}
+
+	private int getRandomAuctionCountRecursive(Iterator<String> keysIterator, ConfigurationSection section, int currentAmount) {
+		if(keysIterator.hasNext()) {
+			String key = keysIterator.next();
+			double percentage = section.getDouble(key);
+			if((random.nextDouble() * 100) < percentage) {
+				return getRandomAuctionCountRecursive(keysIterator, section, currentAmount + 1);
+			}
+		}
+		return currentAmount;
 	}
 
 	public void startAuctions(@Nullable Player player) {
@@ -36,15 +48,9 @@ public class AuctionManager {
 		int auctionItems = Config.gui.get.getInt("auction.items");
 
 		// Random amount of additional items
-		Random random = new Random();
 		ConfigurationSection randomItems = Config.gui.get.getConfigurationSection("auction.randomitems");
 		if(randomItems != null) {
-			for (String key : randomItems.getKeys(false)) {
-				double percentage = randomItems.getDouble(key);
-				if((random.nextDouble() * 100) < percentage) {
-					auctionItems++;
-				}
-			}
+			auctionItems = getRandomAuctionCountRecursive(randomItems.getKeys(false).iterator(), randomItems, auctionItems);
 		}
 
 		List<ItemStack> items = Schwarzmarkt.db.getRandomItems(auctionItems);

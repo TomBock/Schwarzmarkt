@@ -2,8 +2,8 @@ auction:
   items: 3
   randomitems:
     1: 50
-    2: 25
-    3: 12.5
+    2: 50
+    3: 50
   type: normal
   structure:
     - x x x x x x x x x

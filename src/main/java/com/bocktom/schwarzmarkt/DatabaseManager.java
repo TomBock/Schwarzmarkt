@@ -6,6 +6,7 @@ import com.bocktom.schwarzmarkt.util.DbItem;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import de.tr7zw.changeme.nbtapi.NBT;
 import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
+import de.tr7zw.changeme.nbtapi.utils.DataFixerUtil;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
@@ -18,7 +19,9 @@ import java.util.*;
 
 public class DatabaseManager {
 
-	private static final int DB_VERSION = 2;
+	private static final int DB_VERSION = 3;
+	// 2 = fixed
+	// 3 = 1.21.5
 
 	private final Schwarzmarkt plugin;
 	private String dbUrl;
@@ -38,7 +41,15 @@ public class DatabaseManager {
 		createVersionTable();
 		int curVersion = getDbVersion();
 		if(curVersion != DB_VERSION) {
-			setDbVersion(DB_VERSION);
+
+			boolean rollbackNeeded = false;
+			if(curVersion == 2) {
+				rollbackNeeded = upNbtVersion(DataFixerUtil.VERSION1_21_3, DataFixerUtil.VERSION1_21_5);
+			}
+
+			if(!rollbackNeeded) {
+				setDbVersion(DB_VERSION);
+			}
 		}
 
 		try (Connection con = getConnection()) {
@@ -64,6 +75,91 @@ public class DatabaseManager {
 			plugin.getLogger().warning("Failed to setup database: " + e.getMessage());
 			e.printStackTrace();
 		}
+	}
+
+	private boolean upNbtVersion(int fromVersion, int toVersion) {
+		int updated = 0;
+
+		try (Connection con = getConnection()) {
+			con.setAutoCommit(false);
+
+			// Update Items
+			try (ResultSet set = new DBStatementBuilder(con, "sql/select_items.sql").executeQuery()) {
+				while (set.next()) {
+					int id = set.getInt("id");
+					String oldData = set.getString("item_data");
+
+					// 2. Parse NBT
+					ReadWriteNBT nbt = NBT.parseNBT(oldData);
+
+					// 3. Fix the NBT using DataFixerUtil
+					ReadWriteNBT fixedNbt = DataFixerUtil.fixUpItemData(nbt, fromVersion, toVersion);
+
+					// 4. Update the auction with new NBT
+					new DBStatementBuilder(con, "sql/v3/update_items_nbt.sql")
+							.setString(1, fixedNbt.toString())
+							.setInt(2, id)
+							.executeUpdate();
+
+					updated++;
+				}
+			}
+
+			// Update Auctions
+			try (ResultSet set = new DBStatementBuilder(con, "sql/select_auctions.sql").executeQuery()) {
+				while (set.next()) {
+					int id = set.getInt("id");
+					String oldData = set.getString("item_data");
+
+					// 2. Parse NBT
+					ReadWriteNBT nbt = NBT.parseNBT(oldData);
+
+					// 3. Fix the NBT using DataFixerUtil
+					ReadWriteNBT fixedNbt = DataFixerUtil.fixUpItemData(nbt, fromVersion, toVersion);
+
+					// 4. Update the auction with new NBT
+					new DBStatementBuilder(con, "sql/v3/update_auctions_nbt.sql")
+							.setString(1, fixedNbt.toString())
+							.setInt(2, id)
+							.executeUpdate();
+
+					updated++;
+				}
+			}
+
+			// Update Winnings
+			try (ResultSet set = new DBStatementBuilder(con, "sql/v3/select_all_winnings.sql").executeQuery()) {
+				while (set.next()) {
+					int id = set.getInt("id");
+					String oldData = set.getString("item_data");
+
+					// 2. Parse NBT
+					ReadWriteNBT nbt = NBT.parseNBT(oldData);
+
+					// 3. Fix the NBT using DataFixerUtil
+					ReadWriteNBT fixedNbt = DataFixerUtil.fixUpItemData(nbt, fromVersion, toVersion);
+
+					// 4. Update the auction with new NBT
+					new DBStatementBuilder(con, "sql/v3/update_winnings_nbt.sql")
+							.setString(1, fixedNbt.toString())
+							.setInt(2, id)
+							.executeUpdate();
+					updated++;
+
+				}
+			}
+			con.commit();
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to create version table: " + e.getMessage());
+			e.printStackTrace();
+			return true;
+		} catch (NoSuchFieldException | IllegalAccessException e) {
+			plugin.getLogger().warning("Failed to update NBT: " + e.getMessage());
+			e.printStackTrace();
+			return true;
+		}
+		plugin.getLogger().info("Updated " + updated + " items to new NBT version");
+		return false;
 	}
 
 	private void createVersionTable() {
@@ -149,10 +245,16 @@ public class DatabaseManager {
 				while(set.next()) {
 					byte[] highestBidder = set.getBytes("highest_bidder_uuid");
 					UUID uuid = highestBidder != null ? UUID.fromString(new String(highestBidder)) : null;
+					int id = set.getInt("id");
+					ReadWriteNBT nbt = NBT.parseNBT(set.getString("item_data"));
+					ItemStack itemStack = NBT.itemStackFromNBT(nbt);
+
+					int highestBid = set.getInt("highest_bid");
+
 					Auction auction = new Auction(
-							set.getInt("id"),
-							NBT.itemStackFromNBT(NBT.parseNBT(set.getString("item_data"))),
-							set.getInt("highest_bid"),
+							id,
+							itemStack,
+							highestBid,
 							uuid);
 					auctions.add(auction);
 				}
@@ -441,7 +543,7 @@ public class DatabaseManager {
 
 	public Map<Integer, ItemStack> getWinnings(UUID uuid) {
 		try (Connection con = getConnection()) {
-			try(ResultSet set = new DBStatementBuilder(con, "sql/select_winnings.sql")
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v3/select_winnings.sql")
 					.setBytes(1, uuid.toString().getBytes())
 					.executeQuery()) {
 

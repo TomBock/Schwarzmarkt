@@ -1,0 +1,1 @@
+UPDATE auctions SET item_data = ? WHERE id = ?;

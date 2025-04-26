@@ -1,0 +1,1 @@
+UPDATE winnings SET item_data = ? WHERE id = ?;

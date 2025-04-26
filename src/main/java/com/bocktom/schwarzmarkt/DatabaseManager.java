@@ -543,7 +543,7 @@ public class DatabaseManager {
 
 	public Map<Integer, ItemStack> getWinnings(UUID uuid) {
 		try (Connection con = getConnection()) {
-			try(ResultSet set = new DBStatementBuilder(con, "sql/v3/select_winnings.sql")
+			try(ResultSet set = new DBStatementBuilder(con, "sql/select_winnings.sql")
 					.setBytes(1, uuid.toString().getBytes())
 					.executeQuery()) {
 

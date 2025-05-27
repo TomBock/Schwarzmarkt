@@ -28,7 +28,6 @@ public class SetupItem extends PickableItem {
 	public SetupItem(int id, ItemStack item, int amount, Function<PickableItem, Boolean> onAdded, Function<PickableItem, Boolean> tryRemove) {
 		super(id, item, onAdded, tryRemove);
 		this.amount = amount;
-		item.setAmount(amount);
 
 		addLore();
 	}
@@ -54,7 +53,6 @@ public class SetupItem extends PickableItem {
 			lore.set(amountLoreIndex, "§7Anzahl: §e" + amount);
 			meta.setLore(lore);
 			item.setItemMeta(meta);
-			item.setAmount(amount);
 			notifyWindows();
 		}
 	}
@@ -68,7 +66,6 @@ public class SetupItem extends PickableItem {
 	@Override
 	protected boolean handlePickup(@NotNull InventoryClickEvent event) {
 		item = getCleanItem();
-		item.setAmount(1);
 		return super.handlePickup(event);
 	}
 
@@ -99,7 +96,6 @@ public class SetupItem extends PickableItem {
 
 	public ItemStack getCleanItem() {
 		cleanLore();
-		item.setAmount(1);
 		return item;
 	}
 }

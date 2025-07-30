@@ -6,7 +6,6 @@ import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.PersistentLogger;
 import de.tr7zw.changeme.nbtapi.NBT;
 import net.luckperms.api.LuckPerms;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -33,6 +32,7 @@ public final class Schwarzmarkt extends JavaPlugin {
 		config = new Config();
 		db = new DatabaseManager();
 		auctions = new AuctionManager();
+		economy = new Economy();
 
 		//noinspection DataFlowIssue
 		getCommand("schwarzmarkt").setExecutor(new SchwarzmarktCommand());
@@ -41,7 +41,7 @@ public final class Schwarzmarkt extends JavaPlugin {
 		NBT.preloadApi();
 		PersistentLogger.init();
 
-		if(!setupEconomy()) {
+		if(!economy.setup()) {
 			getServer().getPluginManager().disablePlugin(this);
 		}
 
@@ -50,19 +50,6 @@ public final class Schwarzmarkt extends JavaPlugin {
 		}
 	}
 
-	private boolean setupEconomy() {
-		if (getServer().getPluginManager().getPlugin("Vault") == null) {
-			getLogger().severe("Vault not found! Disabling plugin...");
-			return false;
-		}
-		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-		if (rsp == null) {
-			getLogger().severe("No Economy Service found. Disabling plugin...");
-			return false;
-		}
-		economy = rsp.getProvider();
-		return true;
-	}
 
 	private boolean setupLuckPerms() {
 		RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
@@ -88,10 +75,17 @@ public final class Schwarzmarkt extends JavaPlugin {
 		new ServerSetupInventory(player);
 	}
 
+	public void openPlayerSetup(Player admin, String playerName) {
+		Player player = Bukkit.getPlayer(playerName);
+		if(player != null) {
+			new PlayerSetupInventory(admin, player);
+		}
+	}
+
 	public void openPlayerSetup(String playerName) {
 		Player player = Bukkit.getPlayer(playerName);
 		if(player != null) {
-			new PlayerSetupInventory(player);
+			new PlayerSetupInventory(player, player);
 		}
 	}
 

@@ -85,9 +85,11 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 						return true;
 
 
-					case "anbieten":
+					case "setup":
 						Schwarzmarkt.plugin.openPlayerSetup(args[1]);
 						return true;
+					case "showsetup":
+						Schwarzmarkt.plugin.openPlayerSetup(player, args[1]);
 
 					// Deprecated
 					case "show":
@@ -130,6 +132,7 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 
 					case "show":
 						Schwarzmarkt.plugin.openAuction(args[1], args[2].equals("server"));
+						return true;
 				}
 
 			}
@@ -179,7 +182,7 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 			switch (args[0]) {
 				// Deprecated
 				case "show":
-					Schwarzmarkt.plugin.openAuction(args[1]);
+					Schwarzmarkt.plugin.openAuction(args[1], true);
 					return true;
 
 				case "start":
@@ -218,6 +221,7 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 
 			if(isAdmin) {
 				completions.add("setup");
+				completions.add("showsetup");
 				completions.add("start");
 				completions.add("stop");
 				completions.add("info");
@@ -228,13 +232,13 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 		} else if(args.length == 2 && isAdmin) {
 
 			switch (args[0]) {
-				case "show":
+				case "show", "showsetup":
 					Bukkit.getOnlinePlayers().stream().map(Player::getName).forEach(completions::add);
 					break;
-				case "start":
-				case "stop":
+				case "start", "stop":
 					completions.add("server");
 					completions.add("spieler");
+					break;
 			}
 		}
 

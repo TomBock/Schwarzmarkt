@@ -4,12 +4,8 @@ import com.bocktom.schwarzmarkt.inv.Auction;
 import com.bocktom.schwarzmarkt.inv.PlayerAuction;
 import com.bocktom.schwarzmarkt.inv.items.AuctionItem;
 import com.bocktom.schwarzmarkt.inv.items.ServerAuctionItem;
-import com.bocktom.schwarzmarkt.util.Config;
-import com.bocktom.schwarzmarkt.util.InvUtil;
-import com.bocktom.schwarzmarkt.util.MSG;
-import com.bocktom.schwarzmarkt.util.PersistentLogger;
+import com.bocktom.schwarzmarkt.util.*;
 import net.kyori.adventure.text.Component;
-import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -85,6 +81,10 @@ public class AuctionManager {
 
 		int auctionItems = Config.gui.get.getInt("playerauction.items");
 
+		List<DbItem> items = Schwarzmarkt.db.getRandomPlayerItems(auctionItems);
+
+
+		List<Integer> auctionIds = Schwarzmarkt.db.addAuctions(items);
 	}
 
 	public void stopAuctions(@Nullable Player player, boolean isServerAuction) {
@@ -104,7 +104,7 @@ public class AuctionManager {
 		}
 
 		Map<UUID, Integer> returnBids = processAuctionWinners(auctions);
-		Map<UUID, Integer> successfulReturns = returnBidsToPlayers(returnBids);
+		Map<UUID, Integer> successfulReturns = Schwarzmarkt.economy.returnBidsToPlayers(returnBids);
 
 		notifyOnlinePlayers(successfulReturns);
 		Schwarzmarkt.db.addReturnedBids(successfulReturns);
@@ -139,18 +139,6 @@ public class AuctionManager {
 		return returnBids;
 	}
 
-	private Map<UUID, Integer> returnBidsToPlayers(Map<UUID, Integer> returnBids) {
-		Map<UUID, Integer> successfulReturns = new HashMap<>(returnBids);
-
-		for (Map.Entry<UUID, Integer> returnBid : returnBids.entrySet()) {
-			EconomyResponse response = Schwarzmarkt.economy.depositPlayer(Bukkit.getOfflinePlayer(returnBid.getKey()), returnBid.getValue());
-			if(response.type != EconomyResponse.ResponseType.SUCCESS) {
-				PersistentLogger.logReturnBidFailed(returnBid.getKey(), returnBid.getValue());
-				successfulReturns.remove(returnBid.getKey());
-			}
-		}
-		return successfulReturns;
-	}
 
 	private void notifyOnlinePlayers(Map<UUID, Integer> successfulReturns) {
 		// Check for online players and message them directly (no need to store in db)
@@ -199,7 +187,7 @@ public class AuctionManager {
 		}
 
 		// Check if player has enough money
-		if(!hasEnoughBalance(player, amount)) {
+		if(!Schwarzmarkt.economy.hasEnoughBalance(player, amount)) {
 			player.sendMessage(MSG.get("bid.broke"));
 			return;
 		}
@@ -211,7 +199,7 @@ public class AuctionManager {
 		}
 
 		// Attempt to withdraw money
-		if(!withdrawMoney(player, auction, amount)) {
+		if(!Schwarzmarkt.economy.withdrawBidMoney(player, auction, amount)) {
 			return;
 		}
 
@@ -222,25 +210,6 @@ public class AuctionManager {
 				Component.text("%item%"), InvUtil.getName(auction.item)));
 
 		biddingPlayers.remove(player);
-	}
-
-	private boolean withdrawMoney(Player player, AuctionItem auction, int amount) {
-		EconomyResponse withdrawResponse = Schwarzmarkt.economy.withdrawPlayer(player, amount);
-		if(withdrawResponse.type != EconomyResponse.ResponseType.SUCCESS) {
-			player.sendMessage(MSG.get("error"));
-
-			// Rollback if withdraw failed
-			boolean rollbackResponse = Schwarzmarkt.db.rollbackBid(auction.id, player.getUniqueId(), amount);
-			if(!rollbackResponse) {
-				PersistentLogger.logBidRollbackFailed(auction.id, player, amount);
-			}
-			return false;
-		}
-		return true;
-	}
-
-	private boolean hasEnoughBalance(Player player, int amount) {
-		return Schwarzmarkt.economy.getBalance(player) >= amount;
 	}
 
 	/**

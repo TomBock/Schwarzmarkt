@@ -32,6 +32,14 @@ setup:
     - i i i i i i i i c
     - i i i i i i i i x
     - i i i i i i i i d
+playersetup:
+  deposit: 100  # How much does it cot to setup an item as player
+  type: normal
+  structure:
+    - x x x x x x x x x
+    - i i i i i i i i i
+    - i i i i i i i i i
+    - x x x x x x x x x
 # Reserved or special behaviour:
 # i = items filled dynamically
 # c = Closes on click

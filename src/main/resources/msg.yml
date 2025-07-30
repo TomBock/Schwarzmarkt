@@ -39,6 +39,11 @@ auction:
   error: "§cEs ist ein Fehler aufgetreten. Überprüfe die Konsole für den Fehler"
 playerauctions:
   name: "§8Spieler Schwarzmarkt"
+  notenoughmoney: "§cDu hast nicht genug Cash :'( Deine Items hast du zurückbekommen"
+  deposit:
+    withdrawfailed: "§cBeim Geldabheben ist ein Fehler aufgetreten. Die Items wurden dir zurückgegeben"
+    revenuefailed: "§cBeim Geld überweisen ist ein Fehler aufgetreten. Versuche es später erneut" #Muss ggf. manuell gegeben werden
+    success: "§aDu hast erfolgreich deine Angebote erstellt"
 winnings:
   name: "§8Gewinne"
   title:

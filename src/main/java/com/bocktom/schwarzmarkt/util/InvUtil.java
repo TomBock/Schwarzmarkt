@@ -11,6 +11,7 @@ import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.SimpleItem;
 
+import java.lang.invoke.CallSite;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -123,6 +124,32 @@ public class InvUtil {
 				items = new ArrayList<>(items); // Clone list to modify
 				items.remove(selectedItem); // Remove the selected item to avoid duplicates
 			}
+		}
+
+		return selected;
+	}
+
+	public static List<DbItem> getRandomSelection(List<OwnedDbItem> items, int limit) {
+		if (items.isEmpty()) return Collections.emptyList();
+		List<DbItem> selected = new ArrayList<>();
+
+		// Select randomly from the list but only one per player (item.ownerUuid)
+		Set<UUID> selectedOwners = new HashSet<>();
+		Random random = new Random();
+
+		int _exit = 100;
+		int _exitCount = 0;
+		while (selected.size() < limit && !items.isEmpty() && _exitCount++ < _exit) {
+			int randIndex = random.nextInt(items.size());
+			OwnedDbItem item = items.get(randIndex);
+
+			if (!selectedOwners.contains(item.ownerUuid)) {
+				selected.add(new DbItem(item.id, item.item, item.amount));
+				selectedOwners.add(item.ownerUuid);
+			}
+
+			// Remove the item from the list to avoid duplicates
+			items.remove(randIndex);
 		}
 
 		return selected;

@@ -2,9 +2,7 @@ package com.bocktom.schwarzmarkt.inv;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.inv.items.PlayerSetupItem;
-import com.bocktom.schwarzmarkt.util.DbItem;
-import com.bocktom.schwarzmarkt.util.InvUtil;
-import com.bocktom.schwarzmarkt.util.MSG;
+import com.bocktom.schwarzmarkt.util.*;
 import org.bukkit.entity.Player;
 import xyz.xenondevs.invui.item.Item;
 
@@ -12,19 +10,22 @@ import java.util.List;
 
 public class PlayerSetupInventory extends SetupInventory {
 
-	public PlayerSetupInventory(Player player) {
-		super(player, "setup", MSG.get("setup.name"));
+	private final Player owner;
+
+	public PlayerSetupInventory(Player player, Player owner) {
+		super(player, "playersetup", MSG.get("playersetup.name"));
+		this.owner = owner;
 	}
 
 	@Override
 	protected List<Item> getItems() {
-		List<DbItem> dbItems = Schwarzmarkt.db.getPlayerItems(player.getUniqueId());
+		List<DbItem> dbItems = Schwarzmarkt.db.getPlayerItems(owner.getUniqueId());
 
 		List<Item> items = InvUtil.createItems(dbItems,
 				dbItem -> new PlayerSetupItem(dbItem.id, dbItem.item, dbItem.amount, this::tryAddItem, this::tryRemoveItem));
 
 		// One fallback to always have space for new items
-		int additions = Math.max(40 - items.size(), (items.size() % 8) + 8);
+		int additions = Math.min(19 - items.size(), 19);
 		for (int i = 0; i < additions; i++) {
 			items.add(getFallback());
 		}
@@ -33,6 +34,42 @@ public class PlayerSetupInventory extends SetupInventory {
 
 	@Override
 	protected void saveItems(List<DbItem> itemsAdded, List<DbItem> itemsUpdated) {
-		Schwarzmarkt.db.updatePlayerItems(player.getUniqueId(), itemsAdded, itemsUpdated, itemsRemoved);
+		int depositCost = Config.gui.get.getInt("playersetup.deposit");
+
+		int cost = itemsAdded.size() * depositCost;
+		int revenue = itemsRemoved.size() * depositCost;
+
+		boolean returnAddedItems = false;
+
+		if(cost > 0) {
+			if(!Schwarzmarkt.economy.hasEnoughBalance(player, cost)) {
+				player.sendMessage(MSG.get("playersetup.notenoughmoney"));
+				returnAddedItems = true;
+			} else {
+				if(!Schwarzmarkt.economy.withdrawMoney(player, cost)) {
+					player.sendMessage(MSG.get("playersetup.deposit.withdrawfailed"));
+					returnAddedItems = true;
+				}
+			}
+		}
+
+		if(returnAddedItems) {
+			// Return added items to the player
+			for (DbItem item : itemsAdded) {
+				PlayerUtil.give(player, item.item);
+			}
+			itemsAdded.clear();
+		}
+
+		if(revenue > 0) {
+			if(!Schwarzmarkt.economy.depositMoney(player, revenue)) {
+				player.sendMessage(MSG.get("playersetup.deposit.revenuefailed"));
+			}
+		}
+
+		if(!itemsAdded.isEmpty() || !itemsUpdated.isEmpty() || !itemsRemoved.isEmpty()) {
+			Schwarzmarkt.db.updatePlayerItems(owner.getUniqueId(), itemsAdded, itemsUpdated, itemsRemoved);
+			player.sendMessage(MSG.get("playersetup.deposit.success"));
+		}
 	}
 }

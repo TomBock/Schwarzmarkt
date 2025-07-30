@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -50,6 +51,14 @@ public class PersistentLogger {
 	public static void logReturnBidFailed(UUID key, Integer value) {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(key);
 		log("RETURN BID FAILED | Amount: " + value + " | Player: " + player.getName() + " (" + key + ")");
+	}
+
+	public static void logDepositFailed(Player player, int amount) {
+		log("DEPOSIT FAILED | Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
+	}
+
+	public static void logWithdrawFailed(Player player, int amount) {
+		log("WITHDRAW FAILED | Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
 	}
 
 	private static void log(String message) {
@@ -98,4 +107,5 @@ public class PersistentLogger {
 			e.printStackTrace();
 		}
 	}
+
 }

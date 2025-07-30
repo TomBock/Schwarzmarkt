@@ -2,9 +2,11 @@ package com.bocktom.schwarzmarkt;
 
 import com.bocktom.schwarzmarkt.inv.Auction;
 import com.bocktom.schwarzmarkt.inv.PlayerAuction;
+import com.bocktom.schwarzmarkt.inv.items.PlayerAuctionItem;
 import com.bocktom.schwarzmarkt.util.DBStatementBuilder;
 import com.bocktom.schwarzmarkt.util.DbItem;
 import com.bocktom.schwarzmarkt.util.InvUtil;
+import com.bocktom.schwarzmarkt.util.OwnedDbItem;
 import de.tr7zw.changeme.nbtapi.NBT;
 import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
 import de.tr7zw.changeme.nbtapi.utils.DataFixerUtil;
@@ -553,9 +555,38 @@ public class DatabaseManager {
 		return List.of();
 	}
 
+	public List<OwnedDbItem> getPlayerItems() {
+		List<OwnedDbItem> items = new ArrayList<>();
+
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v4/select_player_items.sql")
+					.executeQuery()) {
+
+				while(set.next()) {
+					int id = set.getInt("id");
+					UUID ownerUuid = UUID.fromString(new String(set.getBytes("owner_uuid")));
+					int amount = set.getInt("amount");
+					String json = set.getString("item_data");
+					ReadWriteNBT nbt = NBT.parseNBT(json);
+					items.add(new OwnedDbItem(id, ownerUuid, NBT.itemStackFromNBT(nbt), amount));
+				}
+				return items;
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to get items: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return List.of();
+	}
+
 	public List<ItemStack> getRandomItems(int amount) {
 		List<DbItem> items = getItems();
 		return InvUtil.getWeighedRandomSelection(items, amount, dbItem -> dbItem.item);
+	}
+
+	public List<DbItem> getRandomPlayerItems(int auctionItems) {
+		List<OwnedDbItem> items = getPlayerItems();
+		return InvUtil.getRandomSelection(items, auctionItems);
 	}
 
 	public boolean addWinnings(UUID uuid, ItemStack item) {

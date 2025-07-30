@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS auction_bids (
+CREATE TABLE IF NOT EXISTS player_auction_bids (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     player_auction_id INTEGER NOT NULL,
     player_uuid BINARY(16) NOT NULL,

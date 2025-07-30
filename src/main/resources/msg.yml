@@ -55,6 +55,7 @@ winnings:
     onclick: "§7Du hast den Titel %titel% §7erhalten"
     assigned: "§7Du hast den Titel bereits abgeholt!"
 onjoin:
+  sold: "§7Du hast §e%amount% §7Rubine durch den Verkauf von Items erhalten"
   won: "§6Glückwunsch! §7Du hast bei der Auktion abgeräumt! Klicke hier oder gib §e/schwarzmarkt gewinne §7ein um deine Gewinne abzuholen."
   lost: "§5Schade! §7Du hast bei der Auktion nichts gewonnen. Deine Rubine %amount% wurden dir zurückgegeben."
   delay: 6 # Seconds delay

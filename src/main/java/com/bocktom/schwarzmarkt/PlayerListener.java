@@ -10,19 +10,27 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.util.UUID;
+
 public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
+		UUID playerUuid = player.getUniqueId();
 
-		if(!Schwarzmarkt.db.getWinnings(player.getUniqueId()).isEmpty()) {
+		if(!Schwarzmarkt.db.getWinnings(playerUuid).isEmpty()) {
 			sendMessage(player, MSG.get("onjoin.won"));
 		}
 
-		int returnedBids = Schwarzmarkt.db.getAndClearReturnedBids(player.getUniqueId());
+		int returnedBids = Schwarzmarkt.db.getAndClearReturnedBids(playerUuid);
 		if(returnedBids > 0) {
 			sendMessage(player, MSG.get("onjoin.lost", "%amount%", String.valueOf(returnedBids)));
+		}
+
+		int soldItems = Schwarzmarkt.db.getAndClearEarningsFromSoldItems(playerUuid);
+		if(soldItems > 0) {
+			sendMessage(player, MSG.get("onjoin.sold", "%amount%", String.valueOf(soldItems)));
 		}
 	}
 

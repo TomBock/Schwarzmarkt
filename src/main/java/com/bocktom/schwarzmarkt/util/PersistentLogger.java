@@ -57,14 +57,22 @@ public class PersistentLogger {
 		log("RETURN BID FAILED | Amount: " + value + " | Player: " + player.getName() + " (" + key + ")");
 	}
 
-	public static void logDepositFailed(Player player, int amount) {
+	public static void logDepositFailed(OfflinePlayer player, int amount) {
 		log("DEPOSIT FAILED | Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
+	}
+
+	public static void logRevenueFailed(OfflinePlayer player, int amount) {
+		log("REVENUE FAILED | Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
 	}
 
 	public static void logWithdrawFailed(Player player, int amount) {
 		log("WITHDRAW FAILED | Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
 	}
 
+	public static void logItemRemovalFailed(int auctionId, ItemStack item, UUID ownerUuid) {
+		OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerUuid);
+		log("ITEM REMOVAL FAILED | Auction ID: " + auctionId + " | Player: " + owner.getName() + "| Item: " + NBT.itemStackToNBT(item).toString() + " (" + ownerUuid + ")");
+	}
 	private static void log(String message) {
 		String timestamp = FORMATTER.format(LocalDateTime.now());
 		String logEntry = timestamp + " | " + message;

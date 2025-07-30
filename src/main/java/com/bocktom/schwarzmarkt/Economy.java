@@ -1,10 +1,12 @@
 package com.bocktom.schwarzmarkt;
 
 import com.bocktom.schwarzmarkt.inv.items.AuctionItem;
+import com.bocktom.schwarzmarkt.util.Bids;
 import com.bocktom.schwarzmarkt.util.MSG;
 import com.bocktom.schwarzmarkt.util.PersistentLogger;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
@@ -46,6 +48,19 @@ public class Economy {
 		return successfulReturns;
 	}
 
+	public Bids returnBidsToPlayers(Bids bidsToReturn) {
+		Bids successfulReturns = new Bids(bidsToReturn);
+
+		for (Map.Entry<UUID, Integer> returnBid : bidsToReturn.entrySet()) {
+			EconomyResponse response = economy.depositPlayer(Bukkit.getOfflinePlayer(returnBid.getKey()), returnBid.getValue());
+			if(response.type != EconomyResponse.ResponseType.SUCCESS) {
+				PersistentLogger.logReturnBidFailed(returnBid.getKey(), returnBid.getValue());
+				successfulReturns.remove(returnBid.getKey());
+			}
+		}
+		return successfulReturns;
+	}
+
 
 	public boolean withdrawBidMoney(Player player, AuctionItem auction, int amount) {
 		EconomyResponse withdrawResponse = economy.withdrawPlayer(player, amount);
@@ -66,7 +81,7 @@ public class Economy {
 		return economy.getBalance(player) >= amount;
 	}
 
-	public boolean depositMoney(Player player, int amount) {
+	public boolean depositMoney(OfflinePlayer player, int amount) {
 		EconomyResponse withdrawResponse = economy.depositPlayer(player, amount);
 		if(withdrawResponse.type != EconomyResponse.ResponseType.SUCCESS) {
 			PersistentLogger.logDepositFailed(player, amount);

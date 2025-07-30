@@ -1,0 +1,1 @@
+SELECT * FROM sold_items WHERE owner_uuid = ?;

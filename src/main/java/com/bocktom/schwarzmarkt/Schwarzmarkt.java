@@ -1,9 +1,6 @@
 package com.bocktom.schwarzmarkt;
 
-import com.bocktom.schwarzmarkt.inv.Auction;
-import com.bocktom.schwarzmarkt.inv.AuctionInventory;
-import com.bocktom.schwarzmarkt.inv.SetupInventory;
-import com.bocktom.schwarzmarkt.inv.WinningsInventory;
+import com.bocktom.schwarzmarkt.inv.*;
 import com.bocktom.schwarzmarkt.util.Config;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.PersistentLogger;
@@ -77,10 +74,13 @@ public final class Schwarzmarkt extends JavaPlugin {
 		return true;
 	}
 
-	public void openAuction(String playerName) {
+	public void openAuction(String playerName, boolean isServerAuction) {
 		Player player = Bukkit.getPlayer(playerName);
 		if(player != null) {
-			new AuctionInventory(player);
+			if(isServerAuction)
+				new ServerAuctionInventory(player);
+			else
+				new PlayerAuctionInventory(player);
 		}
 	}
 
@@ -89,11 +89,11 @@ public final class Schwarzmarkt extends JavaPlugin {
 	}
 
 	public void openInfo(CommandSender sender) {
-		List<Auction> auctions = db.getAuctions();
+		List<Auction> auctions = db.getServerAuctions();
 
 		sender.sendMessage("§aAuctions active: " + auctions.size());
 		for (Auction auction : auctions) {
-			Map<UUID, Integer> bids = db.getBids(auction.id);
+			Map<UUID, Integer> bids = db.getServerAuctionBids(auction.id);
 			StringBuilder msg = new StringBuilder("Auction " + auction.id + " for " + InvUtil.getName(auction.item));
 
 			for (Map.Entry<UUID, Integer> bidEntry : bids.entrySet()) {

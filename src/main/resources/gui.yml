@@ -10,6 +10,14 @@ auction:
     - x x x i i i x x x
     - x x x i i i x x x
     - x x x x c x x x x
+playerauction:
+  items: 6
+  type: normal
+  structure:
+    - x x x x x x x x x
+    - x x x i i i x x x
+    - x x x i i i x x x
+    - x x x x c x x x x
 winnings:
   type: normal
   structure:

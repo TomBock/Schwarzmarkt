@@ -1,6 +1,7 @@
 package com.bocktom.schwarzmarkt;
 
 import com.bocktom.schwarzmarkt.inv.Auction;
+import com.bocktom.schwarzmarkt.inv.PlayerAuction;
 import com.bocktom.schwarzmarkt.util.DBStatementBuilder;
 import com.bocktom.schwarzmarkt.util.DbItem;
 import com.bocktom.schwarzmarkt.util.InvUtil;
@@ -236,7 +237,7 @@ public class DatabaseManager {
 		}
 	}
 
-	public List<Auction> getAuctions() {
+	public List<Auction> getServerAuctions() {
 		try (Connection con = getConnection()) {
 			try(ResultSet set = new DBStatementBuilder(con, "sql/select_auctions.sql")
 					.executeQuery()) {
@@ -267,6 +268,48 @@ public class DatabaseManager {
 		return List.of();
 	}
 
+
+	public List<PlayerAuction> getPlayerAuctions() {
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/select_auctions.sql")
+					.executeQuery()) {
+
+				List<PlayerAuction> auctions = new ArrayList<>();
+				while(set.next()) {
+					int id = set.getInt("id");
+
+					byte[] highestBidder = set.getBytes("highest_bidder_uuid");
+					UUID highestBidderUuid = highestBidder != null ? UUID.fromString(new String(highestBidder)) : null;
+					byte[] owner = set.getBytes("owner_uuid");
+					UUID ownerUuid = owner != null ? UUID.fromString(new String(owner)) : null;
+
+					ReadWriteNBT nbt = NBT.parseNBT(set.getString("item_data"));
+					ItemStack itemStack = NBT.itemStackFromNBT(nbt);
+
+					int highestBid = set.getInt("highest_bid");
+					int minBid = set.getInt("min_bid");
+					int deposit = set.getInt("deposit");
+
+					PlayerAuction auction = new PlayerAuction(
+							id,
+							itemStack,
+							ownerUuid,
+							minBid,
+							deposit,
+							highestBid,
+							highestBidderUuid);
+					auctions.add(auction);
+				}
+				return auctions;
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to get auctions: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return List.of();
+	}
+
+	@Deprecated
 	public int getBid(int auctionId, UUID playerUuid) {
 		try (Connection con = getConnection()) {
 			try(ResultSet set = new DBStatementBuilder(con, "sql/select_bid.sql")
@@ -345,7 +388,7 @@ public class DatabaseManager {
 		return false;
 	}
 
-	public Map<ItemStack, Map<UUID, Integer>> getBids() {
+	public Map<ItemStack, Map<UUID, Integer>> getServerAuctionBids() {
 		try (Connection con = getConnection()) {
 			try(ResultSet set = new DBStatementBuilder(con, "sql/select_bids.sql")
 					.executeQuery()) {
@@ -368,7 +411,7 @@ public class DatabaseManager {
 		return Map.of();
 	}
 
-	public Map<UUID, Integer> getBids(int auctionId) {
+	public Map<UUID, Integer> getServerAuctionBids(int auctionId) {
 		try (Connection con = getConnection()) {
 			try(ResultSet set = new DBStatementBuilder(con, "sql/select_bids_by_auction.sql")
 					.setInt(1, auctionId)
@@ -389,7 +432,7 @@ public class DatabaseManager {
 		return Map.of();
 	}
 
-	public Map<Integer, Integer> getBids(UUID playerUuid) {
+	public Map<Integer, Integer> getServerAuctionBids(UUID playerUuid) {
 		try (Connection con = getConnection()) {
 			try(ResultSet set = new DBStatementBuilder(con, "sql/select_bids_by_player.sql")
 					.setBytes(1, playerUuid.toString().getBytes())
@@ -398,6 +441,28 @@ public class DatabaseManager {
 				Map<Integer, Integer> bids = new HashMap<>();
 				while(set.next()) {
 					int auctionId = set.getInt("auction_id");
+					int amount = set.getInt("bid_amount");
+					bids.put(auctionId, amount);
+				}
+				return bids;
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to get bids: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return Map.of();
+	}
+
+
+	public Map<Integer, Integer> getPlayerAuctionBids(UUID playerUuid) {
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/select_player_bids_by_player.sql")
+					.setBytes(1, playerUuid.toString().getBytes())
+					.executeQuery()) {
+
+				Map<Integer, Integer> bids = new HashMap<>();
+				while(set.next()) {
+					int auctionId = set.getInt("player_auction_id");
 					int amount = set.getInt("bid_amount");
 					bids.put(auctionId, amount);
 				}

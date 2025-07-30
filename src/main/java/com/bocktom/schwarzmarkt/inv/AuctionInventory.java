@@ -2,34 +2,21 @@ package com.bocktom.schwarzmarkt.inv;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.inv.items.AuctionItem;
+import com.bocktom.schwarzmarkt.inv.items.ServerAuctionItem;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
-import xyz.xenondevs.invui.item.Item;
 
-import java.util.List;
-import java.util.Map;
+public abstract class AuctionInventory extends ConfigInventory {
 
-public class AuctionInventory extends ConfigInventory {
-
-	public AuctionInventory(Player player) {
-		super(player, "auction", MSG.get("auction.name"));
+	public AuctionInventory(Player player, String config, String configName) {
+		super(player, config, configName);
 	}
 
-	@Override
-	protected List<Item> getItems() {
-		List<Auction> auctions = Schwarzmarkt.db.getAuctions();
-		Map<Integer, Integer> bidsPerAuction = Schwarzmarkt.db.getBids(player.getUniqueId());
-
-		return InvUtil.createItems(auctions,
-				auction -> new AuctionItem(auction.id, auction.item, bidsPerAuction.getOrDefault(auction.id, 0), this::onBid));
-	}
-
-	private void onBid(AuctionItem item) {
+	protected void onBid(AuctionItem item) {
 		player.closeInventory();
 
 		TextComponent msg;

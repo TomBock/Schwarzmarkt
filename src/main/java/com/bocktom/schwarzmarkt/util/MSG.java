@@ -5,10 +5,15 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
+import java.util.List;
+
 public class MSG {
 
 	public static String get(String path) {
 		return Config.msg.get.getString(path);
+	}
+	public static List<String> getList(String path) {
+		return Config.msg.get.getStringList(path);
 	}
 
 	public static String get(String path, String... replaceVariables) {

@@ -3,14 +3,28 @@ setup.name: "§8Auktion einrichten"
 auction:
   name: "§8Schwarzmarkt"
   item.lore:
-    info: "§7Klicke mich um zu bieten"
-    currentbid: "§7Aktuelles Gebot: §e%amount%"
-    title: "§7Kaufbarer Titel"
+    server:
+      - "§7Aktuelles Gebot: §e%meingebot%"    #Nur sichtbar wenn der Spieler geboten hat
+      - "§7Klicke hier um zu bieten"
+    title:
+      - "§7Kaufbarer Titel"
+      - ""
+      - "§7Aktuelles Gebot: §e%meingebot%"    #Nur sichtbar wenn der Spieler geboten hat
+      - "§7Klicke hier um zu bieten"
+    player:
+      - "§7Aktuelle Gebote: §e%gebotspanne%"  #Nur sichtbar wenn es Gebote gibt
+      - "§7Mindestgebot: §e%mindestgebot%"    #Nur sichtbar wenn es keine Gebote gibt
+      - "§7Eigenes Gebot: §e%meingebot%"      #Nur sichtbar wenn der Spieler geboten hat
+      - ""
+      - "§7Eingestellt von §e%besitzer%"
+      - "§7Klicke hier um zu bieten"
   started: "§aDie Auktion wurde gestartet. Es sind %amount% items im Angebot"
   ended: "§cDie Auktion wurde beendet"
   alreadyrunning: "§cEs läuft bereits eine Auktion"
   notrunning: "§cEs läuft keine Auktion"
   error: "§cEs ist ein Fehler aufgetreten. Überprüfe die Konsole für den Fehler"
+playerauctions:
+  name: "§8Spieler Schwarzmarkt"
 winnings:
   name: "§8Gewinne"
   title:

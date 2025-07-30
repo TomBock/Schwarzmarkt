@@ -45,17 +45,20 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 			// ADMIN
 			if(isAdmin) {
 				switch (args[0]) {
-					case "setup":
-						Schwarzmarkt.plugin.openSetup(player);
-						return true;
 					case "info":
 						Schwarzmarkt.plugin.openInfo(player);
 						return true;
-					case "start":
-						Schwarzmarkt.auctions.startAuctions(player);
+					case "setup":
+						Schwarzmarkt.plugin.openSetup(player);
 						return true;
+
+					//Deprecated
+					case "start":
+						Schwarzmarkt.auctions.startAuctions(player, true);
+						return true;
+					//Deprecated
 					case "stop":
-						Schwarzmarkt.auctions.stopAuctions(player);
+						Schwarzmarkt.auctions.stopAuctions(player, true);
 						return true;
 				}
 			}
@@ -65,43 +68,70 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 
 			// ADMIN
 			if(isAdmin) {
-				if(args[0].equals("show")) {
-					Schwarzmarkt.plugin.openAuction(args[1]);
-					return true;
-				} else if(args[0].equals("setinvitem")) {
-					setInvItem(player, args[1]);
-					return true;
-				} else if(args[0].equals("gewinne")) {
-					Schwarzmarkt.plugin.openWinnings(args[1]);
-					return true;
+				switch(args[0]) {
+
+					case "setinvitem":
+						setInvItem(player, args[1]);
+						return true;
+					case "gewinne":
+						Schwarzmarkt.plugin.openWinnings(args[1]);
+						return true;
+
+					case "start":
+						Schwarzmarkt.auctions.startAuctions(player, args[1].equals("server"));
+						return true;
+					case "end":
+						Schwarzmarkt.auctions.stopAuctions(player, args[1].equals("server"));
+						return true;
+
+
+					case "anbieten":
+						Schwarzmarkt.plugin.openPlayerSetup(args[1]);
+						return true;
+
+					// Deprecated
+					case "show":
+						Schwarzmarkt.plugin.openAuction(args[1], true);
+						return true;
 				}
 			}
 
 			// USER
-			if(args[0].equals("bieten")) {
-				int amount = 0;
-				try {
-					amount = Integer.parseInt(args[1]);
+			switch (args[0]) {
+				case "bieten":
+					int amount = 0;
+					try {
+						amount = Integer.parseInt(args[1]);
 
-				} catch(NumberFormatException e) {
-					player.sendMessage(MSG.get("bid.noamount"));
-					return true;
-				}
-				if(amount <= 0) {
-					player.sendMessage(MSG.get("bid.invalidamount"));
-					return true;
-				}
+					} catch(NumberFormatException e) {
+						player.sendMessage(MSG.get("bid.noamount"));
+						return true;
+					}
+					if(amount <= 0) {
+						player.sendMessage(MSG.get("bid.invalidamount"));
+						return true;
+					}
 
-				Schwarzmarkt.auctions.bid(player, amount);
-				return true;
+					Schwarzmarkt.auctions.bid(player, amount);
+					return true;
 			}
 		}
 
 		if(args.length == 3) {
-			if(isAdmin && args[0].equals("titel")) {
-				ItemStack item = InvUtil.createTitleItem(args[1], args[2]);
-				PlayerUtil.give(player, item);
-				return true;
+
+			// ADMIN
+			if(isAdmin) {
+
+				switch (args[0]) {
+					case "titel":
+						ItemStack item = InvUtil.createTitleItem(args[1], args[2]);
+						PlayerUtil.give(player, item);
+						return true;
+
+					case "show":
+						Schwarzmarkt.plugin.openAuction(args[1], args[2].equals("server"));
+				}
+
 			}
 		}
 
@@ -129,21 +159,44 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 	private boolean onConsoleCommand(CommandSender sender, Command command, String label, String[] args) {
 		if(args.length == 1) {
 			switch (args[0]) {
+
+				// Deprecated
 				case "start":
-					Schwarzmarkt.auctions.startAuctions(null);
+					Schwarzmarkt.auctions.startAuctions(null, true);
 					return true;
+				// Deprecated
 				case "stop":
-					Schwarzmarkt.auctions.stopAuctions(null);
+					Schwarzmarkt.auctions.stopAuctions(null, true);
 					return true;
+
 				case "info":
 					Schwarzmarkt.plugin.openInfo(sender);
 					return true;
 			}
 		}
 
-		if(args.length == 2 && args[0].equals("show")) {
-			Schwarzmarkt.plugin.openAuction(args[1]);
-			return true;
+		if(args.length == 2) {
+			switch (args[0]) {
+				// Deprecated
+				case "show":
+					Schwarzmarkt.plugin.openAuction(args[1]);
+					return true;
+
+				case "start":
+					Schwarzmarkt.auctions.startAuctions(null, args[1].equals("server"));
+					return true;
+				case "stop":
+					Schwarzmarkt.auctions.stopAuctions(null, args[1].equals("server"));
+					return true;
+			}
+		}
+
+		if(args.length == 3) {
+			switch (args[0]) {
+				case "show":
+					Schwarzmarkt.plugin.openAuction(args[1], args[2].equals("server"));
+					return true;
+			}
 		}
 
 		sender.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt (start | stop | info | show [player])");
@@ -173,8 +226,15 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 				completions.add("setinvitem");
 			}
 		} else if(args.length == 2 && isAdmin) {
-			if(args[0].equals("show")) {
-				Bukkit.getOnlinePlayers().stream().map(Player::getName).forEach(completions::add);
+
+			switch (args[0]) {
+				case "show":
+					Bukkit.getOnlinePlayers().stream().map(Player::getName).forEach(completions::add);
+					break;
+				case "start":
+				case "stop":
+					completions.add("server");
+					completions.add("spieler");
 			}
 		}
 

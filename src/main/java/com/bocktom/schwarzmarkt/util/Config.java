@@ -72,6 +72,7 @@ public class Config {
 				plugin.getLogger().warning("Could not copy default config file: " + configName);
 				e.printStackTrace();
 			}
+
 		}
 
 		public void save() {

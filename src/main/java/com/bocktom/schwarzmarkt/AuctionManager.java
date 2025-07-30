@@ -1,7 +1,9 @@
 package com.bocktom.schwarzmarkt;
 
 import com.bocktom.schwarzmarkt.inv.Auction;
+import com.bocktom.schwarzmarkt.inv.PlayerAuction;
 import com.bocktom.schwarzmarkt.inv.items.AuctionItem;
+import com.bocktom.schwarzmarkt.inv.items.ServerAuctionItem;
 import com.bocktom.schwarzmarkt.util.Config;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
@@ -38,8 +40,16 @@ public class AuctionManager {
 		return currentAmount;
 	}
 
-	public void startAuctions(@Nullable Player player) {
-		List<Auction> auctions = Schwarzmarkt.db.getAuctions();
+	public void startAuctions(@Nullable Player player, boolean isServerAuction) {
+		if(isServerAuction) {
+			startServerAuctions(player);
+		} else {
+			startPlayerAuctions(player);
+		}
+	}
+
+	private void startServerAuctions(@Nullable Player player) {
+		List<Auction> auctions = Schwarzmarkt.db.getServerAuctions();
 		if(!auctions.isEmpty()) {
 			sendMessage(MSG.get("auction.alreadyrunning"), player);
 			return;
@@ -66,9 +76,28 @@ public class AuctionManager {
 		}
 	}
 
-	public void stopAuctions(@Nullable Player player) {
+	private void startPlayerAuctions(@Nullable Player player) {
+		List<PlayerAuction> auctions = Schwarzmarkt.db.getPlayerAuctions();
+		if(!auctions.isEmpty()) {
+			sendMessage(MSG.get("auction.alreadyrunning"), player);
+			return;
+		}
+
+		int auctionItems = Config.gui.get.getInt("playerauction.items");
+
+	}
+
+	public void stopAuctions(@Nullable Player player, boolean isServerAuction) {
+		if(isServerAuction) {
+			stopServerAuctions(player);
+		} else {
+			stopPlayerAuctions(player);
+		}
+	}
+
+	public void stopServerAuctions(@Nullable Player player) {
 		// Check if running
-		List<Auction> auctions = Schwarzmarkt.db.getAuctions();
+		List<Auction> auctions = Schwarzmarkt.db.getServerAuctions();
 		if(auctions.isEmpty()) {
 			sendMessage(MSG.get("auction.notrunning"), player);
 			return;
@@ -86,6 +115,10 @@ public class AuctionManager {
 		sendMessage(MSG.get("auction.ended"), player);
 	}
 
+	public void stopPlayerAuctions(@Nullable Player player) {
+		// TODO
+	}
+
 	private Map<UUID, Integer> processAuctionWinners(List<Auction> auctions) {
 		Map<UUID, Integer> returnBids = new HashMap<>();
 
@@ -97,7 +130,7 @@ public class AuctionManager {
 			}
 
 			// Collect bids to return
-			Schwarzmarkt.db.getBids(auction.id).forEach((uuid, amount) -> {
+			Schwarzmarkt.db.getServerAuctionBids(auction.id).forEach((uuid, amount) -> {
 				if(!uuid.equals(auction.highestBidder)) {
 					returnBids.merge(uuid, amount, Integer::sum);
 				}
@@ -220,7 +253,7 @@ public class AuctionManager {
 		Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
 
 			// Check if player has changed auction
-			AuctionItem curAuction = biddingPlayers.getOrDefault(player, new AuctionItem(-1));
+			AuctionItem curAuction = biddingPlayers.getOrDefault(player, new ServerAuctionItem(-1));
 			if(auction.id != curAuction.id) return;
 
 			biddingPlayers.remove(player);

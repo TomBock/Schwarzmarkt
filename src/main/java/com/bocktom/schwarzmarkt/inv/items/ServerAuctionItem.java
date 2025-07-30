@@ -1,0 +1,50 @@
+package com.bocktom.schwarzmarkt.inv.items;
+
+import com.bocktom.schwarzmarkt.util.MSG;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
+public class ServerAuctionItem extends AuctionItem {
+
+	public ServerAuctionItem(int id) {
+		super(id);
+	}
+
+	public ServerAuctionItem(int id, ItemStack item, int currentBid, Consumer<AuctionItem> clickHandler) {
+		super(id, item, currentBid, clickHandler);
+
+		fillItemLore(item, currentBid);
+	}
+
+	private void fillItemLore(ItemStack item, int currentBid) {
+		ItemMeta meta = item.getItemMeta();
+		List<String> lore = meta.getLore();
+		// add lore
+		if (lore == null)
+			lore = new ArrayList<>();
+
+		lore.clear();
+
+		List<String> raw = MSG.getList("auction.item.lore.player");
+		for (String line : raw) {
+			if(line.contains("%meingebot%")) {
+				if(currentBid > 0) {
+					lore.add(line.replace("%meingebot%", String.valueOf(currentBid)));
+					continue;
+				}
+			}
+			lore.add(line);
+		}
+
+		meta.setLore(lore);
+		item.setItemMeta(meta);
+	}
+}

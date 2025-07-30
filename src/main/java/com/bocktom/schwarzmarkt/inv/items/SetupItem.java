@@ -15,7 +15,7 @@ import java.util.function.Function;
 public abstract class SetupItem extends PickableItem {
 
 	public int amount = 1;;
-	private int amountLoreIndex;
+	protected int amountLoreIndex;
 	private String amountLoreRaw;
 	private int loreStartIndex;
 	private int loreLength;
@@ -38,7 +38,7 @@ public abstract class SetupItem extends PickableItem {
 		}
 	}
 
-	private void handleRightClick(@NotNull InventoryClickEvent event) {
+	protected void handleRightClick(@NotNull InventoryClickEvent event) {
 		if(item == null || item.getType() == Material.AIR)
 			return;
 

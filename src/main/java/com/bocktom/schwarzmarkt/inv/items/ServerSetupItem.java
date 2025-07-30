@@ -25,7 +25,7 @@ public class ServerSetupItem extends SetupItem {
 
 	@Override
 	protected List<String> getRawLore() {
-		return MSG.getList("setup.item.lore.server");
+		return MSG.getList("setup.item.lore");
 	}
 
 	public static SetupItem empty(Function<PickableItem, Boolean> tryAdd, Function<PickableItem, Boolean> onRemoved) {

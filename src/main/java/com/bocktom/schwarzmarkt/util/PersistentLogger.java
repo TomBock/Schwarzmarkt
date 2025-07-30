@@ -6,7 +6,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -36,6 +35,11 @@ public class PersistentLogger {
 
 	public static void logAuctionStart(int auctionId, ItemStack item) {
 		log("AUCTION START | Auction ID: " + auctionId + " | Item: " + NBT.itemStackToNBT(item).toString());
+	}
+
+	public static void logPlayerAuctionStart(int auctionId, ItemStack item, UUID ownerUuid) {
+		OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerUuid);
+		log("AUCTION START | Auction ID: " + auctionId + " | Player: " + owner.getName() + "| Item: " + NBT.itemStackToNBT(item).toString() + " (" + ownerUuid + ")");
 	}
 
 	public static void logWinningsFailed(int id, UUID highestBidder, ItemStack item) {

@@ -19,13 +19,14 @@ public class PlayerSetupInventory extends SetupInventory {
 
 	@Override
 	protected List<Item> getItems() {
-		List<DbItem> dbItems = Schwarzmarkt.db.getPlayerItems(owner.getUniqueId());
+		List<PlayerDbItem> dbItems = Schwarzmarkt.db.getPlayerItems(owner.getUniqueId());
 
 		List<Item> items = InvUtil.createItems(dbItems,
-				dbItem -> new PlayerSetupItem(dbItem.id, dbItem.item, dbItem.amount, this::tryAddItem, this::tryRemoveItem));
+				dbItem -> new PlayerSetupItem(dbItem.id, dbItem.item, dbItem.amount, dbItem.inAuction, this::tryAddItem, this::tryRemoveItem));
 
 		// One fallback to always have space for new items
-		int additions = Math.min(19 - items.size(), 19);
+		int maxItems = Config.gui.get.getInt("playersetup.maxitems");
+		int additions = Math.min(maxItems - items.size(), maxItems);
 		for (int i = 0; i < additions; i++) {
 			items.add(getFallback());
 		}

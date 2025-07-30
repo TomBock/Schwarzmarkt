@@ -2,15 +2,19 @@ error: "§cEs ist ein Fehler aufgetreten. Bitte versuche es später erneut."
 setup:
   name: "§8Auktion einrichten"
   item.lore:
-    server:
+    - ""
+    - "§7Anzahl: §e%amount%"
+    - ""
+    - "§7Rechtsklick -1"
+    - "§7Shift+Rechtsklick +1"
+playersetup:
+  name: "§8Auktion einrichten"
+  inauction: "§7Dieses Item ist in einer laufenden Auktion" #Wenn der Spieler versucht es bei laufender Auktion zu ändern
+  item.lore:
+    inauction: "§7Dieses Item ist in einer laufenden Auktion"
+    outofauction:
       - ""
-      - "§7Anzahl: §e%amount%"
-      - ""
-      - "§7Rechtsklick -1"
-      - "§7Shift+Rechtsklick +1"
-    player:
-      - ""
-      - "§7Mindesgebot §e%mindestgebot%"
+      - "§7Mindesgebot §e%amount%"
       - ""
       - "§7Rechtsklick -100"
       - "§7Shift+Rechtsklick +100"

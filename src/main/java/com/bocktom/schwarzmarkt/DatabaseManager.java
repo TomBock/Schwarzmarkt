@@ -3,10 +3,7 @@ package com.bocktom.schwarzmarkt;
 import com.bocktom.schwarzmarkt.inv.Auction;
 import com.bocktom.schwarzmarkt.inv.PlayerAuction;
 import com.bocktom.schwarzmarkt.inv.items.PlayerAuctionItem;
-import com.bocktom.schwarzmarkt.util.DBStatementBuilder;
-import com.bocktom.schwarzmarkt.util.DbItem;
-import com.bocktom.schwarzmarkt.util.InvUtil;
-import com.bocktom.schwarzmarkt.util.OwnedDbItem;
+import com.bocktom.schwarzmarkt.util.*;
 import de.tr7zw.changeme.nbtapi.NBT;
 import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
 import de.tr7zw.changeme.nbtapi.utils.DataFixerUtil;
@@ -213,6 +210,34 @@ public class DatabaseManager {
 				String json = NBT.itemStackToNBT(item).toString();
 				try(ResultSet set = new DBStatementBuilder(con, "sql/insert_auction.sql")
 						.setString(1, json)
+						.executeQuery()) {
+
+					if(set.next()) {
+						int id = set.getInt(1);
+						auctionIds.add(id);
+					}
+				}
+			}
+			con.commit();
+			plugin.getLogger().info("Added " + items.size() + " auctions");
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to add auction: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return auctionIds;
+	}
+
+	public List<Integer> addPlayerAuctions(Collection<OwnedDbItem> items) {
+		List<Integer> auctionIds = new ArrayList<>();
+
+		try (Connection con = getConnection()) {
+			con.setAutoCommit(false);
+			for(OwnedDbItem item : items) {
+				String json = NBT.itemStackToNBT(item.item).toString();
+				try(ResultSet set = new DBStatementBuilder(con, "sql/v4/insert_player_auction.sql")
+						.setInt(1, item.id)
+						.setString(2, json)
+						.setBytes(3, item.ownerUuid.toString().getBytes())
 						.executeQuery()) {
 
 					if(set.next()) {
@@ -584,7 +609,7 @@ public class DatabaseManager {
 		return InvUtil.getWeighedRandomSelection(items, amount, dbItem -> dbItem.item);
 	}
 
-	public List<DbItem> getRandomPlayerItems(int auctionItems) {
+	public List<OwnedDbItem> getRandomPlayerItems(int auctionItems) {
 		List<OwnedDbItem> items = getPlayerItems();
 		return InvUtil.getRandomSelection(items, auctionItems);
 	}
@@ -684,8 +709,8 @@ public class DatabaseManager {
 		return DriverManager.getConnection(this.dbUrl);
 	}
 
-	public List<DbItem> getPlayerItems(UUID playerUuid) {
-		List<DbItem> items = new ArrayList<>();
+	public List<PlayerDbItem> getPlayerItems(UUID playerUuid) {
+		List<PlayerDbItem> items = new ArrayList<>();
 
 		try (Connection con = getConnection()) {
 			try(ResultSet set = new DBStatementBuilder(con, "sql/v4/select_player_items_by_player.sql")
@@ -696,8 +721,9 @@ public class DatabaseManager {
 					int id = set.getInt("id");
 					int amount = set.getInt("amount");
 					String json = set.getString("item_data");
+					int inAuction = set.getInt("in_auction");
 					ReadWriteNBT nbt = NBT.parseNBT(json);
-					items.add(new DbItem(id, NBT.itemStackFromNBT(nbt), amount));
+					items.add(new PlayerDbItem(id, NBT.itemStackFromNBT(nbt), amount, inAuction > 0));
 				}
 				return items;
 			}

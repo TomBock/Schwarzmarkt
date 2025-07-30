@@ -34,6 +34,7 @@ setup:
     - i i i i i i i i d
 playersetup:
   deposit: 100  # How much does it cot to setup an item as player
+  maxitems: 3 # How many items can a player setup at once
   type: normal
   structure:
     - x x x x x x x x x

@@ -1,0 +1,1 @@
+SELECT item_id FROM player_auctions;

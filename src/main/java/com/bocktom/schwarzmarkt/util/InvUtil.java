@@ -129,9 +129,9 @@ public class InvUtil {
 		return selected;
 	}
 
-	public static List<DbItem> getRandomSelection(List<OwnedDbItem> items, int limit) {
+	public static List<OwnedDbItem> getRandomSelection(List<OwnedDbItem> items, int limit) {
 		if (items.isEmpty()) return Collections.emptyList();
-		List<DbItem> selected = new ArrayList<>();
+		List<OwnedDbItem> selected = new ArrayList<>();
 
 		// Select randomly from the list but only one per player (item.ownerUuid)
 		Set<UUID> selectedOwners = new HashSet<>();
@@ -144,7 +144,7 @@ public class InvUtil {
 			OwnedDbItem item = items.get(randIndex);
 
 			if (!selectedOwners.contains(item.ownerUuid)) {
-				selected.add(new DbItem(item.id, item.item, item.amount));
+				selected.add(item);
 				selectedOwners.add(item.ownerUuid);
 			}
 

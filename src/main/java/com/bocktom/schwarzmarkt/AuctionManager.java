@@ -81,10 +81,17 @@ public class AuctionManager {
 
 		int auctionItems = Config.gui.get.getInt("playerauction.items");
 
-		List<DbItem> items = Schwarzmarkt.db.getRandomPlayerItems(auctionItems);
+		List<OwnedDbItem> items = Schwarzmarkt.db.getRandomPlayerItems(auctionItems);
+		List<Integer> auctionIds = Schwarzmarkt.db.addPlayerAuctions(items);
 
+		if(!auctionIds.isEmpty())
+			sendMessage(MSG.get("auction.started", "%amount%", String.valueOf(auctionItems)), player);
+		else
+			sendMessage(MSG.get("auction.error"), player);
 
-		List<Integer> auctionIds = Schwarzmarkt.db.addAuctions(items);
+		for (int i = 0; i < auctionIds.size(); i++) {
+			PersistentLogger.logPlayerAuctionStart(auctionIds.get(i), items.get(i).item, items.get(i).ownerUuid);
+		}
 	}
 
 	public void stopAuctions(@Nullable Player player, boolean isServerAuction) {

@@ -1,0 +1,1 @@
+DELETE FROM player_items WHERE owner_uuid = ? AND id = ?;

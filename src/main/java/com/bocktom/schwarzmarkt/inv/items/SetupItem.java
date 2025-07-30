@@ -12,18 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class SetupItem extends PickableItem {
+public abstract class SetupItem extends PickableItem {
 
-	public static SetupItem empty(Function<PickableItem, Boolean> tryAdd, Function<PickableItem, Boolean> onRemoved) {
-		return new SetupItem(-1, new ItemStack(Material.AIR), tryAdd, onRemoved);
-	}
-
-	public int amount = 1;
+	public int amount = 1;;
 	private int amountLoreIndex;
-
-	public SetupItem(int id, ItemStack item, Function<PickableItem, Boolean> onAdded, Function<PickableItem, Boolean> tryRemove) {
-		super(id, item, onAdded, tryRemove);
-	}
+	private String amountLoreRaw;
+	private int loreStartIndex;
+	private int loreLength;
 
 	public SetupItem(int id, ItemStack item, int amount, Function<PickableItem, Boolean> onAdded, Function<PickableItem, Boolean> tryRemove) {
 		super(id, item, onAdded, tryRemove);
@@ -39,23 +34,33 @@ public class SetupItem extends PickableItem {
 			return;
 		}
 		if(clicktype.isRightClick()) {
-			if(item == null || item.getType() == Material.AIR)
-				return;
-
-			int change = event.isShiftClick() ? -1 : +1;
-			amount += change;
-
-			if(amount == 0)
-				amount = 1;
-
-			ItemMeta meta = item.getItemMeta();
-			List<String> lore = meta.getLore();
-			lore.set(amountLoreIndex, "§7Anzahl: §e" + amount);
-			meta.setLore(lore);
-			item.setItemMeta(meta);
-			notifyWindows();
+			handleRightClick(event);
 		}
 	}
+
+	private void handleRightClick(@NotNull InventoryClickEvent event) {
+		if(item == null || item.getType() == Material.AIR)
+			return;
+
+		int change = event.isShiftClick() ? getSubtraction() : getAddition();
+		amount += change;
+
+		if(amount == 0)
+			amount = 1;
+
+		ItemMeta meta = item.getItemMeta();
+		List<String> lore = meta.getLore();
+
+		String formattedLore = amountLoreRaw;
+		lore.set(amountLoreIndex, formattedLore.replace("%amount%", String.valueOf(amount)));
+
+		meta.setLore(lore);
+		item.setItemMeta(meta);
+		notifyWindows();
+	}
+
+	protected abstract int getAddition();
+	protected abstract int getSubtraction();
 
 	@Override
 	protected void handlePlace(@NotNull InventoryClickEvent event) {
@@ -69,30 +74,46 @@ public class SetupItem extends PickableItem {
 		return super.handlePickup(event);
 	}
 
-	private void addLore() {
+	protected void addLore() {
 		ItemMeta meta = item.getItemMeta();
 		List<String> lore = meta.getLore();
 		if(lore == null)
 			lore = new ArrayList<>();
-		lore.add("");
-		lore.add("§7Anzahl: §e" + amount);
-		amountLoreIndex = lore.size() - 1;
-		lore.add("§7Rechtsklick: §7+1");
-		lore.add("§7Shift+Rechtsklick: §7-1");
+
+		List<String> raw = getRawLore();
+
+		loreStartIndex = lore.size();
+		loreLength = raw.size();
+
+		for (String line : raw) {
+			if(line.contains("%amount%")) {
+				amountLoreIndex = lore.size();
+				amountLoreRaw = line;
+				lore.add(line.replace("%amount%", String.valueOf(amount)));
+			} else {
+				lore.add(line);
+			}
+		}
+
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 	}
 
-	private void cleanLore() {
+	protected void cleanLore() {
 		ItemMeta meta = item.getItemMeta();
 		List<String> lore = meta.getLore();
-		lore.remove(amountLoreIndex + 2);
-		lore.remove(amountLoreIndex + 1);
-		lore.remove(amountLoreIndex);
-		lore.remove(amountLoreIndex - 1);
+
+		for (int length = loreLength; length > 0; length--) {
+			if(lore.size() <= loreStartIndex)
+				break;
+			lore.remove(loreStartIndex);
+		}
+
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 	}
+
+	protected abstract List<String> getRawLore();
 
 	public ItemStack getCleanItem() {
 		cleanLore();

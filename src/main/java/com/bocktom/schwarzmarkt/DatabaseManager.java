@@ -8,6 +8,7 @@ import com.bocktom.schwarzmarkt.util.InvUtil;
 import de.tr7zw.changeme.nbtapi.NBT;
 import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
 import de.tr7zw.changeme.nbtapi.utils.DataFixerUtil;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
@@ -456,7 +457,7 @@ public class DatabaseManager {
 
 	public Map<Integer, Integer> getPlayerAuctionBids(UUID playerUuid) {
 		try (Connection con = getConnection()) {
-			try(ResultSet set = new DBStatementBuilder(con, "sql/select_player_bids_by_player.sql")
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v4/select_player_bids_by_player.sql")
 					.setBytes(1, playerUuid.toString().getBytes())
 					.executeQuery()) {
 
@@ -526,28 +527,6 @@ public class DatabaseManager {
 			plugin.getLogger().warning("Failed to update items: " + e.getMessage());
 			e.printStackTrace();
 		}
-
-
-		/*
-		try (Connection con = getConnection()) {
-			con.setAutoCommit(false);
-			for(ItemStack item : added) {
-				String json = NBT.itemStackToNBT(item).toString();
-				new DBStatementBuilder(con, "sql/insert_item.sql")
-						.setString(1, json)
-						.executeUpdate();
-			}
-			for(int id : removed) {
-				new DBStatementBuilder(con, "sql/delete_item.sql")
-						.setInt(1, id)
-						.executeUpdate();
-			}
-			con.commit();
-			return true;
-		} catch (SQLException | IOException e) {
-			plugin.getLogger().warning("Failed to update items: " + e.getMessage());
-			e.printStackTrace();
-		}*/
 		return false;
 	}
 
@@ -674,4 +653,66 @@ public class DatabaseManager {
 		return DriverManager.getConnection(this.dbUrl);
 	}
 
+	public List<DbItem> getPlayerItems(UUID playerUuid) {
+		List<DbItem> items = new ArrayList<>();
+
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v4/select_player_items_by_player.sql")
+					.setBytes(1, playerUuid.toString().getBytes())
+					.executeQuery()) {
+
+				while(set.next()) {
+					int id = set.getInt("id");
+					int amount = set.getInt("amount");
+					String json = set.getString("item_data");
+					ReadWriteNBT nbt = NBT.parseNBT(json);
+					items.add(new DbItem(id, NBT.itemStackFromNBT(nbt), amount));
+				}
+				return items;
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to get items: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return List.of();
+	}
+
+	public boolean updatePlayerItems(UUID owner_uuid, List<DbItem> added, List<DbItem> updated, ArrayList<Integer> removed) {
+		try (Connection con = getConnection()) {
+			con.setAutoCommit(false);
+
+			for(int id : removed) {
+				new DBStatementBuilder(con, "sql/v4/delete_player_items_by_player.sql")
+						.setBytes(1, owner_uuid.toString().getBytes())
+						.setInt(2, id)
+						.executeUpdate();
+			}
+
+			for(DbItem item : added) {
+				String json = NBT.itemStackToNBT(item.item).toString();
+				new DBStatementBuilder(con, "sql/insert_item.sql")
+						.setBytes(1, owner_uuid.toString().getBytes())
+						.setString(2, json)
+						.setInt(3, item.amount)
+						.executeUpdate();
+			}
+
+			for(DbItem item : updated) {
+				String json = NBT.itemStackToNBT(item.item).toString();
+				new DBStatementBuilder(con, "sql/v1/update_item.sql")
+						.setBytes(1, owner_uuid.toString().getBytes())
+						.setString(2, json)
+						.setInt(3, item.amount)
+						.setInt(4, item.id)
+						.executeUpdate();
+			}
+
+
+			con.commit();
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to update items: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
 }

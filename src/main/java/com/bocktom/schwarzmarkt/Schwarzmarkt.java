@@ -85,7 +85,14 @@ public final class Schwarzmarkt extends JavaPlugin {
 	}
 
 	public void openSetup(Player player) {
-		new SetupInventory(player);
+		new ServerSetupInventory(player);
+	}
+
+	public void openPlayerSetup(String playerName) {
+		Player player = Bukkit.getPlayer(playerName);
+		if(player != null) {
+			new PlayerSetupInventory(player);
+		}
 	}
 
 	public void openInfo(CommandSender sender) {

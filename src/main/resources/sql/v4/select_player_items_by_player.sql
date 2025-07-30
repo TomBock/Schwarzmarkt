@@ -1,0 +1,1 @@
+SELECT * FROM player_items WHERE owner_uuid = ?;

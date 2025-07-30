@@ -1,5 +1,19 @@
 error: "§cEs ist ein Fehler aufgetreten. Bitte versuche es später erneut."
-setup.name: "§8Auktion einrichten"
+setup:
+  name: "§8Auktion einrichten"
+  item.lore:
+    server:
+      - ""
+      - "§7Anzahl: §e%amount%"
+      - ""
+      - "§7Rechtsklick -1"
+      - "§7Shift+Rechtsklick +1"
+    player:
+      - ""
+      - "§7Mindesgebot §e%mindestgebot%"
+      - ""
+      - "§7Rechtsklick -100"
+      - "§7Shift+Rechtsklick +100"
 auction:
   name: "§8Schwarzmarkt"
   item.lore:

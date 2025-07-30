@@ -14,13 +14,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class DatabaseManager {
 
-	private static final int DB_VERSION = 3;
+	private static final int DB_VERSION = 4;
 	// 2 = fixed
 	// 3 = 1.21.5
+	// 4 = added player auctions
 
 	private final Schwarzmarkt plugin;
 	private String dbUrl;
@@ -65,6 +69,14 @@ public class DatabaseManager {
 				result += new DBStatementBuilder(con, "sql/create_return_bids.sql").executeUpdate();
 			} else if (curVersion == 1) {
 				result += new DBStatementBuilder(con, "sql/v2/migrate_items.sql").executeUpdate();
+			} else if (curVersion == 3) {
+				result += new DBStatementBuilder(con, "sql/v4/create_player_auctions.sql").executeUpdate();
+				result += new DBStatementBuilder(con, "sql/v4/create_player_items.sql").executeUpdate();
+				result += new DBStatementBuilder(con, "sql/v4/create_player_auction_bids.sql").executeUpdate();
+				result += new DBStatementBuilder(con, "sql/v4/create_sold_items.sql").executeUpdate();
+				result += new DBStatementBuilder(con, "sql/v4/create_item_cooldown.sql").executeUpdate();
+			} else {
+				plugin.getLogger().warning("Unknown database version: " + curVersion);
 			}
 
 			con.commit();
@@ -843,19 +855,8 @@ public class DatabaseManager {
 		}
 	}
 
-	public void removeSoldItem(UUID ownerUuid) {
-		try (Connection con = getConnection()) {
-			new DBStatementBuilder(con, "sql/v4/delete_sold_item.sql")
-					.setBytes(1, ownerUuid.toString().getBytes())
-					.executeUpdate();
-		} catch (SQLException | IOException e) {
-			plugin.getLogger().warning("Failed to remove sold item: " + e.getMessage());
-			e.printStackTrace();
-		}
-	}
-
-	public int getAndClearEarningsFromSoldItems(UUID ownerUuid) {
-		int earnings = 0;
+	public List<Integer> getAndClearEarningsFromSoldItems(UUID ownerUuid) {
+		List<Integer> earnings = new ArrayList<>();
 		try (Connection con = getConnection()) {
 			try(ResultSet set = new DBStatementBuilder(con, "sql/v4/select_sold_item_by_player.sql")
 					.setBytes(1, ownerUuid.toString().getBytes())
@@ -863,7 +864,7 @@ public class DatabaseManager {
 
 				while(set.next()) {
 					int highestBid = set.getInt("highest_bid");
-					earnings += highestBid;
+					earnings.add(highestBid);
 				}
 			}
 
@@ -876,5 +877,51 @@ public class DatabaseManager {
 			e.printStackTrace();
 		}
 		return earnings;
+	}
+
+	public void insertItemCooldown(List<ItemStack> items, long cooldownDays) {
+		Instant cooldown = Instant.now().plus(cooldownDays, ChronoUnit.DAYS);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String cooldownString = dateFormat.format(Date.from(cooldown));
+
+
+		try (Connection con = getConnection()) {
+			for (ItemStack item : items) {
+				String json = NBT.itemStackToNBT(item).toString();
+				new DBStatementBuilder(con, "sql/v4/insert_item_cooldown.sql")
+						.setString(1, json)
+						.setString(2, cooldownString)
+						.executeUpdate();
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to insert item cooldown: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	public void cleanItemCooldowns() {
+		try (Connection con = getConnection()) {
+			new DBStatementBuilder(con, "sql/v4/delete_item_cooldown.sql")
+					.executeUpdate();
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to remove item cooldown: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	public boolean hasItemCooldown(ItemStack item) {
+		try (Connection con = getConnection()) {
+			String json = NBT.itemStackToNBT(item).toString();
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v4/select_item_cooldown.sql")
+					.setString(1, json)
+					.executeQuery()) {
+
+				return set.next();
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to check item cooldown: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
 	}
 }

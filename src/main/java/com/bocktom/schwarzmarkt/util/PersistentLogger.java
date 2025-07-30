@@ -47,6 +47,11 @@ public class PersistentLogger {
 		log("WINNINGS FAILED | Auction ID: " + id + " | Winner: " + player.getName() + " (" + highestBidder + ")" + " | Item: " + NBT.itemStackToNBT(item).toString());
 	}
 
+	public static void logItemReturnFailed(int id, UUID highestBidder, ItemStack item) {
+		OfflinePlayer player = Bukkit.getOfflinePlayer(highestBidder);
+		log("ITEM RETURN FAILED | Auction ID: " + id + " | Winner: " + player.getName() + " (" + highestBidder + ")" + " | Item: " + NBT.itemStackToNBT(item).toString());
+	}
+
 	public static void logAuctionEnd(int auctionId, UUID winner, int amount) {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(winner);
 		log("AUCTION END | Auction ID: " + auctionId + " | Bid Amount: " + amount + " | Winner: " + player.getName() + " (" + winner + ")");

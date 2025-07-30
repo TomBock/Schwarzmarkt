@@ -10,6 +10,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.util.List;
 import java.util.UUID;
 
 public class PlayerListener implements Listener {
@@ -28,8 +29,13 @@ public class PlayerListener implements Listener {
 			sendMessage(player, MSG.get("onjoin.lost", "%amount%", String.valueOf(returnedBids)));
 		}
 
-		int soldItems = Schwarzmarkt.db.getAndClearEarningsFromSoldItems(playerUuid);
-		if(soldItems > 0) {
+		List<Integer> earnings = Schwarzmarkt.db.getAndClearEarningsFromSoldItems(playerUuid);
+		boolean hasNonSoldItems = false;
+		for (Integer earning : earnings) {
+			hasEarnings = hasEarnings | earning > 0;
+			hasNonSoldItems = hasNonSoldItems | earning == 0;
+		}
+		if(hasEarnings) {
 			sendMessage(player, MSG.get("onjoin.sold", "%amount%", String.valueOf(soldItems)));
 		}
 	}

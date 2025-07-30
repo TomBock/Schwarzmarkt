@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS item_cooldown (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_data TEXT NOT NULL,
+    cooldown_end TIMESTAMP NOT NULL
+);)

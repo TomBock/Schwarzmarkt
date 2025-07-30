@@ -1,0 +1,1 @@
+SELECT * FROM item_cooldown WHERE item_data = ?;

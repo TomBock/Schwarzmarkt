@@ -1,6 +1,7 @@
 package com.bocktom.schwarzmarkt.inv;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
+import com.bocktom.schwarzmarkt.inv.items.IdItem;
 import com.bocktom.schwarzmarkt.inv.items.PlayerSetupItem;
 import com.bocktom.schwarzmarkt.util.*;
 import org.bukkit.entity.Player;
@@ -31,6 +32,16 @@ public class PlayerSetupInventory extends SetupInventory {
 			items.add(getFallback());
 		}
 		return items;
+	}
+
+	@Override
+	protected boolean tryAddItem(IdItem item) {
+		boolean hasCooldown = Schwarzmarkt.db.hasItemCooldown(item.item);
+		if(hasCooldown) {
+			player.sendMessage(MSG.get("playersetup.cooldown"));
+			return false;
+		}
+		return true;
 	}
 
 	@Override

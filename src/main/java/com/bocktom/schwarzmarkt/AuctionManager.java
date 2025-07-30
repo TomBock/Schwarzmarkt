@@ -38,6 +38,7 @@ public class AuctionManager {
 	}
 
 	public void startAuctions(@Nullable Player player, boolean isServerAuction) {
+		Schwarzmarkt.db.cleanItemCooldowns();
 		if(isServerAuction) {
 			startServerAuctions(player);
 		} else {
@@ -80,13 +81,15 @@ public class AuctionManager {
 			return;
 		}
 
-		int auctionItems = Config.gui.get.getInt("playerauction.items");
+		int auctionItemAmount = Config.gui.get.getInt("playerauction.items");
 
-		List<OwnedDbItem> items = Schwarzmarkt.db.getRandomPlayerItems(auctionItems);
+		List<OwnedDbItem> items = Schwarzmarkt.db.getRandomPlayerItems(auctionItemAmount);
 		List<Integer> auctionIds = Schwarzmarkt.db.addPlayerAuctions(items);
+		List<ItemStack> auctionItems = items.stream().map(item -> item.item).toList();
+		Schwarzmarkt.db.insertItemCooldown(auctionItems, Config.gui.get.getInt("playerauction.cooldown"));
 
 		if(!auctionIds.isEmpty())
-			sendMessage(MSG.get("auction.started", "%amount%", String.valueOf(auctionItems)), player);
+			sendMessage(MSG.get("auction.started", "%amount%", String.valueOf(auctionItemAmount)), player);
 		else
 			sendMessage(MSG.get("auction.error"), player);
 
@@ -131,7 +134,6 @@ public class AuctionManager {
 		Map<Integer, Bids> allBids = Schwarzmarkt.db.getPlayerAuctionBids();
 		processBids(auctions, allBids, true);
 
-		// todo deposits
 		Schwarzmarkt.db.removePlayerAuctions();
 		Schwarzmarkt.db.removePlayerBids();
 
@@ -142,13 +144,19 @@ public class AuctionManager {
 		Bids bidsToReturn = new Bids();
 
 		for (Auction auction : auctions) {
-			if(auction.highestBidder == null)
+			if(auction.highestBidder == null) {
+
+				if(isPlayerAuction) {
+					// Non-sold player auctions are given back to the owner as winning
+					processItemNotSold((PlayerAuction) auction);
+				}
 				continue;
+			}
 
 			processWinningBid(auction);
 			if(isPlayerAuction) {
 				// Give cash to the winner
-				processOwner((PlayerAuction) auction);
+				processItemSold((PlayerAuction) auction);
 			}
 
 			Bids bids = allBids.get(auction.id);
@@ -164,7 +172,7 @@ public class AuctionManager {
 		Schwarzmarkt.db.addBidsToNotifyLater(notNotifiedReturns);
 	}
 
-	private void processOwner(PlayerAuction auction) {
+	private void processItemSold(PlayerAuction auction) {
 		boolean itemRemoved = Schwarzmarkt.db.removePlayerItem(auction.ownerId, auction.itemId);
 		if(!itemRemoved) {
 			PersistentLogger.logItemRemovalFailed(auction.id, auction.item, auction.ownerId);
@@ -187,13 +195,27 @@ public class AuctionManager {
 		}
 	}
 
+	private void processItemNotSold(PlayerAuction auction) {
+		// If the item was not sold, we return it to the owner
+		boolean itemAdded = Schwarzmarkt.db.addWinnings(auction.ownerId, auction.item);
+		if(!itemAdded) {
+			PersistentLogger.logItemReturnFailed(auction.id, auction.ownerId, auction.item);
+			return;
+		}
+
+		// Inform directly
+		Player owner = Bukkit.getPlayer(auction.ownerId);
+		if(owner != null) {
+			owner.sendMessage(Component.text(MSG.get("onjoin.returned")));
+		}
+	}
+
 	private void processWinningBid(Auction auction) {
 		boolean winningsResult = Schwarzmarkt.db.addWinnings(auction.highestBidder, auction.item);
 		if(!winningsResult) {
 			PersistentLogger.logWinningsFailed(auction.id, auction.highestBidder, auction.item);
 			return;
 		}
-		PersistentLogger.logAuctionEnd(auction.id, auction.highestBidder, auction.highestBid);
 
 		// Inform directly
 		Player winner = Bukkit.getPlayer(auction.highestBidder);

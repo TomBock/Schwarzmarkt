@@ -1,0 +1,1 @@
+INSERT INTO item_cooldown (item_data, cooldown_end) VALUES (?, ?);

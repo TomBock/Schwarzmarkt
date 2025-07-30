@@ -13,6 +13,7 @@ auction:
 playerauction:
   items: 6
   servercut: 0.05 # Cut of the server when a player sells an item
+  cooldown: 21 # Days
   type: normal
   structure:
     - x x x x x x x x x

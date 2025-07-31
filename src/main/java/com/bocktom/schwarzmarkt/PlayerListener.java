@@ -29,14 +29,9 @@ public class PlayerListener implements Listener {
 			sendMessage(player, MSG.get("onjoin.lost", "%amount%", String.valueOf(returnedBids)));
 		}
 
-		List<Integer> earnings = Schwarzmarkt.db.getAndClearEarningsFromSoldItems(playerUuid);
-		boolean hasNonSoldItems = false;
-		for (Integer earning : earnings) {
-			hasEarnings = hasEarnings | earning > 0;
-			hasNonSoldItems = hasNonSoldItems | earning == 0;
-		}
-		if(hasEarnings) {
-			sendMessage(player, MSG.get("onjoin.sold", "%amount%", String.valueOf(soldItems)));
+		int earnings = Schwarzmarkt.db.getAndClearEarningsFromSoldItems(playerUuid);
+		if(earnings > 0) {
+			sendMessage(player, MSG.get("onjoin.sold", "%amount%", String.valueOf(earnings)));
 		}
 	}
 

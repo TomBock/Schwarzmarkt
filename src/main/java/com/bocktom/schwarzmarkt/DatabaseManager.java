@@ -855,8 +855,8 @@ public class DatabaseManager {
 		}
 	}
 
-	public List<Integer> getAndClearEarningsFromSoldItems(UUID ownerUuid) {
-		List<Integer> earnings = new ArrayList<>();
+	public int getAndClearEarningsFromSoldItems(UUID ownerUuid) {
+		int earnings = 0;
 		try (Connection con = getConnection()) {
 			try(ResultSet set = new DBStatementBuilder(con, "sql/v4/select_sold_item_by_player.sql")
 					.setBytes(1, ownerUuid.toString().getBytes())
@@ -864,7 +864,7 @@ public class DatabaseManager {
 
 				while(set.next()) {
 					int highestBid = set.getInt("highest_bid");
-					earnings.add(highestBid);
+					earnings += highestBid;
 				}
 			}
 

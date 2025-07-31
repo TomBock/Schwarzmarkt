@@ -1,5 +1,5 @@
 name: PhoenixSchwarzmarkt
-version: '1.9'
+version: '2.0'
 main: com.bocktom.schwarzmarkt.Schwarzmarkt
 api-version: '1.21'
 depend:

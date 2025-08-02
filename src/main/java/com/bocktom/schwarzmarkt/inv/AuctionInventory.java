@@ -2,6 +2,7 @@ package com.bocktom.schwarzmarkt.inv;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.inv.items.AuctionItem;
+import com.bocktom.schwarzmarkt.inv.items.PlayerAuctionItem;
 import com.bocktom.schwarzmarkt.inv.items.ServerAuctionItem;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
@@ -9,11 +10,16 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.entity.Player;
+import xyz.xenondevs.invui.item.Item;
 
-public abstract class AuctionInventory extends ConfigInventory {
+import java.util.List;
+import java.util.Map;
 
-	public AuctionInventory(Player player, String config, String configName) {
-		super(player, config, configName);
+public class AuctionInventory extends ConfigInventory {
+
+
+	public AuctionInventory(Player player) {
+		super(player, player, "auction", MSG.get("auction.name"));
 	}
 
 	protected void onBid(AuctionItem item) {
@@ -33,5 +39,31 @@ public abstract class AuctionInventory extends ConfigInventory {
 
 		player.sendMessage(msg);
 		Schwarzmarkt.auctions.registerForBidding(player, item);
+	}
+
+	@Override
+	protected List<Item> getItems() {
+		List<Auction> auctions = Schwarzmarkt.db.getServerAuctions();
+		Map<Integer, Integer> bidsPerAuction = Schwarzmarkt.db.getServerAuctionBids(player.getUniqueId());
+
+		return InvUtil.createItems(auctions,
+				auction -> new ServerAuctionItem(auction.id, auction.item, bidsPerAuction.getOrDefault(auction.id, 0), this::onBid));
+	}
+
+	@Override
+	protected List<Item> getItems2() {
+		List<PlayerAuction> auctions = Schwarzmarkt.db.getPlayerAuctions();
+		Map<Integer, Integer> bidsPerAuction = Schwarzmarkt.db.getPlayerAuctionBids(player.getUniqueId());
+
+		return InvUtil.createItems(auctions,
+				auction -> new PlayerAuctionItem(
+						auction.id,
+						auction.item,
+						auction.ownerId,
+						auction.minBid,
+						auction.deposit,
+						bidsPerAuction.getOrDefault(auction.id, 0),
+						auction.highestBid,
+						this::onBid));
 	}
 }

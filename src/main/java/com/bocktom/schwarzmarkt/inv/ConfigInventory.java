@@ -24,12 +24,17 @@ public abstract class ConfigInventory {
 
 	protected final List<Item> items;
 	protected int currentItem;
+	protected final List<Item> items2;
+	protected int currentItem2;
 
 	protected final Player player;
+	protected final Player owner;
 
-	public ConfigInventory(Player player, String configName, String title) {
+	public ConfigInventory(Player player, Player owner, String configName, String title) {
 		this.player = player;
+		this.owner = owner;
 		items = getItems();
+		items2 = getItems2();
 
 		Config.InternalConfig config = Config.gui;
 		String type = config.get.getString(configName + ".type");
@@ -57,7 +62,8 @@ public abstract class ConfigInventory {
 		} else {
 			Gui.Builder.Normal guiBuilder = Gui.normal()
 					.setStructure(structure)
-					.addIngredient('i', this::getNextItem);
+					.addIngredient('i', this::getNextItem)
+					.addIngredient('j', this::getNextItem2);
 
 			getItemsFromConfig(configName, config, guiBuilder::addIngredient);
 			gui = guiBuilder.build();
@@ -92,6 +98,9 @@ public abstract class ConfigInventory {
 	}
 
 	protected abstract List<Item> getItems();
+	protected List<Item> getItems2() {
+		return List.of();
+	}
 
 	protected Item getFallback() {
 		return new SimpleItem(new ItemStack(Material.AIR));
@@ -102,6 +111,13 @@ public abstract class ConfigInventory {
 			return getFallback();
 		}
 		return items.get(currentItem++);
+	}
+
+	protected Item getNextItem2() {
+		if(currentItem2 >= items2.size()) {
+			return getFallback();
+		}
+		return items2.get(currentItem2++);
 	}
 
 	protected void onClose() {

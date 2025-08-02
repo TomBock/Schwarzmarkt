@@ -23,10 +23,6 @@ public class PickableItem extends IdItem {
 		this.tryRemove = tryRemove;
 	}
 
-	public static PickableItem empty(Function<PickableItem, Boolean> tryAdd, Function<PickableItem, Boolean> onRemoved) {
-		return new PickableItem(-1, new ItemStack(Material.AIR), tryAdd, onRemoved);
-	}
-
 	@Override
 	public void handleClick(@NotNull ClickType clicktype, @NotNull Player player, @NotNull InventoryClickEvent event) {
 

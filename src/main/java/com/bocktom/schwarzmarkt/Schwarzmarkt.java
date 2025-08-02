@@ -61,13 +61,10 @@ public final class Schwarzmarkt extends JavaPlugin {
 		return true;
 	}
 
-	public void openAuction(String playerName, boolean isServerAuction) {
+	public void openAuction(String playerName) {
 		Player player = Bukkit.getPlayer(playerName);
 		if(player != null) {
-			if(isServerAuction)
-				new ServerAuctionInventory(player);
-			else
-				new PlayerAuctionInventory(player);
+			new AuctionInventory(player);
 		}
 	}
 

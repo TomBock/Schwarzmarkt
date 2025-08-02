@@ -13,7 +13,7 @@ import java.util.List;
 public class ServerSetupInventory extends SetupInventory {
 
 	public ServerSetupInventory(Player player) {
-		super(player, "setup", MSG.get("setup.name"));
+		super(player, player, "setup", MSG.get("setup.name"));
 	}
 
 	@Override

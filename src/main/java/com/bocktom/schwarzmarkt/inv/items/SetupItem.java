@@ -1,6 +1,7 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -14,7 +15,7 @@ import java.util.function.Function;
 
 public abstract class SetupItem extends PickableItem {
 
-	public int amount = 1;;
+	public int amount = 1;
 	protected int amountLoreIndex;
 	private String amountLoreRaw;
 	private int loreStartIndex;
@@ -25,6 +26,10 @@ public abstract class SetupItem extends PickableItem {
 		this.amount = amount;
 
 		addLore();
+	}
+
+	public static SetupItem empty(Function<PickableItem, Boolean> tryAdd, Function<PickableItem, Boolean> onRemoved) {
+		return new ServerSetupItem(-1, new ItemStack(Material.AIR), 1, tryAdd, onRemoved);
 	}
 
 	@Override
@@ -43,10 +48,10 @@ public abstract class SetupItem extends PickableItem {
 			return;
 
 		int change = event.isShiftClick() ? getSubtraction() : getAddition();
-		amount += change;
 
-		if(amount == 0)
-			amount = 1;
+		if(amount + change < 0)
+			return;
+		amount += change;
 
 		ItemMeta meta = item.getItemMeta();
 		List<String> lore = meta.getLore();
@@ -76,6 +81,8 @@ public abstract class SetupItem extends PickableItem {
 
 	protected void addLore() {
 		ItemMeta meta = item.getItemMeta();
+		if(meta == null)
+			return;
 		List<String> lore = meta.getLore();
 		if(lore == null)
 			lore = new ArrayList<>();
@@ -101,6 +108,8 @@ public abstract class SetupItem extends PickableItem {
 
 	protected void cleanLore() {
 		ItemMeta meta = item.getItemMeta();
+		if(meta == null)
+			return;
 		List<String> lore = meta.getLore();
 
 		for (int length = loreLength; length > 0; length--) {

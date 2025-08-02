@@ -6,14 +6,14 @@
 - /schwarzmarkt bieten \<anzahl> #Bieten für die ausgewählte auktion (klappt nur nach auswahl eines im menu)
 
 #### ADMIN
-- /schwarmzarkt setup - Öffnet Admin GUI für Schwarzmarkt
 - /schwarzmarkt info - Aktuelle Auktion sehen
-- /schwarzmarkt start - Startet den Schwarzmarkt (via Cron Job)
-- /schwarzmarkt stop - Stoppt den Schwarzmarkt (via Cron Job)
+- /schwarzmarkt start \<server/spieler> - Startet den Schwarzmarkt (via Cron Job)
+- /schwarzmarkt stop \<server/spieler> - Stoppt den Schwarzmarkt (via Cron Job)
 - /schwarzmarkt show \<player> - Öffnet den Marktplatz (von citizen auszuführen)
+- /schwarmzarkt setup \<server/spieler> - Öffnet Player GUI für Schwarzmarkt
+- /schwarzmarkt showsetup \<player> Zum abholen der gewinne
 - /schwarzmarkt gewinne \<player> Zum abholen der gewinne
 - /schwarzmarkt titel \<displayname> \<permission> - Hilfe command um titel zu erstellen
-- /schwarzmarkt setinvitem \<inventary> \<key> - Setzt ein item in einer inventar gui yml
 
 ### Configs:
 - _msg.yml_ defines texts & chat messages for the plugin
@@ -39,4 +39,20 @@ Log file for all bids. If there is a complain, check for the following errors:
 <timestamp> | RETURN BID FAILED | Player: <uuid> | Amount: <amount>
 #Means the player did not get their bids back after loosing the auction
 #RESULT: Give the player the money by hand
+
+<timestamp> | RETURN BID FAILED | Player: <uuid> | Amount: <amount>
+#Means the player did not get their bids back after loosing the auction
+
+<timestamp> DEPOSIT FAILED | Amount: <amount> | Player: <uuid>
+#Means the player did not get their money back after taking an item out of their schwarzmarkt setup
+#Use /schwarzmarkt 
+
+ITEM REMOVAL FAILED
+#A sold item could not be removed from the schwarzmarkt setup of a given user
+
+REVENUE FAILED
+#A player did not get the cash for an item
+
+ITEM RETURN FAILED
+# A player did not get their item back after trying and failing to sell it in an auction
 ```

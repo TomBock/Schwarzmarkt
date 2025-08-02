@@ -3,6 +3,7 @@ package com.bocktom.schwarzmarkt;
 import com.bocktom.schwarzmarkt.inv.Auction;
 import com.bocktom.schwarzmarkt.inv.PlayerAuction;
 import com.bocktom.schwarzmarkt.inv.items.AuctionItem;
+import com.bocktom.schwarzmarkt.inv.items.PlayerAuctionItem;
 import com.bocktom.schwarzmarkt.inv.items.ServerAuctionItem;
 import com.bocktom.schwarzmarkt.util.*;
 import net.kyori.adventure.text.Component;
@@ -91,7 +92,7 @@ public class AuctionManager {
 		if(!auctionIds.isEmpty())
 			sendMessage(MSG.get("auction.started", "%amount%", String.valueOf(auctionItemAmount)), player);
 		else
-			sendMessage(MSG.get("auction.error"), player);
+			sendMessage(MSG.get("auction.noplayeritems"), player);
 
 		for (int i = 0; i < auctionIds.size(); i++) {
 			PersistentLogger.logPlayerAuctionStart(auctionIds.get(i), items.get(i).item, items.get(i).ownerUuid);
@@ -160,11 +161,13 @@ public class AuctionManager {
 			}
 
 			Bids bids = allBids.get(auction.id);
-			bids.forEach((bidder, amount) -> {
-				if(auction.highestBidder != bidder) {
-					bidsToReturn.merge(bidder, amount, Integer::sum);
-				}
-			});
+			if(bids != null && !bids.isEmpty()) {
+				bids.forEach((bidder, amount) -> {
+					if(auction.highestBidder != bidder) {
+						bidsToReturn.merge(bidder, amount, Integer::sum);
+					}
+				});
+			}
 		}
 
 		Bids successfulReturns = Schwarzmarkt.economy.returnBidsToPlayers(bidsToReturn);
@@ -189,9 +192,9 @@ public class AuctionManager {
 		// Inform directly
 		Player onlineOwner = Bukkit.getPlayer(auction.ownerId);
 		if(onlineOwner != null) {
-			onlineOwner.sendMessage(Component.text(MSG.get("onjoin.sold")));
+			onlineOwner.sendMessage(Component.text(MSG.get("onjoin.sold", "%amount%", String.valueOf(revenue))));
 		} else {
-			Schwarzmarkt.db.addSoldItem(auction.ownerId, auction.highestBid, auction.highestBidder);
+			Schwarzmarkt.db.addSoldItem(auction.ownerId, revenue, auction.highestBidder);
 		}
 	}
 
@@ -262,11 +265,32 @@ public class AuctionManager {
 			return;
 		}
 
-		// Try to place bid in DB
-		if(!Schwarzmarkt.db.placeBid(auction.id, player.getUniqueId(), amount)) {
-			player.sendMessage(MSG.get("error"));
-			return;
+		// Server vs. Player Auction
+		if(auction instanceof ServerAuctionItem) {
+			if(!Schwarzmarkt.db.isServerAuctionRunning(auction.id)) {
+				player.sendMessage(MSG.get("bid.notrunning"));
+				return;
+			}
+
+			// Try to place bid in DB
+			if(!Schwarzmarkt.db.placeBid(auction.id, player.getUniqueId(), amount)) {
+				player.sendMessage(MSG.get("error"));
+				return;
+			}
+
+		} else if(auction instanceof PlayerAuctionItem) {
+			if (!Schwarzmarkt.db.isPlayerAuctionRunning(auction.id)) {
+				player.sendMessage(MSG.get("bid.notrunning"));
+				return;
+			}
+
+			// Try to place bid in DB
+			if(!Schwarzmarkt.db.placePlayerBid(auction.id, player.getUniqueId(), amount)) {
+				player.sendMessage(MSG.get("error"));
+				return;
+			}
 		}
+
 
 		// Attempt to withdraw money
 		if(!Schwarzmarkt.economy.withdrawBidMoney(player, auction, amount)) {

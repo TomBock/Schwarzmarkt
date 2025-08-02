@@ -5,20 +5,21 @@ setup:
     - ""
     - "§7Anzahl: §e%amount%"
     - ""
-    - "§7Rechtsklick -1"
-    - "§7Shift+Rechtsklick +1"
+    - "§7Rechtsklick +1"
+    - "§7Shift+Rechtsklick -1"
 playersetup:
   name: "§8Auktion einrichten"
   inauction: "§7Dieses Item ist in einer laufenden Auktion" #Wenn der Spieler versucht es bei laufender Auktion zu ändern
   cooldown: "§7Warte noch ein bisschen um dieses Item erneut zu verkaufen"
+  deposit.success: "§aDu hast deine Angebote erfolgreich angepasst"
   item.lore:
     inauction: "§7Dieses Item ist in einer laufenden Auktion"
     outofauction:
       - ""
       - "§7Mindesgebot §e%amount%"
       - ""
-      - "§7Rechtsklick -100"
-      - "§7Shift+Rechtsklick +100"
+      - "§7Rechtsklick +100"
+      - "§7Shift+Rechtsklick -100"
 auction:
   name: "§8Schwarzmarkt"
   item.lore:
@@ -41,9 +42,9 @@ auction:
   ended: "§cDie Auktion wurde beendet"
   alreadyrunning: "§cEs läuft bereits eine Auktion"
   notrunning: "§cEs läuft keine Auktion"
+  noplayeritems: "§cKein Spieler hat Items eingestellt"
   error: "§cEs ist ein Fehler aufgetreten. Überprüfe die Konsole für den Fehler"
 playerauctions:
-  name: "§8Spieler Schwarzmarkt"
   notenoughmoney: "§cDu hast nicht genug Cash :'( Deine Items hast du zurückbekommen"
   deposit:
     withdrawfailed: "§cBeim Geldabheben ist ein Fehler aufgetreten. Die Items wurden dir zurückgegeben"
@@ -61,6 +62,7 @@ onjoin:
   won: "§6Glückwunsch! §7Du hast bei der Auktion abgeräumt! Klicke hier oder gib §e/schwarzmarkt gewinne §7ein um deine Gewinne abzuholen."
   lost: "§5Schade! §7Du hast bei der Auktion nichts gewonnen. Deine Rubine %amount% wurden dir zurückgegeben."
   delay: 6 # Seconds delay
+  returned: "§cSadge, niemand hat deine Items gekauft, daher wurden sie zurückgegeben."
 bid:
   info: "§7Klicke hier um für %item% §7zu bieten oder gib §e/schwarzmarkt bieten <betrag> §7ein"
   infowithbid: "§7Klicke hier um noch mehr für %item% §7zu bieten oder gib §e/schwarzmarkt bieten <betrag> §7ein. Aktuelles Gebot: §e%amount%"

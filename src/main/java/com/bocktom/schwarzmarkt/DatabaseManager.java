@@ -19,6 +19,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import static org.bukkit.Bukkit.getLogger;
+
 public class DatabaseManager {
 
 	private static final int DB_VERSION = 4;
@@ -54,6 +56,8 @@ public class DatabaseManager {
 				setDbVersion(DB_VERSION);
 			}
 		}
+
+		getLogger().info("Current database version: " + curVersion);
 
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
@@ -248,6 +252,7 @@ public class DatabaseManager {
 						.setInt(1, item.id)
 						.setString(2, json)
 						.setBytes(3, item.ownerUuid.toString().getBytes())
+						.setInt(4, item.amount) // deposit
 						.executeQuery()) {
 
 					if(set.next()) {
@@ -319,7 +324,7 @@ public class DatabaseManager {
 
 	public List<PlayerAuction> getPlayerAuctions() {
 		try (Connection con = getConnection()) {
-			try(ResultSet set = new DBStatementBuilder(con, "sql/select_auctions.sql")
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v4/select_player_auctions.sql")
 					.executeQuery()) {
 
 				List<PlayerAuction> auctions = new ArrayList<>();
@@ -401,6 +406,44 @@ public class DatabaseManager {
 			}
 
 			result += new DBStatementBuilder(con, "sql/update_highest_bid.sql")
+					.setInt(1, totalBid)
+					.setBytes(2, uuid)
+					.setInt(3, auctionId)
+					.setInt(4, totalBid)
+					.executeUpdate();
+
+			con.commit();
+			return result > 0;
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to place bid: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public boolean placePlayerBid(int auctionId, UUID playerUuid, int amount) {
+		try (Connection con = getConnection()) {
+			con.setAutoCommit(false);
+
+			byte[] uuid = playerUuid.toString().getBytes();
+			int result = new DBStatementBuilder(con, "sql/v4/insert_or_update_player_bid.sql")
+					.setInt(1, auctionId)
+					.setBytes(2, uuid)
+					.setInt(3, amount)
+					.executeUpdate();
+
+			int totalBid = 0;
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v4/select_player_bid.sql")
+					.setInt(1, auctionId)
+					.setBytes(2, playerUuid.toString().getBytes())
+					.executeQuery()) {
+
+				if(set.next()) {
+					totalBid = set.getInt("bid_amount");
+				}
+			}
+
+			result += new DBStatementBuilder(con, "sql/v4/update_highest_player_bid.sql")
 					.setInt(1, totalBid)
 					.setBytes(2, uuid)
 					.setInt(3, auctionId)
@@ -774,11 +817,11 @@ public class DatabaseManager {
 
 				while(set.next()) {
 					int id = set.getInt("id");
-					int amount = set.getInt("amount");
 					String json = set.getString("item_data");
 					int inAuction = set.getInt("in_auction");
+					int amount = set.getInt("amount");
 					ReadWriteNBT nbt = NBT.parseNBT(json);
-					items.add(new PlayerDbItem(id, NBT.itemStackFromNBT(nbt), amount, inAuction > 0));
+					items.add(new PlayerDbItem(id, NBT.itemStackFromNBT(nbt), inAuction > 0, amount));
 				}
 				return items;
 			}
@@ -816,7 +859,7 @@ public class DatabaseManager {
 
 			for(DbItem item : added) {
 				String json = NBT.itemStackToNBT(item.item).toString();
-				new DBStatementBuilder(con, "sql/insert_item.sql")
+				new DBStatementBuilder(con, "sql/v4/insert_player_items_by_player.sql")
 						.setBytes(1, owner_uuid.toString().getBytes())
 						.setString(2, json)
 						.setInt(3, item.amount)
@@ -825,11 +868,10 @@ public class DatabaseManager {
 
 			for(DbItem item : updated) {
 				String json = NBT.itemStackToNBT(item.item).toString();
-				new DBStatementBuilder(con, "sql/v1/update_item.sql")
-						.setBytes(1, owner_uuid.toString().getBytes())
-						.setString(2, json)
-						.setInt(3, item.amount)
-						.setInt(4, item.id)
+				new DBStatementBuilder(con, "sql/v4/update_player_items_by_player.sql")
+						.setString(1, json)
+						.setInt(2, item.amount)
+						.setInt(3, item.id)
 						.executeUpdate();
 			}
 
@@ -920,6 +962,36 @@ public class DatabaseManager {
 			}
 		} catch (SQLException | IOException e) {
 			plugin.getLogger().warning("Failed to check item cooldown: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public boolean isServerAuctionRunning(int auctionId) {
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v4/select_server_auction_by_id.sql")
+					.setInt(1, auctionId)
+					.executeQuery()) {
+
+				return set.next();
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to check if auction is running: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public boolean isPlayerAuctionRunning(int auctionId) {
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v4/select_player_auction_by_id.sql")
+					.setInt(1, auctionId)
+					.executeQuery()) {
+
+				return set.next();
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to check if auction is running: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return false;

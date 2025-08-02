@@ -15,8 +15,8 @@ public abstract class SetupInventory extends ConfigInventory {
 
 	protected ArrayList<Integer> itemsRemoved = new ArrayList<>();
 
-	public SetupInventory(Player player, String setup, String name) {
-		super(player, setup, name);
+	public SetupInventory(Player player, Player owner, String setup, String name) {
+		super(player, owner, setup, name);
 	}
 
 
@@ -39,6 +39,12 @@ public abstract class SetupInventory extends ConfigInventory {
 	protected void onClose() {
 		List<DbItem> itemsAdded = new ArrayList<>();
 		List<DbItem> itemsUpdated = new ArrayList<>();
+		sortItems(items, itemsUpdated, itemsAdded);
+
+		saveItems(itemsAdded, itemsUpdated);
+	}
+
+	private void sortItems(List<Item> items, List<DbItem> itemsUpdated, List<DbItem> itemsAdded) {
 		for (Item item : items) {
 			SetupItem idItem = (SetupItem) item;
 
@@ -54,8 +60,6 @@ public abstract class SetupInventory extends ConfigInventory {
 				}
 			}
 		}
-
-
 	}
 
 	protected abstract void saveItems(List<DbItem> itemsAdded, List<DbItem> itemsUpdated);

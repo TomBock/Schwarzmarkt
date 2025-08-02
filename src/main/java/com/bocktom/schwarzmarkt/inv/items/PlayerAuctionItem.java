@@ -29,13 +29,16 @@ public class PlayerAuctionItem extends AuctionItem {
 
 		boolean hasBids = highestBid > 0;
 
+		boolean hideLine = false;
 		List<String> raw = MSG.getList("auction.item.lore.player");
 		for (String line : raw) {
+			hideLine = false;
 			if(line.contains("%meingebot%")) {
 				if(currentBid > 0) {
 					lore.add(line.replace("%meingebot%", String.valueOf(currentBid)));
 					continue;
 				}
+				hideLine = true;
 			}
 			if(line.contains("%besitzer%")) {
 				String ownerName = Bukkit.getOfflinePlayer(ownerId).getName();
@@ -43,15 +46,26 @@ public class PlayerAuctionItem extends AuctionItem {
 				continue;
 			}
 
-			if(hasBids && line.contains("%gebotspanne%")) {
-				lore.add(line.replace("%gebotspanne%", getBidRange(highestBid)));
-				continue;
+			if(line.contains("%gebotspanne%")) {
+				if(hasBids) {
+					lore.add(line.replace("%gebotspanne%", getBidRange(highestBid)));
+					continue;
+
+				} else {
+					hideLine = true;
+				}
 			}
-			if(!hasBids && line.contains("%mindestgebot%")) {
-				lore.add(line.replace("%mindestgebot%", String.valueOf(minId)));
-				continue;
+			if(line.contains("%mindestgebot%")) {
+				if(!hasBids) {
+					lore.add(line.replace("%mindestgebot%", String.valueOf(minId)));
+					continue;
+				} else {
+					hideLine = true;
+				}
 			}
-			lore.add(line);
+			if(!hideLine) {
+				lore.add(line);
+			}
 		}
 
 		meta.setLore(lore);

@@ -3,19 +3,19 @@ package com.bocktom.schwarzmarkt.inv;
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.inv.items.IdItem;
 import com.bocktom.schwarzmarkt.inv.items.PlayerSetupItem;
+import com.bocktom.schwarzmarkt.inv.items.SetupItem;
 import com.bocktom.schwarzmarkt.util.*;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.item.Item;
 
 import java.util.List;
 
 public class PlayerSetupInventory extends SetupInventory {
 
-	private final Player owner;
-
 	public PlayerSetupInventory(Player player, Player owner) {
-		super(player, "playersetup", MSG.get("playersetup.name"));
-		this.owner = owner;
+		super(player, owner, "playersetup", MSG.get("playersetup.name"));
 	}
 
 	@Override
@@ -32,6 +32,11 @@ public class PlayerSetupInventory extends SetupInventory {
 			items.add(getFallback());
 		}
 		return items;
+	}
+
+	@Override
+	protected Item getFallback() {
+		return new PlayerSetupItem(-1, new ItemStack(Material.AIR), 100, false, this::tryAddItem, this::tryRemoveItem);
 	}
 
 	@Override

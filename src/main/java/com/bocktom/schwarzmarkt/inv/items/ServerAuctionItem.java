@@ -33,15 +33,16 @@ public class ServerAuctionItem extends AuctionItem {
 
 		lore.clear();
 
-		List<String> raw = MSG.getList("auction.item.lore.player");
+		List<String> raw = MSG.getList("auction.item.lore.server");
 		for (String line : raw) {
 			if(line.contains("%meingebot%")) {
 				if(currentBid > 0) {
 					lore.add(line.replace("%meingebot%", String.valueOf(currentBid)));
 					continue;
 				}
+			} else {
+				lore.add(line);
 			}
-			lore.add(line);
 		}
 
 		meta.setLore(lore);

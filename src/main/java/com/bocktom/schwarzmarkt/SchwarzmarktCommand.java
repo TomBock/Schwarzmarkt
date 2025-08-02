@@ -80,7 +80,7 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 					case "start":
 						Schwarzmarkt.auctions.startAuctions(player, args[1].equals("server"));
 						return true;
-					case "end":
+					case "stop":
 						Schwarzmarkt.auctions.stopAuctions(player, args[1].equals("server"));
 						return true;
 
@@ -91,9 +91,8 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 					case "showsetup":
 						Schwarzmarkt.plugin.openPlayerSetup(player, args[1]);
 
-					// Deprecated
 					case "show":
-						Schwarzmarkt.plugin.openAuction(args[1], true);
+						Schwarzmarkt.plugin.openAuction(args[1]);
 						return true;
 				}
 			}
@@ -128,10 +127,6 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 					case "titel":
 						ItemStack item = InvUtil.createTitleItem(args[1], args[2]);
 						PlayerUtil.give(player, item);
-						return true;
-
-					case "show":
-						Schwarzmarkt.plugin.openAuction(args[1], args[2].equals("server"));
 						return true;
 				}
 
@@ -182,7 +177,7 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 			switch (args[0]) {
 				// Deprecated
 				case "show":
-					Schwarzmarkt.plugin.openAuction(args[1], true);
+					Schwarzmarkt.plugin.openAuction(args[1]);
 					return true;
 
 				case "start":
@@ -190,14 +185,6 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 					return true;
 				case "stop":
 					Schwarzmarkt.auctions.stopAuctions(null, args[1].equals("server"));
-					return true;
-			}
-		}
-
-		if(args.length == 3) {
-			switch (args[0]) {
-				case "show":
-					Schwarzmarkt.plugin.openAuction(args[1], args[2].equals("server"));
 					return true;
 			}
 		}

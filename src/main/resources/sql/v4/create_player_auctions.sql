@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS player_auctions (
     item_id INTEGER NOT NULL,
     item_data TEXT NOT NULL,
     owner_uuid BINARY(16),
+    deposit INTEGER DEFAULT 0,
     min_bid INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     highest_bid INTEGER DEFAULT 0,

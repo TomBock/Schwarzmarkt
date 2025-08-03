@@ -199,6 +199,12 @@ public class AuctionManager {
 	}
 
 	private void processItemNotSold(PlayerAuction auction) {
+		boolean itemRemoved = Schwarzmarkt.db.removePlayerItem(auction.ownerId, auction.itemId);
+		if(!itemRemoved) {
+			PersistentLogger.logItemRemovalFailed(auction.id, auction.item, auction.ownerId);
+			return;
+		}
+
 		// If the item was not sold, we return it to the owner
 		boolean itemAdded = Schwarzmarkt.db.addWinnings(auction.ownerId, auction.item);
 		if(!itemAdded) {

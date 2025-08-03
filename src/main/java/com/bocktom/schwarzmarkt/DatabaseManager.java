@@ -2,7 +2,6 @@ package com.bocktom.schwarzmarkt;
 
 import com.bocktom.schwarzmarkt.inv.Auction;
 import com.bocktom.schwarzmarkt.inv.PlayerAuction;
-import com.bocktom.schwarzmarkt.inv.items.PlayerAuctionItem;
 import com.bocktom.schwarzmarkt.util.*;
 import de.tr7zw.changeme.nbtapi.NBT;
 import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
@@ -24,10 +23,11 @@ import static org.bukkit.Bukkit.getLogger;
 
 public class DatabaseManager {
 
-	private static final int DB_VERSION = 4;
+	private static final int DB_VERSION = 5;
 	// 2 = fixed
 	// 3 = 1.21.5
 	// 4 = added player auctions
+	// 5 = not sold items
 
 	private final Schwarzmarkt plugin;
 	private String dbUrl;
@@ -45,6 +45,7 @@ public class DatabaseManager {
 
 		// Versioning
 		createVersionTable();
+		setDbVersion(4);
 		int curVersion = getDbVersion();
 		if(curVersion != DB_VERSION) {
 
@@ -74,12 +75,14 @@ public class DatabaseManager {
 				result += new DBStatementBuilder(con, "sql/create_return_bids.sql").executeUpdate();
 			} else if (curVersion == 1) {
 				result += new DBStatementBuilder(con, "sql/v2/migrate_items.sql").executeUpdate();
-			} else if (curVersion == 3) {
+			} else if (curVersion <= 3) {
 				result += new DBStatementBuilder(con, "sql/v4/create_player_auctions.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/v4/create_player_items.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/v4/create_player_auction_bids.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/v4/create_sold_items.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/v4/create_item_cooldown.sql").executeUpdate();
+			} else if(curVersion <= 4) {
+				result += new DBStatementBuilder(con, "sql/v5/create_notsold.sql").executeUpdate();
 			} else {
 				plugin.getLogger().warning("Unknown database version: " + curVersion);
 			}
@@ -997,6 +1000,55 @@ public class DatabaseManager {
 			}
 		} catch (SQLException | IOException e) {
 			plugin.getLogger().warning("Failed to check if auction is running: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public boolean addNotsold(UUID playerUuid, ItemStack item) {
+		try (Connection con = getConnection()) {
+			int result = new DBStatementBuilder(con, "sql/v5/insert_notsold.sql")
+					.setBytes(1, playerUuid.toString().getBytes())
+					.setString(2, NBT.itemStackToNBT(item).toString())
+					.executeUpdate();
+			return result > 0;
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to add not sold item: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public Map<Integer, ItemStack> getNotSold(UUID uuid) {
+		Map<Integer, ItemStack> notSoldItems = new HashMap<>();
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v5/select_notsold_by_player.sql")
+					.setBytes(1, uuid.toString().getBytes())
+					.executeQuery()) {
+
+				while(set.next()) {
+					int id = set.getInt("id");
+					String json = set.getString("item_data");
+					ItemStack item = NBT.itemStackFromNBT(NBT.parseNBT(json));
+					notSoldItems.put(id, item);
+				}
+				return notSoldItems;
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to get not sold item: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return Map.of();
+	}
+
+	public boolean removeNotSold(int id) {
+		try (Connection con = getConnection()) {
+			int result = new DBStatementBuilder(con, "sql/v5/delete_notsold.sql")
+					.setInt(1, id)
+					.executeUpdate();
+			return result > 0;
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to delete not sold item: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return false;

@@ -10,7 +10,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.util.List;
 import java.util.UUID;
 
 public class PlayerListener implements Listener {
@@ -20,8 +19,14 @@ public class PlayerListener implements Listener {
 		Player player = event.getPlayer();
 		UUID playerUuid = player.getUniqueId();
 
-		if(!Schwarzmarkt.db.getWinnings(playerUuid).isEmpty()) {
+		boolean hasWinnings = !Schwarzmarkt.db.getWinnings(playerUuid).isEmpty();
+		boolean hasNotSold = !Schwarzmarkt.db.getNotSold(playerUuid).isEmpty();
+		if(hasWinnings && hasNotSold) {
+			sendMessage(player, MSG.get("onjoin.wonandnotsold"));
+		} else if(hasWinnings) {
 			sendMessage(player, MSG.get("onjoin.won"));
+		} else if(hasNotSold) {
+			sendMessage(player, MSG.get("onjoin.notsold"));
 		}
 
 		int returnedBids = Schwarzmarkt.db.getAndClearReturnedBids(playerUuid);

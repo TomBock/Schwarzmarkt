@@ -2,6 +2,7 @@ package com.bocktom.schwarzmarkt.inv;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.inv.items.IdItem;
+import com.bocktom.schwarzmarkt.inv.items.NotSoldWinningsItem;
 import com.bocktom.schwarzmarkt.inv.items.WinningsItem;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
@@ -21,12 +22,23 @@ public class WinningsInventory extends ConfigInventory {
 	@Override
 	protected List<Item> getItems() {
 		Map<Integer, ItemStack> itemStackMap = Schwarzmarkt.db.getWinnings(player.getUniqueId());
-		return InvUtil.createItems(itemStackMap,
+		Map<Integer, ItemStack> nonSoldItems = Schwarzmarkt.db.getNotSold(player.getUniqueId());
+		List<Item> winnings = InvUtil.createItems(itemStackMap,
 				entry -> new WinningsItem(entry.getKey(), entry.getValue(), null, this::tryItemRemove));
+		List<Item> notSold = InvUtil.createItems(nonSoldItems,
+				entry -> new NotSoldWinningsItem(entry.getKey(), entry.getValue(), null, this::tryItemRemove));
+		winnings.addAll(notSold);
+		return winnings;
 	}
 
 	private boolean tryItemRemove(IdItem item) {
-		boolean removed = Schwarzmarkt.db.removeWinnings(item.id);
+		// Not the cleanest but should work
+		boolean removed;
+		if(item instanceof NotSoldWinningsItem) {
+			removed = Schwarzmarkt.db.removeNotSold(item.id);
+		} else {
+			removed = Schwarzmarkt.db.removeWinnings(item.id);
+		}
 		if(!removed) {
 			player.sendMessage(MSG.get("error"));
 			return false;

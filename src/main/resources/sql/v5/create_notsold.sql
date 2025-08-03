@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS notsold (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner_uuid BINARY(16) NOT NULL,
+    item_data TEXT NOT NULL
+);

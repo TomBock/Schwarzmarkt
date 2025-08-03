@@ -1,0 +1,1 @@
+INSERT INTO notsold (owner_uuid, item_data) VALUES (?, ?);

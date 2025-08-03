@@ -183,7 +183,7 @@ public class AuctionManager {
 		}
 		OfflinePlayer owner = Bukkit.getOfflinePlayer(auction.ownerId);
 
-		int revenue = auction.highestBid * (1-Config.gui.get.getInt("playerauction.servercut"));
+		int revenue = (int) Math.ceil(((double) auction.highestBid) * (1.0-Config.gui.get.getDouble("playerauction.servercut")));
 		boolean depositResult = Schwarzmarkt.economy.depositMoney(owner, revenue + auction.deposit);
 		if(!depositResult) {
 			PersistentLogger.logDepositFailed(owner, auction.highestBid);
@@ -206,7 +206,7 @@ public class AuctionManager {
 		}
 
 		// If the item was not sold, we return it to the owner
-		boolean itemAdded = Schwarzmarkt.db.addWinnings(auction.ownerId, auction.item);
+		boolean itemAdded = Schwarzmarkt.db.addNotsold(auction.ownerId, auction.item);
 		if(!itemAdded) {
 			PersistentLogger.logItemReturnFailed(auction.id, auction.ownerId, auction.item);
 			return;

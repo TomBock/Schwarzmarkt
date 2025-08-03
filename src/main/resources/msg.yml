@@ -11,7 +11,10 @@ playersetup:
   name: "§8Auktion einrichten"
   inauction: "§7Dieses Item ist in einer laufenden Auktion" #Wenn der Spieler versucht es bei laufender Auktion zu ändern
   cooldown: "§7Warte noch ein bisschen um dieses Item erneut zu verkaufen"
-  deposit.success: "§aDu hast deine Angebote erfolgreich angepasst"
+  deposit:
+    earning: "§aDu hast %items_added% Items eingestellt und %items_removed% entfernt. Insgesamt hast du %amount% Rubine zurückbekommen."
+    cost: "§aDu hast %items_added% Items eingestellt und %items_removed% entfernt. Insgesamt hast du %amount% Rubine gezahlt."
+    neutral: "§aDu hast %items_added% Items eingestellt und %items_removed% entfernt. Insgesamt hat es dich nix gekostet."
   item.lore:
     inauction: "§7Dieses Item ist in einer laufenden Auktion"
     outofauction:
@@ -58,7 +61,6 @@ winnings:
     assigned: "§7Du hast den Titel bereits abgeholt!"
 onjoin:
   sold: "§7Du hast §e%amount% §7Rubine durch den Verkauf von Items erhalten"
-  notsold: "§7RIP."
   won: "§6Glückwunsch! §7Du hast bei der Auktion abgeräumt! Klicke hier oder gib §e/schwarzmarkt gewinne §7ein um deine Gewinne abzuholen."
   lost: "§5Schade! §7Du hast bei der Auktion nichts gewonnen. Deine Rubine %amount% wurden dir zurückgegeben."
   delay: 6 # Seconds delay

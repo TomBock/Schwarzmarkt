@@ -1,1 +1,1 @@
-INSERT INTO player_items (owner_uuid, item_data, amount) VALUES (?, ?, ?);
+INSERT INTO player_items (owner_uuid, item_data, min_bid, deposit) VALUES (?, ?, ?, ?);

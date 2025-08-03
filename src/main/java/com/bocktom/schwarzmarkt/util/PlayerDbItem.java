@@ -2,12 +2,14 @@ package com.bocktom.schwarzmarkt.util;
 
 import org.bukkit.inventory.ItemStack;
 
-public class PlayerDbItem extends DbItem {
+import java.util.UUID;
+
+public class PlayerDbItem extends OwnedDbItem {
 
 	public boolean inAuction = false;
 
-	public PlayerDbItem(int id, ItemStack item, boolean inAuction, int amount) {
-		super(id, item, amount);
+	public PlayerDbItem(int id, UUID ownerUuid, ItemStack item, int minBid, int deposit, boolean inAuction) {
+		super(id, ownerUuid, item, minBid, deposit);
 		this.inAuction = inAuction;
 	}
 }

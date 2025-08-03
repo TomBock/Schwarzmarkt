@@ -2,7 +2,8 @@ SELECT
     pi.id,
     pi.owner_uuid,
     pi.item_data,
-    pi.amount,
+    pi.deposit,
+    pi.min_bid,
     CASE
         WHEN pa.id IS NOT NULL THEN 1
         ELSE 0

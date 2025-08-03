@@ -19,6 +19,8 @@ public class PlayerSetupItem extends SetupItem {
 	public PlayerSetupItem(int id, ItemStack item, int amount, boolean inAuction, Function<PickableItem, Boolean> onAdded, Function<PickableItem, Boolean> tryRemove) {
 		super(id, item, amount, onAdded, tryRemove);
 		this.inAuction = inAuction;
+
+		customAddLore();
 	}
 
 	@Override
@@ -28,18 +30,29 @@ public class PlayerSetupItem extends SetupItem {
 
 	@Override
 	protected void addLore() {
-		if(inAuction) {
-			ItemMeta meta = item.getItemMeta();
-			List<String> lore = meta.getLore();
-			if(lore == null)
-				lore = new ArrayList<>();
-			amountLoreIndex = lore.size();
-			lore.add(MSG.get("playersetup.item.lore.inauction"));
-			meta.setLore(lore);
-			item.setItemMeta(meta);
-		} else {
+		// Ignore the default lore and add custom in-auction lore after init
+	}
+
+	@Override
+	protected void handlePlace(@NotNull InventoryClickEvent event) {
+		super.handlePlace(event);
+		customAddLore();
+	}
+
+	private void customAddLore() {
+		if(!inAuction) {
 			super.addLore();
+			return;
 		}
+
+		ItemMeta meta = item.getItemMeta();
+		List<String> lore = meta.getLore();
+		if(lore == null)
+			lore = new ArrayList<>();
+		amountLoreIndex = lore.size();
+		lore.add(MSG.get("playersetup.item.lore.inauction"));
+		meta.setLore(lore);
+		item.setItemMeta(meta);
 	}
 
 	@Override

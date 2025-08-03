@@ -12,13 +12,18 @@ import java.util.function.Consumer;
 
 public class PlayerAuctionItem extends AuctionItem {
 
-	public PlayerAuctionItem(int id, ItemStack item, UUID ownerId, int minId, int deposit, int currentBid, int highestBid, Consumer<AuctionItem> clickHandler) {
+	public UUID ownerUuid;
+	public int minBid;
+
+	public PlayerAuctionItem(int id, ItemStack item, UUID ownerId, int minBid, int deposit, int currentBid, int highestBid, Consumer<AuctionItem> clickHandler) {
 		super(id, item, currentBid, clickHandler);
 
-		fillItemLore(item, ownerId, minId, currentBid, highestBid);
+		this.ownerUuid = ownerId;
+		this.minBid = minBid;
+		fillItemLore(item, ownerId, minBid, currentBid, highestBid);
 	}
 
-	private void fillItemLore(ItemStack item, UUID ownerId, int minId, int currentBid, int highestBid) {
+	private void fillItemLore(ItemStack item, UUID ownerId, int minBid, int currentBid, int highestBid) {
 		ItemMeta meta = item.getItemMeta();
 		List<String> lore = meta.getLore();
 		// add lore
@@ -57,7 +62,7 @@ public class PlayerAuctionItem extends AuctionItem {
 			}
 			if(line.contains("%mindestgebot%")) {
 				if(!hasBids) {
-					lore.add(line.replace("%mindestgebot%", String.valueOf(minId)));
+					lore.add(line.replace("%mindestgebot%", String.valueOf(minBid)));
 					continue;
 				} else {
 					hideLine = true;

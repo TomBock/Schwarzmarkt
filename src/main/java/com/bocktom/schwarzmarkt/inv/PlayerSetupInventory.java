@@ -85,7 +85,7 @@ public class PlayerSetupInventory extends SetupInventory {
 		}
 
 		if(!itemsAdded.isEmpty() || !itemsUpdated.isEmpty() || !itemsRemoved.isEmpty()) {
-			Schwarzmarkt.db.updatePlayerItems(owner.getUniqueId(), itemsAdded, itemsUpdated, itemsRemoved);
+			Schwarzmarkt.db.updatePlayerItems(owner.getUniqueId(), itemsAdded, itemsUpdated, itemsRemoved, depositCost);
 			player.sendMessage(MSG.get("playersetup.deposit.success"));
 		}
 	}

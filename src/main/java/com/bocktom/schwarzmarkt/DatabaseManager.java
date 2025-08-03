@@ -2,6 +2,7 @@ package com.bocktom.schwarzmarkt;
 
 import com.bocktom.schwarzmarkt.inv.Auction;
 import com.bocktom.schwarzmarkt.inv.PlayerAuction;
+import com.bocktom.schwarzmarkt.inv.items.PlayerAuctionItem;
 import com.bocktom.schwarzmarkt.util.*;
 import de.tr7zw.changeme.nbtapi.NBT;
 import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
@@ -252,7 +253,8 @@ public class DatabaseManager {
 						.setInt(1, item.id)
 						.setString(2, json)
 						.setBytes(3, item.ownerUuid.toString().getBytes())
-						.setInt(4, item.amount) // deposit
+						.setInt(4, item.amount) //minBid
+						.setInt(5, item.amount) // deposit
 						.executeQuery()) {
 
 					if(set.next()) {
@@ -688,10 +690,11 @@ public class DatabaseManager {
 				while(set.next()) {
 					int id = set.getInt("id");
 					UUID ownerUuid = UUID.fromString(new String(set.getBytes("owner_uuid")));
-					int amount = set.getInt("amount");
+					int deposit = set.getInt("deposit");
+					int minBid = set.getInt("min_bid");
 					String json = set.getString("item_data");
 					ReadWriteNBT nbt = NBT.parseNBT(json);
-					items.add(new OwnedDbItem(id, ownerUuid, NBT.itemStackFromNBT(nbt), amount));
+					items.add(new OwnedDbItem(id, ownerUuid, NBT.itemStackFromNBT(nbt), minBid, deposit));
 				}
 				return items;
 			}
@@ -819,9 +822,10 @@ public class DatabaseManager {
 					int id = set.getInt("id");
 					String json = set.getString("item_data");
 					int inAuction = set.getInt("in_auction");
-					int amount = set.getInt("amount");
+					int deposit = set.getInt("deposit");
+					int minBid = set.getInt("min_bid");
 					ReadWriteNBT nbt = NBT.parseNBT(json);
-					items.add(new PlayerDbItem(id, NBT.itemStackFromNBT(nbt), inAuction > 0, amount));
+					items.add(new PlayerDbItem(id, playerUuid, NBT.itemStackFromNBT(nbt), minBid, deposit, inAuction > 0));
 				}
 				return items;
 			}
@@ -846,7 +850,7 @@ public class DatabaseManager {
 		return false;
 	}
 
-	public boolean updatePlayerItems(UUID owner_uuid, List<DbItem> added, List<DbItem> updated, ArrayList<Integer> removed) {
+	public boolean updatePlayerItems(UUID owner_uuid, List<DbItem> added, List<DbItem> updated, ArrayList<Integer> removed, int deposit) {
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
 
@@ -862,7 +866,8 @@ public class DatabaseManager {
 				new DBStatementBuilder(con, "sql/v4/insert_player_items_by_player.sql")
 						.setBytes(1, owner_uuid.toString().getBytes())
 						.setString(2, json)
-						.setInt(3, item.amount)
+						.setInt(3, item.amount) // minBid
+						.setInt(4, deposit)
 						.executeUpdate();
 			}
 
@@ -870,7 +875,7 @@ public class DatabaseManager {
 				String json = NBT.itemStackToNBT(item.item).toString();
 				new DBStatementBuilder(con, "sql/v4/update_player_items_by_player.sql")
 						.setString(1, json)
-						.setInt(2, item.amount)
+						.setInt(2, item.amount) // minBid
 						.setInt(3, item.id)
 						.executeUpdate();
 			}

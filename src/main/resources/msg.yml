@@ -71,3 +71,5 @@ bid:
   broke: "§cDu hast nicht genug Geld"
   noauction: "§cDu hast keine Auktion ausgewählt"
   success: "§aDu hast erfolgreich §e%amount% §afür %item% §ageboten"
+  ownauction: "§cDu kannst nicht auf deine eigene Auktion bieten"
+  toosmall: "§cDein Gebot ist zu niedrig. Das Mindestgebot beträgt §e%minbid%"

@@ -7,9 +7,13 @@ import java.util.UUID;
 public class OwnedDbItem extends DbItem {
 
 	public UUID ownerUuid;
+	public int deposit;
+	public int minBid;
 
-	public OwnedDbItem(int id, UUID ownerUuid, ItemStack item, int amount) {
-		super(id, item, amount);
+	public OwnedDbItem(int id, UUID ownerUuid, ItemStack item, int minBid, int deposit) {
+		super(id, item, minBid);
 		this.ownerUuid = ownerUuid;
+		this.minBid = minBid;
+		this.deposit = deposit;
 	}
 }

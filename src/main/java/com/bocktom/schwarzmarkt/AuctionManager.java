@@ -278,7 +278,18 @@ public class AuctionManager {
 				return;
 			}
 
-		} else if(auction instanceof PlayerAuctionItem) {
+		} else if(auction instanceof PlayerAuctionItem playerAuction) {
+
+			if(playerAuction.ownerUuid.equals(player.getUniqueId())) {
+				player.sendMessage(MSG.get("bid.ownauction"));
+				return;
+			}
+
+			if(amount < playerAuction.minBid) {
+				player.sendMessage(MSG.get("bid.toosmall", "%minbid%", String.valueOf(playerAuction.minBid)));
+				return;
+			}
+
 			if (!Schwarzmarkt.db.isPlayerAuctionRunning(auction.id)) {
 				player.sendMessage(MSG.get("bid.notrunning"));
 				return;

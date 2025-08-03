@@ -90,6 +90,7 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 						return true;
 					case "showsetup":
 						Schwarzmarkt.plugin.openPlayerSetup(player, args[1]);
+						return true;
 
 					case "show":
 						Schwarzmarkt.plugin.openAuction(args[1]);
@@ -134,7 +135,7 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 		}
 
 		if(isAdmin)
-			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt (setup | start | stop | info | gewinne [player] | bieten [amount] | show [player] | titel [displayname] [permission] | setinvitem [slotkey])");
+			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt (setup | setup [player] | start | stop | info | gewinne [player] | bieten [amount] | show [player] | showsetup [player] | titel [displayname] [permission] | setinvitem [slotkey])");
 		else
 			player.sendMessage("Dieser Befehl braucht mindestens 1 Parameter: /schwarzmarkt bieten [betrag]");
 		return true;

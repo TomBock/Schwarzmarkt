@@ -3,7 +3,6 @@ package com.bocktom.schwarzmarkt.inv;
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.inv.items.IdItem;
 import com.bocktom.schwarzmarkt.inv.items.PlayerSetupItem;
-import com.bocktom.schwarzmarkt.inv.items.SetupItem;
 import com.bocktom.schwarzmarkt.util.*;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

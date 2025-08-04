@@ -23,11 +23,12 @@ import static org.bukkit.Bukkit.getLogger;
 
 public class DatabaseManager {
 
-	private static final int DB_VERSION = 5;
+	private static final int DB_VERSION = 6;
 	// 2 = fixed
 	// 3 = 1.21.5
 	// 4 = added player auctions
 	// 5 = not sold items
+	// 6 = try again
 
 	private final Schwarzmarkt plugin;
 	private String dbUrl;
@@ -45,7 +46,6 @@ public class DatabaseManager {
 
 		// Versioning
 		createVersionTable();
-		setDbVersion(4);
 		int curVersion = getDbVersion();
 		if(curVersion != DB_VERSION) {
 
@@ -75,13 +75,13 @@ public class DatabaseManager {
 				result += new DBStatementBuilder(con, "sql/create_return_bids.sql").executeUpdate();
 			} else if (curVersion == 1) {
 				result += new DBStatementBuilder(con, "sql/v2/migrate_items.sql").executeUpdate();
-			} else if (curVersion <= 3) {
+			} else if (curVersion <= 5) {
 				result += new DBStatementBuilder(con, "sql/v4/create_player_auctions.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/v4/create_player_items.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/v4/create_player_auction_bids.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/v4/create_sold_items.sql").executeUpdate();
 				result += new DBStatementBuilder(con, "sql/v4/create_item_cooldown.sql").executeUpdate();
-			} else if(curVersion <= 4) {
+			} else if(curVersion <= 5) {
 				result += new DBStatementBuilder(con, "sql/v5/create_notsold.sql").executeUpdate();
 			} else {
 				plugin.getLogger().warning("Unknown database version: " + curVersion);

@@ -30,8 +30,6 @@ public class PlayerAuctionItem extends AuctionItem {
 		if (lore == null)
 			lore = new ArrayList<>();
 
-		lore.clear();
-
 		boolean hasBids = highestBid > 0;
 
 		boolean hideLine = false;

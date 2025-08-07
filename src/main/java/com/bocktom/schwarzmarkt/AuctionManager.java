@@ -204,6 +204,7 @@ public class AuctionManager {
 			PersistentLogger.logItemRemovalFailed(auction.id, auction.item, auction.ownerId);
 			return;
 		}
+		PersistentLogger.logAuctionEndNotSold(auction.id, auction.item, auction.ownerId);
 
 		// If the item was not sold, we return it to the owner
 		boolean itemAdded = Schwarzmarkt.db.addNotsold(auction.ownerId, auction.item);
@@ -225,6 +226,7 @@ public class AuctionManager {
 			PersistentLogger.logWinningsFailed(auction.id, auction.highestBidder, auction.item);
 			return;
 		}
+		PersistentLogger.logAuctionEnd(auction.id, auction.highestBidder, auction.highestBid);
 
 		// Inform directly
 		Player winner = Bukkit.getPlayer(auction.highestBidder);

@@ -31,8 +31,6 @@ public class ServerAuctionItem extends AuctionItem {
 		if (lore == null)
 			lore = new ArrayList<>();
 
-		lore.clear();
-
 		List<String> raw = MSG.getList("auction.item.lore.server");
 		for (String line : raw) {
 			if(line.contains("%meingebot%")) {

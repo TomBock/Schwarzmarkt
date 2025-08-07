@@ -4,6 +4,7 @@ import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import de.tr7zw.changeme.nbtapi.NBT;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -55,6 +56,11 @@ public class PersistentLogger {
 	public static void logAuctionEnd(int auctionId, UUID winner, int amount) {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(winner);
 		log("AUCTION END | Auction ID: " + auctionId + " | Bid Amount: " + amount + " | Winner: " + player.getName() + " (" + winner + ")");
+	}
+
+	public static void logAuctionEndNotSold(int auctionId, ItemStack item, UUID ownerUuid) {
+		OfflinePlayer player = Bukkit.getOfflinePlayer(ownerUuid);
+		log("AUCTION END NOT SOLD | Auction ID: " + auctionId + " | Owner: " + player.getName() + "| Item: " + NBT.itemStackToNBT(item).toString() + " (" + ownerUuid + ")");
 	}
 
 	public static void logReturnBidFailed(UUID key, Integer value) {

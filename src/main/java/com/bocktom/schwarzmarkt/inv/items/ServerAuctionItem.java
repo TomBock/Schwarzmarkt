@@ -1,5 +1,6 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
+import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -30,6 +31,10 @@ public class ServerAuctionItem extends AuctionItem {
 		// add lore
 		if (lore == null)
 			lore = new ArrayList<>();
+
+		if(InvUtil.isTitleItem(item)) {
+			lore.clear();
+		}
 
 		List<String> raw = MSG.getList("auction.item.lore.server");
 		for (String line : raw) {

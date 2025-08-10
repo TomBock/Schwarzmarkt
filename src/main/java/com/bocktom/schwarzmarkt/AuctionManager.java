@@ -145,22 +145,29 @@ public class AuctionManager {
 		Bids bidsToReturn = new Bids();
 
 		for (Auction auction : auctions) {
+			PersistentLogger.logAuctionEnd(auction.id, auction.highestBidder, auction.highestBid);
+
+			Bids bids = allBids.get(auction.id);
+
 			if(auction.highestBidder == null) {
 
 				if(isPlayerAuction) {
 					// Non-sold player auctions are given back to the owner as winning
 					processItemNotSold((PlayerAuction) auction);
 				}
-				continue;
+
+			} else {
+				processWinningBid(auction);
+				if(bids != null) {
+					bids.remove(auction.highestBidder); // Remove the winning bid from the return list
+				}
+
+				if(isPlayerAuction) {
+					// Give cash to the winner
+					processItemSold((PlayerAuction) auction);
+				}
 			}
 
-			processWinningBid(auction);
-			if(isPlayerAuction) {
-				// Give cash to the winner
-				processItemSold((PlayerAuction) auction);
-			}
-
-			Bids bids = allBids.get(auction.id);
 			if(bids != null && !bids.isEmpty()) {
 				bids.forEach((bidder, amount) -> {
 					if(auction.highestBidder != bidder) {
@@ -226,7 +233,6 @@ public class AuctionManager {
 			PersistentLogger.logWinningsFailed(auction.id, auction.highestBidder, auction.item);
 			return;
 		}
-		PersistentLogger.logAuctionEnd(auction.id, auction.highestBidder, auction.highestBid);
 
 		// Inform directly
 		Player winner = Bukkit.getPlayer(auction.highestBidder);

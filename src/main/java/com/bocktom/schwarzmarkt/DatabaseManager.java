@@ -495,7 +495,7 @@ public class DatabaseManager {
 				while(set.next()) {
 					UUID playerUuid = UUID.fromString(new String(set.getBytes("player_uuid")));
 					int amount = set.getInt("bid_amount");
-					int auctionId = set.getInt("id");
+					int auctionId = set.getInt("auction_id");
 
 					bids.computeIfAbsent(auctionId, k -> new Bids()).put(playerUuid, amount);
 				}
@@ -517,7 +517,7 @@ public class DatabaseManager {
 				while(set.next()) {
 					UUID playerUuid = UUID.fromString(new String(set.getBytes("player_uuid")));
 					int amount = set.getInt("bid_amount");
-					int auctionId = set.getInt("id");
+					int auctionId = set.getInt("player_auction_id");
 
 					bids.computeIfAbsent(auctionId, k -> new Bids()).put(playerUuid, amount);
 				}

@@ -7,6 +7,7 @@ import de.tr7zw.changeme.nbtapi.NBT;
 import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
 import de.tr7zw.changeme.nbtapi.utils.DataFixerUtil;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -1043,12 +1044,28 @@ public class DatabaseManager {
 
 	public boolean removeNotSold(int id) {
 		try (Connection con = getConnection()) {
-			int result = new DBStatementBuilder(con, "sql/v5/delete_notsold.sql")
+			ResultSet set = new DBStatementBuilder(con, "sql/v5/delete_notsold.sql")
 					.setInt(1, id)
-					.executeUpdate();
-			return result > 0;
+					.executeQuery();
+			return set.next();
 		} catch (SQLException | IOException e) {
 			plugin.getLogger().warning("Failed to delete not sold item: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public boolean hasPlacedBidInPlayerAuction(int playerAuctionId, @NotNull UUID uniqueId) {
+		try (Connection con = getConnection()) {
+			try(ResultSet set = new DBStatementBuilder(con, "sql/v5/select_player_bid_by_player.sql")
+					.setInt(1, playerAuctionId)
+					.setBytes(2, uniqueId.toString().getBytes())
+					.executeQuery()) {
+
+				return set.next();
+			}
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to insert player auction bid: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return false;

@@ -299,7 +299,9 @@ public class AuctionManager {
 				return;
 			}
 
-			if(amount < playerAuction.minBid) {
+			boolean hasBid = Schwarzmarkt.db.hasPlacedBidInPlayerAuction(playerAuction.id, player.getUniqueId());
+
+			if(!hasBid && amount < playerAuction.minBid) {
 				player.sendMessage(MSG.get("bid.toosmall", "%minbid%", String.valueOf(playerAuction.minBid)));
 				return;
 			}

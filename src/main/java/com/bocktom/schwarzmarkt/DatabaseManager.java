@@ -84,6 +84,8 @@ public class DatabaseManager {
 				result += new DBStatementBuilder(con, "sql/v4/create_item_cooldown.sql").executeUpdate();
 			} else if(curVersion <= 5) {
 				result += new DBStatementBuilder(con, "sql/v5/create_notsold.sql").executeUpdate();
+			} else if(curVersion == DB_VERSION) {
+				plugin.getLogger().info("Database version is up to date");
 			} else {
 				plugin.getLogger().warning("Unknown database version: " + curVersion);
 			}

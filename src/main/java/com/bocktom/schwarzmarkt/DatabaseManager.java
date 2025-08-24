@@ -916,7 +916,7 @@ public class DatabaseManager {
 					.executeQuery()) {
 
 				while(set.next()) {
-					int highestBid = set.getInt("highest_bid");
+					int highestBid = set.getInt("price");
 					earnings += highestBid;
 				}
 			}

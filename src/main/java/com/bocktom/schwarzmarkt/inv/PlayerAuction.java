@@ -18,4 +18,14 @@ public class PlayerAuction extends Auction {
 		this.minBid = minBid;
 		this.deposit = deposit;
 	}
+
+	@Override
+	public boolean isServerAuction() {
+		return false;
+	}
+
+	@Override
+	public boolean isPlayerAuction() {
+		return true;
+	}
 }

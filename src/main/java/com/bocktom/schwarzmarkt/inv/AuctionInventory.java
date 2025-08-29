@@ -25,8 +25,8 @@ public class AuctionInventory extends ConfigInventory {
 	protected void onBid(AuctionItem item) {
 		player.closeInventory();
 
-		if(item instanceof PlayerAuctionItem playerAuctionItem) {
-			if(playerAuctionItem.ownerUuid.equals(player.getUniqueId())) {
+		if(item.isPlayerAuction()) {
+			if(((PlayerAuctionItem) item).ownerUuid.equals(player.getUniqueId())) {
 				player.sendMessage(MSG.get("bid.ownauction"));
 				return;
 			}

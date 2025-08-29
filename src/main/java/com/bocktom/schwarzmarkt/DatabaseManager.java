@@ -1046,10 +1046,10 @@ public class DatabaseManager {
 
 	public boolean removeNotSold(int id) {
 		try (Connection con = getConnection()) {
-			ResultSet set = new DBStatementBuilder(con, "sql/v5/delete_notsold.sql")
+			new DBStatementBuilder(con, "sql/v5/delete_notsold.sql")
 					.setInt(1, id)
-					.executeQuery();
-			return set.next();
+					.executeUpdate();
+			return true;
 		} catch (SQLException | IOException e) {
 			plugin.getLogger().warning("Failed to delete not sold item: " + e.getMessage());
 			e.printStackTrace();

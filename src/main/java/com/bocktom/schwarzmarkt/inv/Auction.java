@@ -17,4 +17,12 @@ public class Auction {
 		this.highestBid = highestBid;
 		this.highestBidder = highestBidder;
 	}
+
+	public boolean isServerAuction() {
+		return true;
+	}
+
+	public boolean isPlayerAuction() {
+		return false;
+	}
 }

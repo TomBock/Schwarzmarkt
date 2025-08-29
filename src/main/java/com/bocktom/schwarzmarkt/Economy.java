@@ -35,26 +35,13 @@ public class Economy {
 		return true;
 	}
 
-	public Map<UUID, Integer> returnBidsToPlayers(Map<UUID, Integer> returnBids) {
-		Map<UUID, Integer> successfulReturns = new HashMap<>(returnBids);
-
-		for (Map.Entry<UUID, Integer> returnBid : returnBids.entrySet()) {
-			EconomyResponse response = economy.depositPlayer(Bukkit.getOfflinePlayer(returnBid.getKey()), returnBid.getValue());
-			if(response.type != EconomyResponse.ResponseType.SUCCESS) {
-				PersistentLogger.logReturnBidFailed(returnBid.getKey(), returnBid.getValue());
-				successfulReturns.remove(returnBid.getKey());
-			}
-		}
-		return successfulReturns;
-	}
-
-	public Bids returnBidsToPlayers(Bids bidsToReturn) {
+	public Bids returnBidsToPlayers(Bids bidsToReturn, boolean isPlayerAuction) {
 		Bids successfulReturns = new Bids(bidsToReturn);
 
 		for (Map.Entry<UUID, Integer> returnBid : bidsToReturn.entrySet()) {
 			EconomyResponse response = economy.depositPlayer(Bukkit.getOfflinePlayer(returnBid.getKey()), returnBid.getValue());
 			if(response.type != EconomyResponse.ResponseType.SUCCESS) {
-				PersistentLogger.logReturnBidFailed(returnBid.getKey(), returnBid.getValue());
+				PersistentLogger.logReturnBidFailed(isPlayerAuction, returnBid.getKey(), returnBid.getValue());
 				successfulReturns.remove(returnBid.getKey());
 			}
 		}
@@ -70,7 +57,7 @@ public class Economy {
 			// Rollback if withdraw failed
 			boolean rollbackResponse = Schwarzmarkt.db.rollbackBid(auction.id, player.getUniqueId(), amount);
 			if(!rollbackResponse) {
-				PersistentLogger.logBidRollbackFailed(auction.id, player, amount);
+				PersistentLogger.logBidRollbackFailed(auction.isPlayerAuction(), auction.id, player, amount);
 			}
 			return false;
 		}
@@ -81,19 +68,19 @@ public class Economy {
 		return economy.getBalance(player) >= amount;
 	}
 
-	public boolean depositMoney(OfflinePlayer player, int amount) {
+	public boolean depositMoney(OfflinePlayer player, int amount, boolean isPlayerAuction) {
 		EconomyResponse withdrawResponse = economy.depositPlayer(player, amount);
 		if(withdrawResponse.type != EconomyResponse.ResponseType.SUCCESS) {
-			PersistentLogger.logDepositFailed(player, amount);
+			PersistentLogger.logDepositFailed(isPlayerAuction, player, amount);
 			return false;
 		}
 		return true;
 	}
 
-	public boolean withdrawMoney(Player player, int amount) {
+	public boolean withdrawMoney(Player player, int amount, boolean isPlayerAuction) {
 		EconomyResponse withdrawResponse = economy.withdrawPlayer(player, amount);
 		if(withdrawResponse.type != EconomyResponse.ResponseType.SUCCESS) {
-			PersistentLogger.logWithdrawFailed(player, amount);
+			PersistentLogger.logWithdrawFailed(isPlayerAuction, player, amount);
 			return false;
 		}
 		return true;

@@ -71,7 +71,7 @@ public class AuctionManager {
 			sendMessage(MSG.get("auction.error"), player);
 
 		for (int i = 0; i < auctionIds.size(); i++) {
-			PersistentLogger.logAuctionStart(auctionIds.get(i), items.get(i));
+			PersistentLogger.logServerAuctionStart(auctionIds.get(i), items.get(i));
 		}
 	}
 
@@ -145,7 +145,7 @@ public class AuctionManager {
 		Bids bidsToReturn = new Bids();
 
 		for (Auction auction : auctions) {
-			PersistentLogger.logAuctionEnd(auction.id, auction.highestBidder, auction.highestBid);
+			PersistentLogger.logAuctionEnd(auction.isPlayerAuction(), auction.id, auction.highestBidder, auction.highestBid);
 
 			Bids bids = allBids.get(auction.id);
 
@@ -177,7 +177,7 @@ public class AuctionManager {
 			}
 		}
 
-		Bids successfulReturns = Schwarzmarkt.economy.returnBidsToPlayers(bidsToReturn);
+		Bids successfulReturns = Schwarzmarkt.economy.returnBidsToPlayers(bidsToReturn, isPlayerAuction);
 		Bids notNotifiedReturns = notifyOnlinePlayers(successfulReturns);
 		Schwarzmarkt.db.addBidsToNotifyLater(notNotifiedReturns);
 	}
@@ -185,15 +185,15 @@ public class AuctionManager {
 	private void processItemSold(PlayerAuction auction) {
 		boolean itemRemoved = Schwarzmarkt.db.removePlayerItem(auction.ownerId, auction.itemId);
 		if(!itemRemoved) {
-			PersistentLogger.logItemRemovalFailed(auction.id, auction.item, auction.ownerId);
+			PersistentLogger.logItemRemovalFailed(true, auction.id, auction.item, auction.ownerId);
 			// continue to remove the money
 		}
 		OfflinePlayer owner = Bukkit.getOfflinePlayer(auction.ownerId);
 
 		int revenue = (int) Math.ceil(((double) auction.highestBid) * (1.0-Config.gui.get.getDouble("playerauction.servercut")));
-		boolean depositResult = Schwarzmarkt.economy.depositMoney(owner, revenue + auction.deposit);
+		boolean depositResult = Schwarzmarkt.economy.depositMoney(owner, revenue + auction.deposit, true);
 		if(!depositResult) {
-			PersistentLogger.logDepositFailed(owner, auction.highestBid);
+			PersistentLogger.logDepositFailed(true, owner, auction.highestBid);
 		}
 
 		// Inform directly
@@ -208,7 +208,7 @@ public class AuctionManager {
 	private void processItemNotSold(PlayerAuction auction) {
 		boolean itemRemoved = Schwarzmarkt.db.removePlayerItem(auction.ownerId, auction.itemId);
 		if(!itemRemoved) {
-			PersistentLogger.logItemRemovalFailed(auction.id, auction.item, auction.ownerId);
+			PersistentLogger.logItemRemovalFailed(auction.isPlayerAuction(), auction.id, auction.item, auction.ownerId);
 			return;
 		}
 		PersistentLogger.logAuctionEndNotSold(auction.id, auction.item, auction.ownerId);
@@ -230,7 +230,7 @@ public class AuctionManager {
 	private void processWinningBid(Auction auction) {
 		boolean winningsResult = Schwarzmarkt.db.addWinnings(auction.highestBidder, auction.item);
 		if(!winningsResult) {
-			PersistentLogger.logWinningsFailed(auction.id, auction.highestBidder, auction.item);
+			PersistentLogger.logWinningsFailed(auction.isPlayerAuction(), auction.id, auction.highestBidder, auction.item);
 			return;
 		}
 
@@ -280,7 +280,8 @@ public class AuctionManager {
 		}
 
 		// Server vs. Player Auction
-		if(auction instanceof ServerAuctionItem) {
+		boolean isServerAuction = auction.isServerAuction();
+		if(isServerAuction) {
 			if(!Schwarzmarkt.db.isServerAuctionRunning(auction.id)) {
 				player.sendMessage(MSG.get("bid.notrunning"));
 				return;
@@ -292,7 +293,9 @@ public class AuctionManager {
 				return;
 			}
 
-		} else if(auction instanceof PlayerAuctionItem playerAuction) {
+		} else {
+
+			PlayerAuctionItem playerAuction = (PlayerAuctionItem) auction;
 
 			if(playerAuction.ownerUuid.equals(player.getUniqueId())) {
 				player.sendMessage(MSG.get("bid.ownauction"));
@@ -325,7 +328,7 @@ public class AuctionManager {
 		}
 
 		// Bid successfully placed
-		PersistentLogger.logBid(auction.id, player, amount);
+		PersistentLogger.logBid(!isServerAuction, auction.id, player, amount);
 		player.sendMessage(MSG.get("bid.success",
 				Component.text("%amount%"), Component.text(amount),
 				Component.text("%item%"), InvUtil.getName(auction.item)));

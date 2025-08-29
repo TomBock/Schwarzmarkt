@@ -86,4 +86,9 @@ public class PlayerAuctionItem extends AuctionItem {
 		int upper = base + step;
 		return base + "-" + upper;
 	}
+
+	@Override
+	public boolean isServerAuction() {
+		return false;
+	}
 }

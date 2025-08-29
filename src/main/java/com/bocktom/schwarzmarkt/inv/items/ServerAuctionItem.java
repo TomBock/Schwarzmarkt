@@ -51,4 +51,9 @@ public class ServerAuctionItem extends AuctionItem {
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 	}
+
+	@Override
+	public boolean isServerAuction() {
+		return true;
+	}
 }

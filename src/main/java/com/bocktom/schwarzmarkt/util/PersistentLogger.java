@@ -4,7 +4,6 @@ import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import de.tr7zw.changeme.nbtapi.NBT;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -24,72 +23,74 @@ import java.util.stream.Stream;
 public class PersistentLogger {
 
 	private static final String FILE = Path.of(Schwarzmarkt.plugin.getDataPath().toString(), "bids.log").toString();
+	private static final String PLAYER_FILE = Path.of(Schwarzmarkt.plugin.getDataPath().toString(), "player_bids.log").toString();
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
 
-	public static void logBid(int auctionId, Player player, int amount) {
-		log("BID | Auction ID: " + auctionId + " | Bid Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
+	public static void logBid(boolean isPlayerAuction, int auctionId, Player player, int amount) {
+		log(isPlayerAuction, "BID | Auction ID: " + auctionId + " | Bid Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
 	}
 
-	public static void logBidRollbackFailed(int auctionId, Player player, int amount) {
-		log("ROLLBACK FAILED | Auction ID: " + auctionId + " | Bid Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
+	public static void logBidRollbackFailed(boolean isPlayerAuction, int auctionId, Player player, int amount) {
+		log(isPlayerAuction, "ROLLBACK FAILED | Auction ID: " + auctionId + " | Bid Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
 	}
 
-	public static void logAuctionStart(int auctionId, ItemStack item) {
-		log("AUCTION START | Auction ID: " + auctionId + " | Item: " + NBT.itemStackToNBT(item).toString());
+	public static void logServerAuctionStart(int auctionId, ItemStack item) {
+		log(false, "AUCTION START | Auction ID: " + auctionId + " | Item: " + NBT.itemStackToNBT(item).toString());
 	}
 
 	public static void logPlayerAuctionStart(int auctionId, ItemStack item, UUID ownerUuid) {
 		OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerUuid);
-		log("AUCTION START | Auction ID: " + auctionId + " | Player: " + owner.getName() + "| Item: " + NBT.itemStackToNBT(item).toString() + " (" + ownerUuid + ")");
+		log(true, "AUCTION START | Auction ID: " + auctionId + " | Player: " + owner.getName() + "| Item: " + NBT.itemStackToNBT(item).toString() + " (" + ownerUuid + ")");
 	}
 
-	public static void logWinningsFailed(int id, UUID highestBidder, ItemStack item) {
+	public static void logWinningsFailed(boolean isPlayerAuction, int id, UUID highestBidder, ItemStack item) {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(highestBidder);
-		log("WINNINGS FAILED | Auction ID: " + id + " | Winner: " + player.getName() + " (" + highestBidder + ")" + " | Item: " + NBT.itemStackToNBT(item).toString());
+		log(isPlayerAuction, "WINNINGS FAILED | Auction ID: " + id + " | Winner: " + player.getName() + " (" + highestBidder + ")" + " | Item: " + NBT.itemStackToNBT(item).toString());
 	}
 
 	public static void logItemReturnFailed(int id, UUID highestBidder, ItemStack item) {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(highestBidder);
-		log("ITEM RETURN FAILED | Auction ID: " + id + " | Winner: " + player.getName() + " (" + highestBidder + ")" + " | Item: " + NBT.itemStackToNBT(item).toString());
+		log(true, "ITEM RETURN FAILED | Auction ID: " + id + " | Winner: " + player.getName() + " (" + highestBidder + ")" + " | Item: " + NBT.itemStackToNBT(item).toString());
 	}
 
-	public static void logAuctionEnd(int auctionId, UUID winner, int amount) {
+	public static void logAuctionEnd(boolean isPlayerAuction, int auctionId, UUID winner, int amount) {
 		String winnerName = winner == null ? "None" : Bukkit.getOfflinePlayer(winner).getName();
-		log("AUCTION END | Auction ID: " + auctionId + " | Bid Amount: " + amount + " | Winner: " + winnerName + " (" + winner + ")");
+		log(isPlayerAuction, "AUCTION END | Auction ID: " + auctionId + " | Bid Amount: " + amount + " | Winner: " + winnerName + " (" + winner + ")");
 	}
 
 	public static void logAuctionEndNotSold(int auctionId, ItemStack item, UUID ownerUuid) {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(ownerUuid);
-		log("PLAYER ITEM NOT SOLD | Auction ID: " + auctionId + " | Owner: " + player.getName() + "| Item: " + NBT.itemStackToNBT(item).toString() + " (" + ownerUuid + ")");
+		log(true, "PLAYER ITEM NOT SOLD | Auction ID: " + auctionId + " | Owner: " + player.getName() + "| Item: " + NBT.itemStackToNBT(item).toString() + " (" + ownerUuid + ")");
 	}
 
-	public static void logReturnBidFailed(UUID key, Integer value) {
+	public static void logReturnBidFailed(boolean isPlayerAuction, UUID key, Integer value) {
 		OfflinePlayer player = Bukkit.getOfflinePlayer(key);
-		log("RETURN BID FAILED | Amount: " + value + " | Player: " + player.getName() + " (" + key + ")");
+		log(isPlayerAuction, "RETURN BID FAILED | Amount: " + value + " | Player: " + player.getName() + " (" + key + ")");
 	}
 
-	public static void logDepositFailed(OfflinePlayer player, int amount) {
-		log("DEPOSIT FAILED | Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
+	public static void logDepositFailed(boolean isPlayerAuction, OfflinePlayer player, int amount) {
+		log(isPlayerAuction, "DEPOSIT FAILED | Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
 	}
 
-	public static void logRevenueFailed(OfflinePlayer player, int amount) {
-		log("REVENUE FAILED | Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
+	public static void logRevenueFailed(boolean isPlayerAuction, OfflinePlayer player, int amount) {
+		log(isPlayerAuction, "REVENUE FAILED | Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
 	}
 
-	public static void logWithdrawFailed(Player player, int amount) {
-		log("WITHDRAW FAILED | Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
+	public static void logWithdrawFailed(boolean isPlayerAuction, Player player, int amount) {
+		log(isPlayerAuction, "WITHDRAW FAILED | Amount: " + amount + " | Player: " + player.getName() + " (" + player.getUniqueId() + ")");
 	}
 
-	public static void logItemRemovalFailed(int auctionId, ItemStack item, UUID ownerUuid) {
+	public static void logItemRemovalFailed(boolean isPlayerAuction, int auctionId, ItemStack item, UUID ownerUuid) {
 		OfflinePlayer owner = Bukkit.getOfflinePlayer(ownerUuid);
-		log("ITEM REMOVAL FAILED | Auction ID: " + auctionId + " | Player: " + owner.getName() + "| Item: " + NBT.itemStackToNBT(item).toString() + " (" + ownerUuid + ")");
+		log(isPlayerAuction, "ITEM REMOVAL FAILED | Auction ID: " + auctionId + " | Player: " + owner.getName() + "| Item: " + NBT.itemStackToNBT(item).toString() + " (" + ownerUuid + ")");
 	}
-	private static void log(String message) {
+
+	private static void log(boolean isPlayerAuction, String message) {
 		String timestamp = FORMATTER.format(LocalDateTime.now());
 		String logEntry = timestamp + " | " + message;
 
 		// write logEntry to FILE
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE, true))) {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(isPlayerAuction ? PLAYER_FILE : FILE, true))) {
 			writer.write(logEntry);
 			writer.newLine();
 		} catch (IOException e) {
@@ -99,19 +100,23 @@ public class PersistentLogger {
 
 	public static void init() {
 		Path path = Paths.get(FILE);
+		Path playerPath = Paths.get(PLAYER_FILE);
 		try {
 			if(!Files.exists(path))
 				Files.createFile(path);
-			cleanup();
+			cleanup(FILE);
+			if(!Files.exists(playerPath))
+				Files.createFile(playerPath);
+			cleanup(PLAYER_FILE);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static void cleanup() {
+	private static void cleanup(String filepath) {
 
 		// delete logs older than 30 days
-		Path path = Paths.get(FILE);
+		Path path = Paths.get(filepath);
 		try (Stream<String> lines = Files.lines(path)) {
 			List<String> filteredLines = lines
 					.filter(line -> {

@@ -62,7 +62,7 @@ public class PlayerSetupInventory extends SetupInventory {
 				player.sendMessage(MSG.get("playersetup.notenoughmoney"));
 				returnAddedItems = true;
 			} else {
-				if(!Schwarzmarkt.economy.withdrawMoney(player, cost)) {
+				if(!Schwarzmarkt.economy.withdrawMoney(player, cost, true)) {
 					player.sendMessage(MSG.get("playersetup.deposit.withdrawfailed"));
 					returnAddedItems = true;
 				}
@@ -78,7 +78,7 @@ public class PlayerSetupInventory extends SetupInventory {
 		}
 
 		if(revenue > 0) {
-			if(!Schwarzmarkt.economy.depositMoney(player, revenue)) {
+			if(!Schwarzmarkt.economy.depositMoney(player, revenue, true)) {
 				player.sendMessage(MSG.get("playersetup.deposit.revenuefailed"));
 			}
 		}

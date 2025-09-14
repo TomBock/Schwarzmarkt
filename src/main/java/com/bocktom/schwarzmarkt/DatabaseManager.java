@@ -2,6 +2,7 @@ package com.bocktom.schwarzmarkt;
 
 import com.bocktom.schwarzmarkt.inv.Auction;
 import com.bocktom.schwarzmarkt.inv.PlayerAuction;
+import com.bocktom.schwarzmarkt.inv.items.IdItem;
 import com.bocktom.schwarzmarkt.util.*;
 import de.tr7zw.changeme.nbtapi.NBT;
 import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
@@ -627,7 +628,7 @@ public class DatabaseManager {
 		return false;
 	}
 
-	public boolean updateItems(List<DbItem> added, List<DbItem> updated, ArrayList<Integer> removed) {
+	public boolean updateItems(List<DbItem> added, List<DbItem> updated, Set<Integer> removed) {
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
 
@@ -856,7 +857,7 @@ public class DatabaseManager {
 		return false;
 	}
 
-	public boolean updatePlayerItems(UUID owner_uuid, List<DbItem> added, List<DbItem> updated, ArrayList<Integer> removed, int deposit) {
+	public boolean updatePlayerItems(UUID owner_uuid, List<DbItem> added, List<DbItem> updated, Set<Integer> removed, int deposit) {
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
 
@@ -892,6 +893,7 @@ public class DatabaseManager {
 			plugin.getLogger().warning("Failed to update items: " + e.getMessage());
 			e.printStackTrace();
 		}
+
 		return false;
 	}
 

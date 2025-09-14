@@ -9,11 +9,14 @@ import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.item.Item;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.List;
 
 public abstract class SetupInventory extends ConfigInventory {
 
-	protected ArrayList<Integer> itemsRemoved = new ArrayList<>();
+	protected HashMap<Integer, ItemStack> itemsRemoved = new HashMap<>();
+	//protected ArrayList<IdItem> itemsRemoved = new ArrayList<>();
 
 	public SetupInventory(Player player, Player owner, String setup, String name) {
 		super(player, owner, setup, name);
@@ -30,8 +33,8 @@ public abstract class SetupInventory extends ConfigInventory {
 	}
 
 	protected boolean tryRemoveItem(IdItem item) {
-		if(item.id > 0 && !itemsRemoved.contains(item.id))
-			itemsRemoved.add(item.id);
+		if(item.id > 0 && !itemsRemoved.containsKey(item.id))
+			itemsRemoved.put(item.id, item.item.clone());
 		return true;
 	}
 
@@ -53,7 +56,7 @@ public abstract class SetupInventory extends ConfigInventory {
 				ItemStack itemStack = idItem.getCleanItem();
 				DbItem dbItem = new DbItem(idItem.id, itemStack, idItem.amount);
 
-				if(idItem.id > 0 && !itemsRemoved.contains(idItem.id)) {
+				if(idItem.id > 0 && !itemsRemoved.containsKey(idItem.id)) {
 					itemsUpdated.add(dbItem);
 				} else {
 					itemsAdded.add(dbItem);

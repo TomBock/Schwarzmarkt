@@ -33,6 +33,6 @@ public class ServerSetupInventory extends SetupInventory {
 
 	@Override
 	protected void saveItems(List<DbItem> itemsAdded, List<DbItem> itemsUpdated) {
-		Schwarzmarkt.db.updateItems(itemsAdded, itemsUpdated, itemsRemoved);
+		Schwarzmarkt.db.updateItems(itemsAdded, itemsUpdated, itemsRemoved.keySet());
 	}
 }

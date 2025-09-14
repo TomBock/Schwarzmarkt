@@ -84,13 +84,15 @@ public class PlayerSetupInventory extends SetupInventory {
 		}
 
 		if(!itemsAdded.isEmpty() || !itemsUpdated.isEmpty() || !itemsRemoved.isEmpty()) {
-			Schwarzmarkt.db.updatePlayerItems(owner.getUniqueId(), itemsAdded, itemsUpdated, itemsRemoved, depositCost);
+			Schwarzmarkt.db.updatePlayerItems(owner.getUniqueId(), itemsAdded, itemsUpdated, itemsRemoved.keySet(), depositCost);
 
 			int total = -cost + revenue;
 			if(total > 0) {
 				sendAfterSaveMessage("playersetup.deposit.earning", itemsAdded.size(), itemsRemoved.size(), total);
+				PersistentLogger.logPlayerAuctionItemSetup(player, total, itemsAdded, itemsRemoved.values());
 			} else if(total < 0){
 				sendAfterSaveMessage("playersetup.deposit.cost", itemsAdded.size(), itemsRemoved.size(), -total);
+				PersistentLogger.logPlayerAuctionItemSetup(player, total, itemsAdded, itemsRemoved.values());
 			} else {
 				sendAfterSaveMessage("playersetup.deposit.neutral", itemsAdded.size(), itemsRemoved.size(), total);
 			}

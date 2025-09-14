@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -85,6 +86,25 @@ public class PersistentLogger {
 		log(isPlayerAuction, "ITEM REMOVAL FAILED | Auction ID: " + auctionId + " | Player: " + owner.getName() + "| Item: " + NBT.itemStackToNBT(item).toString() + " (" + ownerUuid + ")");
 	}
 
+	public static void logPlayerAuctionItemSetup(Player player, int total, List<DbItem> itemsAdded, Collection<ItemStack> itemsRemoved) {
+		String itemsAddedStr = toStringList(itemsAdded.stream().map(dbItem -> dbItem.item));
+		String itemsRemovedStr = toStringList(itemsRemoved.stream());
+		log(true, "ITEM SETUP | Player: " + player.getName() +
+				" | Items Added: " + itemsAdded.size() + (!itemsAdded.isEmpty() ? itemsAddedStr : "") +
+				" | Items Removed: " + itemsRemoved.size() + (!itemsRemoved.isEmpty() ? itemsRemovedStr : "") +
+				" | Total Return/Cost: " + total + " (" + player.getUniqueId() + ")");
+	}
+
+	private static String toStringList(Stream<ItemStack> items) {
+		return " (" + items
+				.map(item ->
+						(item.getItemMeta() != null && item.getItemMeta().hasDisplayName())
+						? item.getItemMeta().getDisplayName() + "[" + item.getAmount() + "]"
+						: item.getType().name() + "[" + item.getAmount() + "]")
+				.reduce((a, b) -> a + ", " + b)
+				.orElse("None") + ")";
+	}
+
 	private static void log(boolean isPlayerAuction, String message) {
 		String timestamp = FORMATTER.format(LocalDateTime.now());
 		String logEntry = timestamp + " | " + message;
@@ -135,5 +155,4 @@ public class PersistentLogger {
 			e.printStackTrace();
 		}
 	}
-
 }

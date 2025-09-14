@@ -82,4 +82,9 @@ public class WinningsItem extends PickableItem {
 		CompletableFuture<Void> future = Schwarzmarkt.perms.getUserManager().saveUser(permUser);
 		return future.thenApply(v -> true);
 	}
+
+	@Override
+	protected boolean isPartialClickAllowed() {
+		return false;
+	}
 }

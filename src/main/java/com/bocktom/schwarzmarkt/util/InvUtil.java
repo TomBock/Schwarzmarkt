@@ -49,19 +49,27 @@ public class InvUtil {
 		return item.getItemMeta().displayName() != null ? item.getItemMeta().displayName() : item.displayName();
 	}
 
-	public static boolean isPlaceAction(InventoryAction action) {
-		return action == InventoryAction.PLACE_ALL
-				|| action == InventoryAction.PLACE_ONE
-				|| action == InventoryAction.PLACE_SOME
+	public static boolean isPlaceAction(InventoryAction action, boolean isPartialClickAllowed) {
+		boolean isAction = action == InventoryAction.PLACE_ALL
 				|| action == InventoryAction.SWAP_WITH_CURSOR;
+
+		if(isPartialClickAllowed) {
+			isAction = isAction || action == InventoryAction.PLACE_ONE
+					|| action == InventoryAction.PLACE_SOME;
+		}
+		return isAction;
 	}
 
-	public static boolean isPickupAction(InventoryAction action) {
-		return action == InventoryAction.PICKUP_ALL
-				|| action == InventoryAction.PICKUP_HALF
-				|| action == InventoryAction.PICKUP_ONE
-				|| action == InventoryAction.PICKUP_SOME
+	public static boolean isPickupAction(InventoryAction action, boolean isPartialClickAllowed) {
+		boolean isAction = action == InventoryAction.PICKUP_ALL
 				|| action == InventoryAction.MOVE_TO_OTHER_INVENTORY;
+
+		if(isPartialClickAllowed) {
+			isAction = isAction || action == InventoryAction.PICKUP_SOME
+					|| action == InventoryAction.PICKUP_ONE
+					|| action == InventoryAction.PICKUP_HALF;
+		}
+		return isAction;
 	}
 
 	public static ItemStack createTitleItem(String title, String perm) {

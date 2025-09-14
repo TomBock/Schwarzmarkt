@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.function.Function;
 
 public class PickableItem extends IdItem {
@@ -26,11 +27,11 @@ public class PickableItem extends IdItem {
 	@Override
 	public void handleClick(@NotNull ClickType clicktype, @NotNull Player player, @NotNull InventoryClickEvent event) {
 
-		if(InvUtil.isPlaceAction(event.getAction())) {
+		if(InvUtil.isPlaceAction(event.getAction(), isPartialClickAllowed())) {
 
 			handlePlace(event);
 
-		} else if(InvUtil.isPickupAction(event.getAction())) {
+		} else if(InvUtil.isPickupAction(event.getAction(), isPartialClickAllowed())) {
 
 			handlePickup(event);
 
@@ -39,13 +40,22 @@ public class PickableItem extends IdItem {
 		notifyWindows();
 	}
 
+	protected boolean isPartialClickAllowed() {
+		return true;
+	}
 
 	protected void handlePlace(@NotNull InventoryClickEvent event) {
-		ItemStack previous = item;
+		ItemStack previous = getCleanItem();
 		item = event.getCursor();
 		if(tryAdd != null && tryAdd.apply(this)) {
 			event.setCancelled(true);
 			event.setCursor(new ItemStack(Material.AIR));
+			if(previous != null && previous.getType() != Material.AIR) {
+				Bukkit.getScheduler().runTask(Schwarzmarkt.plugin, () -> {
+					event.getWhoClicked().getInventory().addItem(previous);
+					notifyWindows();
+				});
+			}
 		} else {
 			item = previous;
 		}
@@ -62,5 +72,9 @@ public class PickableItem extends IdItem {
 			return true;
 		}
 		return false;
+	}
+
+	public ItemStack getCleanItem() {
+		return item;
 	}
 }

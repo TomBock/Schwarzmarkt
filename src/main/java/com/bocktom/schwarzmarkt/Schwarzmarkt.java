@@ -7,6 +7,7 @@ import com.bocktom.schwarzmarkt.util.PersistentLogger;
 import de.tr7zw.changeme.nbtapi.NBT;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -73,16 +74,16 @@ public final class Schwarzmarkt extends JavaPlugin {
 	}
 
 	public void openPlayerSetup(Player admin, String playerName) {
-		Player player = Bukkit.getPlayer(playerName);
-		if(player != null) {
-			new PlayerSetupInventory(admin, player);
+		OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+		if(player.hasPlayedBefore()) {
+			new PlayerSetupInventory(admin, player.getUniqueId());
 		}
 	}
 
 	public void openPlayerSetup(String playerName) {
 		Player player = Bukkit.getPlayer(playerName);
 		if(player != null) {
-			new PlayerSetupInventory(player, player);
+			new PlayerSetupInventory(player, player.getUniqueId());
 		}
 	}
 

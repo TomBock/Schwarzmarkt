@@ -19,7 +19,7 @@ public class AuctionInventory extends ConfigInventory {
 
 
 	public AuctionInventory(Player player) {
-		super(player, player, "auction", MSG.get("auction.name"));
+		super(player, player.getUniqueId(), "auction", MSG.get("auction.name"));
 	}
 
 	protected void onBid(AuctionItem item) {

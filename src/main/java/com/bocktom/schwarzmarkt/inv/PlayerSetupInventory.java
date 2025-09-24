@@ -10,16 +10,17 @@ import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.item.Item;
 
 import java.util.List;
+import java.util.UUID;
 
 public class PlayerSetupInventory extends SetupInventory {
 
-	public PlayerSetupInventory(Player player, Player owner) {
+	public PlayerSetupInventory(Player player, UUID owner) {
 		super(player, owner, "playersetup", MSG.get("playersetup.name"));
 	}
 
 	@Override
 	protected List<Item> getItems() {
-		List<PlayerDbItem> dbItems = Schwarzmarkt.db.getPlayerItems(owner.getUniqueId());
+		List<PlayerDbItem> dbItems = Schwarzmarkt.db.getPlayerItems(owner);
 
 		List<Item> items = InvUtil.createItems(dbItems,
 				dbItem -> new PlayerSetupItem(dbItem.id, dbItem.item, dbItem.amount, dbItem.inAuction, this::tryAddItem, this::tryRemoveItem));
@@ -84,7 +85,7 @@ public class PlayerSetupInventory extends SetupInventory {
 		}
 
 		if(!itemsAdded.isEmpty() || !itemsUpdated.isEmpty() || !itemsRemoved.isEmpty()) {
-			Schwarzmarkt.db.updatePlayerItems(owner.getUniqueId(), itemsAdded, itemsUpdated, itemsRemoved.keySet(), depositCost);
+			Schwarzmarkt.db.updatePlayerItems(owner, itemsAdded, itemsUpdated, itemsRemoved.keySet(), depositCost);
 
 			int total = -cost + revenue;
 			if(total > 0) {

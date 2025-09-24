@@ -18,6 +18,7 @@ import xyz.xenondevs.invui.window.Window;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
 public abstract class ConfigInventory {
@@ -28,9 +29,9 @@ public abstract class ConfigInventory {
 	protected int currentItem2;
 
 	protected final Player player;
-	protected final Player owner;
+	protected final UUID owner;
 
-	public ConfigInventory(Player player, Player owner, String configName, String title) {
+	public ConfigInventory(Player player, UUID owner, String configName, String title) {
 		this.player = player;
 		this.owner = owner;
 		items = getItems();

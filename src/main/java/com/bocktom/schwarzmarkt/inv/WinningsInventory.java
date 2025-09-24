@@ -16,7 +16,7 @@ import java.util.Map;
 public class WinningsInventory extends ConfigInventory {
 
 	public WinningsInventory(Player player) {
-		super(player, player, "winnings", MSG.get("winnings.name"));
+		super(player, player.getUniqueId(), "winnings", MSG.get("winnings.name"));
 	}
 
 	@Override

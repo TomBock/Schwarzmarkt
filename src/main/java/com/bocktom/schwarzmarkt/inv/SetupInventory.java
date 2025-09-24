@@ -8,17 +8,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.item.Item;
 
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public abstract class SetupInventory extends ConfigInventory {
 
 	protected HashMap<Integer, ItemStack> itemsRemoved = new HashMap<>();
 	//protected ArrayList<IdItem> itemsRemoved = new ArrayList<>();
 
-	public SetupInventory(Player player, Player owner, String setup, String name) {
+	public SetupInventory(Player player, UUID owner, String setup, String name) {
 		super(player, owner, setup, name);
 	}
 

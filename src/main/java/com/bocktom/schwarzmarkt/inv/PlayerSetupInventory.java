@@ -7,6 +7,7 @@ import com.bocktom.schwarzmarkt.util.*;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import xyz.xenondevs.invui.item.Item;
 
 import java.util.List;
@@ -41,6 +42,12 @@ public class PlayerSetupInventory extends SetupInventory {
 
 	@Override
 	protected boolean tryAddItem(IdItem item) {
+		boolean hasDamage = item.item.getItemMeta() != null && item.item.getItemMeta() instanceof Damageable && ((Damageable) item.item.getItemMeta()).hasDamage();
+		if(hasDamage) {
+			player.sendMessage(MSG.get("playersetup.damaged"));
+			return false;
+		}
+
 		boolean hasCooldown = Schwarzmarkt.db.hasItemCooldown(item.item);
 		if(hasCooldown) {
 			player.sendMessage(MSG.get("playersetup.cooldown"));

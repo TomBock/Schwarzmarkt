@@ -11,6 +11,7 @@ playersetup:
   name: "§8Auktion einrichten"
   inauction: "§7Dieses Item ist in einer laufenden Auktion" #Wenn der Spieler versucht es bei laufender Auktion zu ändern
   cooldown: "§7Warte noch ein bisschen um dieses Item erneut zu verkaufen"
+  damaged: "§cDu kannst beschädigte Items nicht verkaufen"
   deposit:
     earning: "§aDu hast %items_added% Items eingestellt und %items_removed% entfernt. Insgesamt hast du %amount% Rubine zurückbekommen."
     cost: "§aDu hast %items_added% Items eingestellt und %items_removed% entfernt. Insgesamt hast du %amount% Rubine gezahlt."

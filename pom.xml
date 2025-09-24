@@ -6,7 +6,7 @@
 
     <groupId>com.bocktom</groupId>
     <artifactId>phoenixschwarzmarkt</artifactId>
-    <version>2.5</version>
+    <version>2.6</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -16,6 +16,37 @@
         <!-- Custom -->
         <server.dir>D:/dev/.mcdev/static/server_sp_21_7</server.dir>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>debug-no-invui</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>3.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>shade</id>
+                                <phase>package</phase>
+                                <goals><goal>shade</goal></goals>
+                                <configuration>
+                                    <minimizeJar>false</minimizeJar>
+                                    <relocations>
+                                        <relocation>
+                                            <pattern>de.tr7zw.changeme.nbtapi</pattern>
+                                            <shadedPattern>com.bocktom.shades.nbtapi</shadedPattern>
+                                        </relocation>
+                                    </relocations>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
         <finalName>PhoenixSchwarzmarkt</finalName>
@@ -45,10 +76,10 @@
                 </executions>
                 <configuration>
                     <relocations>
-                        <relocation>
+                        <!--<relocation>
                             <pattern>xyz.xenondevs.invui</pattern>
                             <shadedPattern>com.bocktom.shades.invui</shadedPattern>
-                        </relocation>
+                        </relocation>-->
                         <relocation>
                             <pattern>de.tr7zw.changeme.nbtapi</pattern>
                             <shadedPattern>com.bocktom.shades.nbtapi</shadedPattern>
@@ -153,95 +184,23 @@
         <!-- Inventory GUI -->
         <dependency>
             <groupId>xyz.xenondevs.invui</groupId>
-            <artifactId>invui</artifactId>
+            <artifactId>invui-core</artifactId>
             <version>1.46</version>
-            <type>pom</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r1</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r2</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r3</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r4</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r5</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r6</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r7</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r8</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r9</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r10</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r11</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r13</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r14</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r15</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r16</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r17</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r18</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r19</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r20</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xyz.xenondevs.invui</groupId>
-                    <artifactId>inventory-access-r21</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>xyz.xenondevs.invui</groupId>
+            <artifactId>inventory-access</artifactId>
+            <version>1.46</version>
+        </dependency>
+        <dependency>
+            <groupId>xyz.xenondevs.invui</groupId>
+            <artifactId>inventory-access</artifactId>
+            <version>1.46</version>
+        </dependency>
+        <dependency>
+            <groupId>xyz.xenondevs.invui</groupId>
+            <artifactId>inventory-access-r24</artifactId>
+            <version>1.46</version>
         </dependency>
 
         <!-- Vault -->

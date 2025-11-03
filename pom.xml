@@ -14,7 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Custom -->
-        <server.dir>D:/dev/.mcdev/static/server_sp_21_7</server.dir>
+        <server.dir>D:/dev/.mcdev/static/server_sp_21_9</server.dir>
     </properties>
 
     <profiles>
@@ -155,7 +155,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.6-R0.1-SNAPSHOT</version>
+            <version>1.21.10-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
@@ -170,14 +170,14 @@
         <dependency>
             <groupId>de.tr7zw</groupId>
             <artifactId>item-nbt-api</artifactId>
-            <version>2.15.1</version>
+            <version>2.15.3</version>
         </dependency>
 
         <!-- LuckPerms -->
         <dependency>
             <groupId>net.luckperms</groupId>
             <artifactId>api</artifactId>
-            <version>5.4</version>
+            <version>5.5</version>
             <scope>provided</scope>
         </dependency>
 
@@ -185,29 +185,24 @@
         <dependency>
             <groupId>xyz.xenondevs.invui</groupId>
             <artifactId>invui-core</artifactId>
-            <version>1.46</version>
+            <version>1.47</version>
         </dependency>
         <dependency>
             <groupId>xyz.xenondevs.invui</groupId>
             <artifactId>inventory-access</artifactId>
-            <version>1.46</version>
+            <version>1.47</version>
         </dependency>
         <dependency>
             <groupId>xyz.xenondevs.invui</groupId>
-            <artifactId>inventory-access</artifactId>
-            <version>1.46</version>
-        </dependency>
-        <dependency>
-            <groupId>xyz.xenondevs.invui</groupId>
-            <artifactId>inventory-access-r24</artifactId>
-            <version>1.46</version>
+            <artifactId>inventory-access-r25</artifactId>
+            <version>1.47</version>
         </dependency>
 
         <!-- Vault -->
         <dependency>
             <groupId>com.github.MilkBowl</groupId>
             <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
+            <version>1.7.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

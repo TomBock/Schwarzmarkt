@@ -75,7 +75,7 @@ public class WinningsItem extends PickableItem {
 			// see https://discord.com/channels/506865081162661919/1436816608344539156
 			Bukkit.getScheduler().runTaskLater(Schwarzmarkt.plugin, () -> {
 				player.getInventory().removeItem(item);
-			}, 1L);
+			}, 10L);
 		});
 		return true;
 	}

@@ -1,6 +1,7 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
 import com.bocktom.schwarzmarkt.util.MSG;
+import com.bocktom.schwarzmarkt.util.StringUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -46,7 +47,8 @@ public class PlayerAuctionItem extends AuctionItem {
 				hideLine = true;
 			}
 			if(line.contains("%besitzer%")) {
-				lore.add(line.replace("%besitzer%", ownerName != null ? ownerName : ""));
+				String playerName = StringUtil.isNullOrEmpty(ownerName) ? Bukkit.getOfflinePlayer(ownerId).getName() : ownerName;
+				lore.add(line.replace("%besitzer%", playerName != null ? playerName : "Unbekannt"));
 				continue;
 			}
 

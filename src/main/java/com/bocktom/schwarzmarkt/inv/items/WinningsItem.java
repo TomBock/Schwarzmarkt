@@ -5,6 +5,7 @@ import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -69,6 +70,12 @@ public class WinningsItem extends PickableItem {
 
 			player.sendMessage(MSG.get("winnings.title.onclick", "%titel%", title));
 			isTitleAssigned = true;
+
+			// Double removal of titles for duplicate item glitch
+			// see https://discord.com/channels/506865081162661919/1436816608344539156
+			Bukkit.getScheduler().runTaskLater(Schwarzmarkt.plugin, () -> {
+				player.getInventory().removeItem(item);
+			}, 1L);
 		});
 		return true;
 	}

@@ -1,0 +1,1 @@
+INSERT INTO player_items (owner_uuid, owner_name, item_data, min_bid, deposit) VALUES (?, ?, ?, ?, ?);

@@ -8,8 +8,8 @@ public class PlayerDbItem extends OwnedDbItem {
 
 	public boolean inAuction = false;
 
-	public PlayerDbItem(int id, UUID ownerUuid, ItemStack item, int minBid, int deposit, boolean inAuction) {
-		super(id, ownerUuid, item, minBid, deposit);
+	public PlayerDbItem(int id, UUID ownerUuid, String ownerName, ItemStack item, int minBid, int deposit, boolean inAuction) {
+		super(id, ownerUuid, ownerName, item, minBid, deposit);
 		this.inAuction = inAuction;
 	}
 }

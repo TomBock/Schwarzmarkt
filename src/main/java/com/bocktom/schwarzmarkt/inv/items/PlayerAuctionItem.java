@@ -13,12 +13,14 @@ import java.util.function.Consumer;
 public class PlayerAuctionItem extends AuctionItem {
 
 	public UUID ownerUuid;
+	public String ownerName;
 	public int minBid;
 
-	public PlayerAuctionItem(int id, ItemStack item, UUID ownerId, int minBid, int deposit, int currentBid, int highestBid, Consumer<AuctionItem> clickHandler) {
+	public PlayerAuctionItem(int id, ItemStack item, UUID ownerId, String ownerName, int minBid, int deposit, int currentBid, int highestBid, Consumer<AuctionItem> clickHandler) {
 		super(id, item, currentBid, clickHandler);
 
 		this.ownerUuid = ownerId;
+		this.ownerName = ownerName;
 		this.minBid = minBid;
 		fillItemLore(item, ownerId, minBid, currentBid, highestBid);
 	}
@@ -44,7 +46,6 @@ public class PlayerAuctionItem extends AuctionItem {
 				hideLine = true;
 			}
 			if(line.contains("%besitzer%")) {
-				String ownerName = Bukkit.getOfflinePlayer(ownerId).getName();
 				lore.add(line.replace("%besitzer%", ownerName != null ? ownerName : ""));
 				continue;
 			}

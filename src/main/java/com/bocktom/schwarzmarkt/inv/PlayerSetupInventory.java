@@ -4,6 +4,7 @@ import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.inv.items.IdItem;
 import com.bocktom.schwarzmarkt.inv.items.PlayerSetupItem;
 import com.bocktom.schwarzmarkt.util.*;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -92,7 +93,9 @@ public class PlayerSetupInventory extends SetupInventory {
 		}
 
 		if(!itemsAdded.isEmpty() || !itemsUpdated.isEmpty() || !itemsRemoved.isEmpty()) {
-			Schwarzmarkt.db.updatePlayerItems(owner, itemsAdded, itemsUpdated, itemsRemoved.keySet(), depositCost);
+			Player ownerPlayer = Bukkit.getPlayer(owner);
+			String ownerName = ownerPlayer != null ? ownerPlayer.getName() : "";
+			Schwarzmarkt.db.updatePlayerItems(owner, ownerName, itemsAdded, itemsUpdated, itemsRemoved.keySet(), depositCost);
 
 			int total = -cost + revenue;
 			if(total > 0) {

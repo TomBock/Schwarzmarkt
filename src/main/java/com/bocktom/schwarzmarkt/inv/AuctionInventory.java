@@ -67,6 +67,7 @@ public class AuctionInventory extends ConfigInventory {
 						auction.id,
 						auction.item,
 						auction.ownerId,
+						auction.ownerName,
 						auction.minBid,
 						auction.deposit,
 						bidsPerAuction.getOrDefault(auction.id, 0),

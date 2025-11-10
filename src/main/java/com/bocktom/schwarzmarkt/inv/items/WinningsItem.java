@@ -70,12 +70,13 @@ public class WinningsItem extends PickableItem {
 
 			player.sendMessage(MSG.get("winnings.title.onclick", "%titel%", title));
 			isTitleAssigned = true;
+			event.setCancelled(true);
 
 			// Double removal of titles for duplicate item glitch
 			// see https://discord.com/channels/506865081162661919/1436816608344539156
-			Bukkit.getScheduler().runTaskLater(Schwarzmarkt.plugin, () -> {
-				player.getInventory().removeItem(item);
-			}, 10L);
+			//Bukkit.getScheduler().runTaskLater(Schwarzmarkt.plugin, () -> {
+			//	player.getInventory().removeItem(item);
+			//}, 10L);
 		});
 		return true;
 	}

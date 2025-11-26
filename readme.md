@@ -13,6 +13,11 @@ Supports server- and player-auctions, custom GUIs, cron-based scheduling and com
 - Permission rewards (for titles)
 - Full audit log for every bid 
 
+## Requirements
+- Paper 1.20+
+- [Vault](https://www.spigotmc.org/resources/vault.34315/)
+- [LuckPerms](https://www.spigotmc.org/resources/luckperms.28140/)
+
 ## Commands
 ### User Commands
 | Command                         | Description                                                                     |

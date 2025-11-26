@@ -86,7 +86,10 @@ public class SchwarzmarktCommand implements CommandExecutor, TabCompleter {
 
 
 					case "setup":
-						Schwarzmarkt.plugin.openPlayerSetup(args[1]);
+						if(args[1].equals("server"))
+							Schwarzmarkt.plugin.openSetup(player);
+						else
+							Schwarzmarkt.plugin.openPlayerSetup(args[1]);
 						return true;
 					case "showsetup":
 						Schwarzmarkt.plugin.openPlayerSetup(player, args[1]);

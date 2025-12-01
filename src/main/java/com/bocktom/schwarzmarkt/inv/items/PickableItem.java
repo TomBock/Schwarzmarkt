@@ -4,16 +4,19 @@ import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import xyz.xenondevs.invui.InvUI;
 
-import java.util.List;
 import java.util.function.Function;
 
 public class PickableItem extends IdItem {
+	public static final NamespacedKey SLOT_KEY = new NamespacedKey(InvUI.getInstance().getPlugin(), "slot");
 
 	protected final Function<PickableItem, Boolean> tryAdd;
 	protected final Function<PickableItem, Boolean> tryRemove;
@@ -30,14 +33,28 @@ public class PickableItem extends IdItem {
 		if(InvUtil.isPlaceAction(event.getAction(), isPartialClickAllowed())) {
 
 			handlePlace(event);
+			notifyWindows();
 
 		} else if(InvUtil.isPickupAction(event.getAction(), isPartialClickAllowed())) {
 
 			handlePickup(event);
+			notifyWindows();
 
+			removeSlotDataFromClonedItem(event);
 		}
+	}
 
-		notifyWindows();
+	/**
+	 * Removes slot data that InvUI leaves in. Also, items are cloned by InvUI on notifyWindows,
+	 * so we need to load the item directly from the inventory slot.
+	 */
+	private void removeSlotDataFromClonedItem(@NotNull InventoryClickEvent event) {
+		ItemStack invUiClonedItem = event.getInventory().getItem(event.getSlot());
+		if(invUiClonedItem != null) {
+			ItemMeta meta = invUiClonedItem.getItemMeta();
+			meta.getPersistentDataContainer().remove(SLOT_KEY);
+			invUiClonedItem.setItemMeta(meta);
+		}
 	}
 
 	protected boolean isPartialClickAllowed() {

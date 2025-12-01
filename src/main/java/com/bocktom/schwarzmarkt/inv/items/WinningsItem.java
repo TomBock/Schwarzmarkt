@@ -2,11 +2,10 @@ package com.bocktom.schwarzmarkt.inv.items;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.util.InvUtil;
+import com.bocktom.schwarzmarkt.util.ItemUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -31,12 +30,12 @@ public class WinningsItem extends PickableItem {
 		isTitle = InvUtil.isTitleItem(item);
 		if(isTitle) {
 			ItemMeta meta = item.getItemMeta();
-			List<String> lore = meta.getLore();
+			List<String> lore = ItemUtil.getLegacyLore(meta);
 			title = meta.getDisplayName();
 			titlePerm = lore.getLast().replace("§7", "");
 			lore.clear();
 			lore.add(MSG.get("winnings.title.lore"));
-			meta.setLore(lore);
+			ItemUtil.setLegacyLore(meta, lore);
 			item.setItemMeta(meta);
 		}
 	}

@@ -1,5 +1,6 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
+import com.bocktom.schwarzmarkt.util.ItemUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -46,12 +47,10 @@ public class PlayerSetupItem extends SetupItem {
 		}
 
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = meta.getLore();
-		if(lore == null)
-			lore = new ArrayList<>();
+		List<String> lore = ItemUtil.getLegacyLore(meta);
 		amountLoreIndex = lore.size();
 		lore.add(MSG.get("playersetup.item.lore.inauction"));
-		meta.setLore(lore);
+		ItemUtil.setLegacyLore(meta, lore);
 		item.setItemMeta(meta);
 	}
 
@@ -59,10 +58,10 @@ public class PlayerSetupItem extends SetupItem {
 	protected void cleanLore() {
 		if(inAuction) {
 			ItemMeta meta = item.getItemMeta();
-			List<String> lore = meta.getLore();
-			if(lore != null && lore.size() > amountLoreIndex) {
+			List<String> lore = ItemUtil.getLegacyLore(meta);
+			if(lore.size() > amountLoreIndex) {
 				lore.remove(amountLoreIndex);
-				meta.setLore(lore);
+				ItemUtil.setLegacyLore(meta, lore);
 				item.setItemMeta(meta);
 			}
 			amountLoreIndex = -1; // Reset index since lore is removed

@@ -1,5 +1,7 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
+import com.bocktom.schwarzmarkt.util.ItemUtil;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
@@ -54,12 +56,12 @@ public abstract class SetupItem extends PickableItem {
 		amount += change;
 
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = meta.getLore();
+		List<String> lore = ItemUtil.getLegacyLore(meta);
 
 		String formattedLore = amountLoreRaw;
 		lore.set(amountLoreIndex, formattedLore.replace("%amount%", String.valueOf(amount)));
 
-		meta.setLore(lore);
+		ItemUtil.setLegacyLore(meta, lore);
 		item.setItemMeta(meta);
 		notifyWindows();
 	}
@@ -83,10 +85,7 @@ public abstract class SetupItem extends PickableItem {
 		ItemMeta meta = item.getItemMeta();
 		if(meta == null)
 			return;
-		List<String> lore = meta.getLore();
-		if(lore == null)
-			lore = new ArrayList<>();
-
+		List<String> lore = ItemUtil.getLegacyLore(meta);
 		List<String> raw = getRawLore();
 
 		loreStartIndex = lore.size();
@@ -102,7 +101,7 @@ public abstract class SetupItem extends PickableItem {
 			}
 		}
 
-		meta.setLore(lore);
+		ItemUtil.setLegacyLore(meta, lore);
 		item.setItemMeta(meta);
 	}
 
@@ -110,7 +109,8 @@ public abstract class SetupItem extends PickableItem {
 		ItemMeta meta = item.getItemMeta();
 		if(meta == null)
 			return;
-		List<String> lore = meta.getLore();
+
+		List<String> lore = ItemUtil.getLegacyLore(meta);
 
 		for (int length = loreLength; length > 0; length--) {
 			if(lore.size() <= loreStartIndex)
@@ -118,7 +118,7 @@ public abstract class SetupItem extends PickableItem {
 			lore.remove(loreStartIndex);
 		}
 
-		meta.setLore(lore);
+		ItemUtil.setLegacyLore(meta, lore);
 		item.setItemMeta(meta);
 	}
 

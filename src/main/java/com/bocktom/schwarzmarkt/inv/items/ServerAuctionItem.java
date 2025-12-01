@@ -1,6 +1,7 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
 import com.bocktom.schwarzmarkt.util.InvUtil;
+import com.bocktom.schwarzmarkt.util.ItemUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -27,10 +28,8 @@ public class ServerAuctionItem extends AuctionItem {
 
 	private void fillItemLore(ItemStack item, int currentBid) {
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = meta.getLore();
-		// add lore
-		if (lore == null)
-			lore = new ArrayList<>();
+
+		List<String> lore = ItemUtil.getLegacyLore(meta);
 
 		if(InvUtil.isTitleItem(item)) {
 			lore.clear();
@@ -48,7 +47,7 @@ public class ServerAuctionItem extends AuctionItem {
 			}
 		}
 
-		meta.setLore(lore);
+		ItemUtil.setLegacyLore(meta, lore);
 		item.setItemMeta(meta);
 	}
 

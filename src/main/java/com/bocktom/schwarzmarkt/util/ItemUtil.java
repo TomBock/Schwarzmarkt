@@ -22,6 +22,6 @@ public class ItemUtil {
 	}
 
 	public static String removeLegacyColorCodes(String input) {
-		return input.replaceAll("(?i)&[0-9a-fk-or]", "");
+		return input.replaceAll("(?i)[&§][0-9a-fk-or]", "");
 	}
 }

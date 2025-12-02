@@ -20,4 +20,8 @@ public class ItemUtil {
 	public static void setLegacyLore(ItemMeta meta, List<String> lore) {
 		meta.lore(new ArrayList<>(lore.stream().map(legacyAmpersand::deserialize).toList()));
 	}
+
+	public static String removeLegacyColorCodes(String input) {
+		return input.replaceAll("(?i)&[0-9a-fk-or]", "");
+	}
 }

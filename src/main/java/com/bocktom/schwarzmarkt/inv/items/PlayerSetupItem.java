@@ -9,7 +9,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -47,10 +46,10 @@ public class PlayerSetupItem extends SetupItem {
 		}
 
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = ItemUtil.getLegacyLore(meta);
+		List<String> lore = ItemUtil.getLore(meta);
 		amountLoreIndex = lore.size();
 		lore.add(MSG.get("playersetup.item.lore.inauction"));
-		ItemUtil.setLegacyLore(meta, lore);
+		ItemUtil.setLoreWithoutEvents(meta, lore);
 		item.setItemMeta(meta);
 	}
 
@@ -58,10 +57,10 @@ public class PlayerSetupItem extends SetupItem {
 	protected void cleanLore() {
 		if(inAuction) {
 			ItemMeta meta = item.getItemMeta();
-			List<String> lore = ItemUtil.getLegacyLore(meta);
+			List<String> lore = ItemUtil.getLore(meta);
 			if(lore.size() > amountLoreIndex) {
 				lore.remove(amountLoreIndex);
-				ItemUtil.setLegacyLore(meta, lore);
+				ItemUtil.setLoreWithoutEvents(meta, lore);
 				item.setItemMeta(meta);
 			}
 			amountLoreIndex = -1; // Reset index since lore is removed

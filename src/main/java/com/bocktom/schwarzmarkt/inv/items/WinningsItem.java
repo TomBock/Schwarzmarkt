@@ -6,7 +6,6 @@ import com.bocktom.schwarzmarkt.util.ItemUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -31,12 +30,12 @@ public class WinningsItem extends PickableItem {
 		isTitle = InvUtil.isTitleItem(item);
 		if(isTitle) {
 			ItemMeta meta = item.getItemMeta();
-			List<String> lore = ItemUtil.getLegacyLore(meta);
+			List<String> lore = ItemUtil.getLore(meta);
 			title = meta.getDisplayName();
 			titlePerm = ItemUtil.removeLegacyColorCodes(lore.getLast());
 			lore.clear();
 			lore.add(MSG.get("winnings.title.lore"));
-			ItemUtil.setLegacyLore(meta, lore);
+			ItemUtil.setLoreWithoutEvents(meta, lore);
 			item.setItemMeta(meta);
 		}
 	}

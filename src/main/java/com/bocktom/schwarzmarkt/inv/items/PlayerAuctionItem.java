@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -29,7 +28,7 @@ public class PlayerAuctionItem extends AuctionItem {
 
 	private void fillItemLore(ItemStack item, UUID ownerId, int minBid, int currentBid, int highestBid) {
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = ItemUtil.getLegacyLore(meta);
+		List<String> lore = ItemUtil.getLore(meta);
 
 		boolean hasBids = highestBid > 0;
 
@@ -72,7 +71,7 @@ public class PlayerAuctionItem extends AuctionItem {
 			}
 		}
 
-		ItemUtil.setLegacyLore(meta, lore);
+		ItemUtil.setLoreWithoutEvents(meta, lore);
 		item.setItemMeta(meta);
 	}
 

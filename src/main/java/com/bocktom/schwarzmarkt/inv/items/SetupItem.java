@@ -1,9 +1,7 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
 import com.bocktom.schwarzmarkt.util.ItemUtil;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -11,7 +9,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -56,12 +53,12 @@ public abstract class SetupItem extends PickableItem {
 		amount += change;
 
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = ItemUtil.getLegacyLore(meta);
+		List<String> lore = ItemUtil.getLore(meta);
 
 		String formattedLore = amountLoreRaw;
 		lore.set(amountLoreIndex, formattedLore.replace("%amount%", String.valueOf(amount)));
 
-		ItemUtil.setLegacyLore(meta, lore);
+		ItemUtil.setLoreWithoutEvents(meta, lore);
 		item.setItemMeta(meta);
 		notifyWindows();
 	}
@@ -85,7 +82,7 @@ public abstract class SetupItem extends PickableItem {
 		ItemMeta meta = item.getItemMeta();
 		if(meta == null)
 			return;
-		List<String> lore = ItemUtil.getLegacyLore(meta);
+		List<String> lore = ItemUtil.getLore(meta);
 		List<String> raw = getRawLore();
 
 		loreStartIndex = lore.size();
@@ -101,7 +98,7 @@ public abstract class SetupItem extends PickableItem {
 			}
 		}
 
-		ItemUtil.setLegacyLore(meta, lore);
+		ItemUtil.setLoreWithoutEvents(meta, lore);
 		item.setItemMeta(meta);
 	}
 
@@ -110,7 +107,7 @@ public abstract class SetupItem extends PickableItem {
 		if(meta == null)
 			return;
 
-		List<String> lore = ItemUtil.getLegacyLore(meta);
+		List<String> lore = ItemUtil.getLore(meta);
 
 		for (int length = loreLength; length > 0; length--) {
 			if(lore.size() <= loreStartIndex)
@@ -118,7 +115,7 @@ public abstract class SetupItem extends PickableItem {
 			lore.remove(loreStartIndex);
 		}
 
-		ItemUtil.setLegacyLore(meta, lore);
+		ItemUtil.setLoreWithoutEvents(meta, lore);
 		item.setItemMeta(meta);
 	}
 

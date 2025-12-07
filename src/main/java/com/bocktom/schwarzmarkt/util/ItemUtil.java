@@ -1,7 +1,6 @@
 package com.bocktom.schwarzmarkt.util;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -28,21 +27,21 @@ public class ItemUtil {
 		meta.setLore(lore);
 
 		// Remove paper added click events from the components
-		meta.lore(removeClickEventsRec(meta.lore()));
+		meta.lore(removeClickEvents(meta.lore()));
 	}
 
-	public static List<Component> removeClickEventsRec(List<Component> components) {
+	public static List<Component> removeClickEvents(List<Component> components) {
 		if(components == null || components.isEmpty())
 			return components;
 
 		List<Component> newComponents = new ArrayList<>();
 
 		for (Component c : components) {
-
-			// Skip empty text components that are added by paper with the click events
-			if(c instanceof TextComponent textComponent && textComponent.children().isEmpty() && textComponent.content().isEmpty())
-				continue;
-			newComponents.add(c.children(removeClickEventsRec(c.children())).clickEvent(null));
+			c = c.clickEvent(null).children(c.children().stream().map(child -> {
+				child = child.clickEvent(null);
+				return child;
+			}).toList());
+			newComponents.add(c);
 		}
 		return newComponents;
 	}

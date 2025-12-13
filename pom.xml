@@ -155,7 +155,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.10-R0.1-SNAPSHOT</version>
+            <version>1.21.11-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
@@ -170,7 +170,7 @@
         <dependency>
             <groupId>de.tr7zw</groupId>
             <artifactId>item-nbt-api</artifactId>
-            <version>2.15.3</version>
+            <version>2.15.5</version>
         </dependency>
 
         <!-- LuckPerms -->
@@ -185,17 +185,17 @@
         <dependency>
             <groupId>xyz.xenondevs.invui</groupId>
             <artifactId>invui-core</artifactId>
-            <version>1.47</version>
+            <version>1.49</version>
         </dependency>
         <dependency>
             <groupId>xyz.xenondevs.invui</groupId>
             <artifactId>inventory-access</artifactId>
-            <version>1.47</version>
+            <version>1.49</version>
         </dependency>
         <dependency>
             <groupId>xyz.xenondevs.invui</groupId>
-            <artifactId>inventory-access-r25</artifactId>
-            <version>1.47</version>
+            <artifactId>inventory-access-r26</artifactId>
+            <version>1.49</version>
         </dependency>
 
         <!-- Vault -->

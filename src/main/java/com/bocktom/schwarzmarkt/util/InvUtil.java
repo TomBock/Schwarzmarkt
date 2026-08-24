@@ -5,11 +5,10 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
-import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.item.Item;
-import xyz.xenondevs.invui.item.builder.ItemBuilder;
-import xyz.xenondevs.invui.item.impl.SimpleItem;
+import xyz.xenondevs.invui.item.ItemBuilder;
 
 import java.lang.invoke.CallSite;
 import java.util.*;
@@ -22,8 +21,8 @@ public class InvUtil {
 
 	private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
 
-	public static Item BORDER = new SimpleItem(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE));
-	public static Item AIR = new SimpleItem(new ItemBuilder(Material.AIR));
+	public static Item BORDER = Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE));
+	public static Item AIR = Item.simple(new ItemBuilder(Material.AIR));
 
 	public static List<Item> createItems(Map<Integer, ItemStack> itemStacks, Function<Map.Entry<Integer, ItemStack>, Item> itemCreator) {
 		return itemStacks.entrySet().stream()
@@ -49,25 +48,33 @@ public class InvUtil {
 		return item.getItemMeta().displayName() != null ? item.getItemMeta().displayName() : item.displayName();
 	}
 
-	public static boolean isPlaceAction(InventoryAction action, boolean isPartialClickAllowed) {
-		boolean isAction = action == InventoryAction.PLACE_ALL
-				|| action == InventoryAction.SWAP_WITH_CURSOR;
+	/**
+	 * InvUI 2 no longer exposes the {@code InventoryClickEvent} - and with it the
+	 * {@code InventoryAction} - to items, so place and pickup intent is derived from the
+	 * click type plus the state of the player's cursor (checked by the caller).
+	 * <p>
+	 * Left click with a full cursor is what vanilla resolves to PLACE_ALL or
+	 * SWAP_WITH_CURSOR; right click is the partial PLACE_ONE / PLACE_SOME.
+	 */
+	public static boolean isPlaceClick(ClickType clickType, boolean isPartialClickAllowed) {
+		boolean isAction = clickType == ClickType.LEFT;
 
 		if(isPartialClickAllowed) {
-			isAction = isAction || action == InventoryAction.PLACE_ONE
-					|| action == InventoryAction.PLACE_SOME;
+			isAction = isAction || clickType == ClickType.RIGHT;
 		}
 		return isAction;
 	}
 
-	public static boolean isPickupAction(InventoryAction action, boolean isPartialClickAllowed) {
-		boolean isAction = action == InventoryAction.PICKUP_ALL
-				|| action == InventoryAction.MOVE_TO_OTHER_INVENTORY;
+	/**
+	 * Counterpart to {@link #isPlaceClick}: left click is PICKUP_ALL, shift-left is
+	 * MOVE_TO_OTHER_INVENTORY, right click is the partial PICKUP_HALF / PICKUP_ONE.
+	 */
+	public static boolean isPickupClick(ClickType clickType, boolean isPartialClickAllowed) {
+		boolean isAction = clickType == ClickType.LEFT
+				|| clickType == ClickType.SHIFT_LEFT;
 
 		if(isPartialClickAllowed) {
-			isAction = isAction || action == InventoryAction.PICKUP_SOME
-					|| action == InventoryAction.PICKUP_ONE
-					|| action == InventoryAction.PICKUP_HALF;
+			isAction = isAction || clickType == ClickType.RIGHT;
 		}
 		return isAction;
 	}

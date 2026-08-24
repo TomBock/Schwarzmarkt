@@ -1,15 +1,14 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
-import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import xyz.xenondevs.invui.gui.ScrollGui;
+import org.jetbrains.annotations.NotNull;
+import xyz.xenondevs.invui.item.ItemBuilder;
 import xyz.xenondevs.invui.item.ItemProvider;
-import xyz.xenondevs.invui.item.builder.ItemBuilder;
-import xyz.xenondevs.invui.item.impl.controlitem.ScrollItem;
 
 import java.util.List;
 
-public class ScrollDownItem extends ScrollItem {
+public class ScrollDownItem extends ScrollControlItem {
 
 	private final ItemStack item;
 
@@ -19,9 +18,9 @@ public class ScrollDownItem extends ScrollItem {
 	}
 
 	@Override
-	public ItemProvider getItemProvider(ScrollGui<?> gui) {
+	public ItemProvider getItemProvider(@NotNull Player viewer) {
 		ItemStack item = this.item.clone();
-		if(gui.canScroll(1))
+		if(canScroll(1))
 			item.setLore(List.of());
 		return new ItemBuilder(item);
 	}

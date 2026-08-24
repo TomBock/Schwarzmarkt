@@ -9,10 +9,9 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.gui.Gui;
+import xyz.xenondevs.invui.gui.Markers;
 import xyz.xenondevs.invui.gui.ScrollGui;
-import xyz.xenondevs.invui.gui.structure.Markers;
 import xyz.xenondevs.invui.item.Item;
-import xyz.xenondevs.invui.item.impl.SimpleItem;
 import xyz.xenondevs.invui.window.Window;
 
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ public abstract class ConfigInventory {
 				items.add(getNextItem());
 			}
 
-			ScrollGui.Builder<Item> guiBuilder = ScrollGui.items()
+			ScrollGui.Builder<Item> guiBuilder = ScrollGui.<Item>itemsBuilder()
 					.setStructure(structure)
 					.addIngredient('i', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
 					.setContent(items);
@@ -61,7 +60,7 @@ public abstract class ConfigInventory {
 			getItemsFromConfig(configName, config, guiBuilder::addIngredient);
 			gui = guiBuilder.build();
 		} else {
-			Gui.Builder.Normal guiBuilder = Gui.normal()
+			Gui.Builder<?, ?> guiBuilder = Gui.builder()
 					.setStructure(structure)
 					.addIngredient('i', this::getNextItem)
 					.addIngredient('j', this::getNextItem2);
@@ -70,11 +69,11 @@ public abstract class ConfigInventory {
 			gui = guiBuilder.build();
 		}
 
-		Window window = Window.single()
+		Window window = Window.builder()
 				.setViewer(player)
 				.setTitle(title)
-				.setGui(gui)
-				.addCloseHandler(this::onClose)
+				.setUpperGui(gui)
+				.addCloseHandler(reason -> onClose())
 				.build();
 
 		window.open();
@@ -92,7 +91,7 @@ public abstract class ConfigInventory {
 				case "c" -> new CloseItem(itemStack);
 				case "u" -> new ScrollUpItem(itemStack);
 				case "d" -> new ScrollDownItem(itemStack);
-				default -> new SimpleItem(itemStack);
+				default -> Item.simple(itemStack);
 			};
 			handler.accept(slot.charAt(0), item);
 		}
@@ -104,7 +103,7 @@ public abstract class ConfigInventory {
 	}
 
 	protected Item getFallback() {
-		return new SimpleItem(new ItemStack(Material.AIR));
+		return Item.simple(new ItemStack(Material.AIR));
 	}
 
 	protected Item getNextItem() {

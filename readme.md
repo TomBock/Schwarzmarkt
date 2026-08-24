@@ -14,9 +14,13 @@ Supports server- and player-auctions, custom GUIs, cron-based scheduling and com
 - Full audit log for every bid 
 
 ## Requirements
-- Paper 1.20+
+- Paper 26.2+ (requires Java 25)
 - [Vault](https://www.spigotmc.org/resources/vault.34315/)
 - [LuckPerms](https://www.spigotmc.org/resources/luckperms.28140/)
+
+> **Upgrading from a 1.21.x install:** the stored items are migrated to the 26.2
+> item format on first start (database version 8). Back up `schwarzmarkt.db`
+> before the first launch - the migration rewrites item data in place.
 
 ## Commands
 ### User Commands

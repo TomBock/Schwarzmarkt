@@ -5,6 +5,7 @@ import com.bocktom.schwarzmarkt.inv.items.CloseItem;
 import com.bocktom.schwarzmarkt.inv.items.ScrollDownItem;
 import com.bocktom.schwarzmarkt.inv.items.ScrollUpItem;
 import com.bocktom.schwarzmarkt.util.Config;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -69,9 +70,12 @@ public abstract class ConfigInventory {
 			gui = guiBuilder.build();
 		}
 
+		// InvUI 2 parses setTitle(String) as MiniMessage and throws on legacy codes.
+		// The titles come from msg.yml and use section signs, so they are deserialized
+		// here and handed over as a Component - same result as InvUI 1.x gave.
 		Window window = Window.builder()
 				.setViewer(player)
-				.setTitle(title)
+				.setTitle(LegacyComponentSerializer.legacySection().deserialize(title))
 				.setUpperGui(gui)
 				.addCloseHandler(reason -> onClose())
 				.build();

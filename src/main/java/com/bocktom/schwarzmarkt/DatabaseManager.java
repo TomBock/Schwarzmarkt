@@ -228,12 +228,14 @@ public class DatabaseManager {
 	/**
 	 * Runs the NBT data fixer over every table that stores serialized items.
 	 *
+	 * @param fromVersion fallback source version for rows whose nbt carries no DataVersion
 	 * @param tables (select, update) sql resource pairs; the select must expose {@code id}
 	 *               and {@code item_data}, the update takes (item_data, id)
 	 * @return whether a rollback is needed, i.e. whether the step failed
 	 */
 	private boolean upNbtVersion(int fromVersion, int toVersion, String[][] tables) {
 		int updated = 0;
+		int skipped = 0;
 
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
@@ -249,9 +251,22 @@ public class DatabaseManager {
 						if(oldData == null)
 							continue;
 
-						// Parse NBT, fix it up, write it back
 						ReadWriteNBT nbt = NBT.parseNBT(oldData);
-						ReadWriteNBT fixedNbt = DataFixerUtil.fixUpItemData(nbt, fromVersion, toVersion);
+
+						// Rows are not all written by the same server version: the last item
+						// format step was 1.21.5, everything stored since then carries the
+						// version that was running at the time. Trusting a single source
+						// version would skip the fixes an older row still needs, so each row
+						// is fixed from the DataVersion it carries.
+						Integer storedVersion = nbt.hasTag("DataVersion") ? nbt.getInteger("DataVersion") : null;
+						int itemVersion = storedVersion != null ? storedVersion : fromVersion;
+
+						if(itemVersion >= toVersion) {
+							skipped++;
+							continue;
+						}
+
+						ReadWriteNBT fixedNbt = DataFixerUtil.fixUpItemData(nbt, itemVersion, toVersion);
 
 						new DBStatementBuilder(con, updateSql)
 								.setString(1, fixedNbt.toString())
@@ -273,7 +288,8 @@ public class DatabaseManager {
 			e.printStackTrace();
 			return true;
 		}
-		plugin.getLogger().info("Updated " + updated + " items to new NBT version");
+		plugin.getLogger().info("Updated " + updated + " items to NBT version " + toVersion
+				+ (skipped > 0 ? " (" + skipped + " already current or newer)" : ""));
 		return false;
 	}
 

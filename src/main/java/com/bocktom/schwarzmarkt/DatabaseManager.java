@@ -24,13 +24,57 @@ import static org.bukkit.Bukkit.getLogger;
 
 public class DatabaseManager {
 
-	private static final int DB_VERSION = 7;
+	private static final int DB_VERSION = 8;
 	// 2 = fixed
 	// 3 = 1.21.5
 	// 4 = added player auctions
 	// 5 = not sold items
 	// 6 = try again
 	// 7 = name for player auctions
+	// 8 = 26.2 item format
+
+	/**
+	 * Tables holding serialized items, as (select, update) sql resource pairs.
+	 * <p>
+	 * The 1.21.5 step only knew items, auctions and winnings - the player auction and
+	 * notsold tables did not exist yet - so that step keeps its original, smaller scope.
+	 */
+	/** Create scripts per schema version. All of them are CREATE TABLE IF NOT EXISTS. */
+	private static final String[] SCHEMA_V1 = {
+			"sql/create_items.sql",
+			"sql/create_auctions.sql",
+			"sql/create_auction_bids.sql",
+			"sql/create_winnings.sql",
+			"sql/create_return_bids.sql",
+	};
+
+	private static final String[] SCHEMA_V4 = {
+			"sql/v4/create_player_auctions.sql",
+			"sql/v4/create_player_items.sql",
+			"sql/v4/create_player_auction_bids.sql",
+			"sql/v4/create_sold_items.sql",
+			"sql/v4/create_item_cooldown.sql",
+	};
+
+	private static final String[] SCHEMA_V5 = {
+			"sql/v5/create_notsold.sql",
+	};
+
+	private static final String[][] NBT_TABLES_V3 = {
+			{"sql/select_items.sql", "sql/v3/update_items_nbt.sql"},
+			{"sql/select_auctions.sql", "sql/v3/update_auctions_nbt.sql"},
+			{"sql/v3/select_all_winnings.sql", "sql/v3/update_winnings_nbt.sql"},
+	};
+
+	private static final String[][] NBT_TABLES_V8 = {
+			{"sql/select_items.sql", "sql/v3/update_items_nbt.sql"},
+			{"sql/select_auctions.sql", "sql/v3/update_auctions_nbt.sql"},
+			{"sql/v3/select_all_winnings.sql", "sql/v3/update_winnings_nbt.sql"},
+			{"sql/v8/select_all_player_items.sql", "sql/v8/update_player_items_nbt.sql"},
+			{"sql/v8/select_all_player_auctions.sql", "sql/v8/update_player_auctions_nbt.sql"},
+			{"sql/v8/select_all_notsold.sql", "sql/v8/update_notsold_nbt.sql"},
+			{"sql/v8/select_all_item_cooldown.sql", "sql/v8/update_item_cooldown_nbt.sql"},
+	};
 
 	private final Schwarzmarkt plugin;
 	private String dbUrl;
@@ -49,134 +93,179 @@ public class DatabaseManager {
 		// Versioning
 		createVersionTable();
 		int curVersion = getDbVersion();
-		if(curVersion != DB_VERSION) {
-
-			boolean rollbackNeeded = false;
-			if(curVersion == 2) {
-				rollbackNeeded = upNbtVersion(DataFixerUtil.VERSION1_21_3, DataFixerUtil.VERSION1_21_5);
-			}
-
-			if(!rollbackNeeded) {
-				setDbVersion(DB_VERSION);
-			}
-		}
 
 		getLogger().info("Current database version: " + curVersion);
+
+		if(curVersion == DB_VERSION) {
+			plugin.getLogger().info("Database version is up to date");
+			ensureSchema();
+			return;
+		}
+		if(curVersion > DB_VERSION) {
+			plugin.getLogger().warning("Unknown database version: " + curVersion);
+			return;
+		}
+
+		// Every outstanding step is applied in order - a fresh database walks the whole
+		// chain from 1 to DB_VERSION. The stored version is only raised after a step
+		// actually went through, so a failed migration is retried on the next start
+		// instead of being silently skipped.
+		for (int version = curVersion + 1; version <= DB_VERSION; version++) {
+			if(!migrateTo(version)) {
+				plugin.getLogger().severe("Database migration to version " + version + " failed - aborting at version " + (version - 1));
+				return;
+			}
+			setDbVersion(version);
+			plugin.getLogger().info("Database migrated to version " + version);
+		}
+
+		ensureSchema();
+	}
+
+	/**
+	 * Applies the single step that lifts the database from {@code version - 1} to
+	 * {@code version}.
+	 *
+	 * @return whether the step succeeded
+	 */
+	private boolean migrateTo(int version) {
+
+		// Item format steps rewrite row data and manage their own transaction
+		if(version == 3) {
+			return !upNbtVersion(DataFixerUtil.VERSION1_21_3, DataFixerUtil.VERSION1_21_5, NBT_TABLES_V3);
+		}
+		if(version == 8) {
+			return !upNbtVersion(DataFixerUtil.VERSION1_21R7, DataFixerUtil.VERSION_26_2, NBT_TABLES_V8);
+		}
 
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
 
 			int result = 0;
 
-			// Versioning
-			if(curVersion == 0) {
-				result += new DBStatementBuilder(con, "sql/create_items.sql").executeUpdate();
-				result += new DBStatementBuilder(con, "sql/create_auctions.sql").executeUpdate();
-				result += new DBStatementBuilder(con, "sql/create_auction_bids.sql").executeUpdate();
-				result += new DBStatementBuilder(con, "sql/create_winnings.sql").executeUpdate();
-				result += new DBStatementBuilder(con, "sql/create_return_bids.sql").executeUpdate();
-			} else if (curVersion == 1) {
-				result += new DBStatementBuilder(con, "sql/v2/migrate_items.sql").executeUpdate();
-			} else if (curVersion <= 5) {
-				result += new DBStatementBuilder(con, "sql/v4/create_player_auctions.sql").executeUpdate();
-				result += new DBStatementBuilder(con, "sql/v4/create_player_items.sql").executeUpdate();
-				result += new DBStatementBuilder(con, "sql/v4/create_player_auction_bids.sql").executeUpdate();
-				result += new DBStatementBuilder(con, "sql/v4/create_sold_items.sql").executeUpdate();
-				result += new DBStatementBuilder(con, "sql/v4/create_item_cooldown.sql").executeUpdate();
-			} else if(curVersion <= 5) {
-				result += new DBStatementBuilder(con, "sql/v5/create_notsold.sql").executeUpdate();
-			} else if(curVersion <= 6) {
-				result += new DBStatementBuilder(con, "sql/v6/alter_player_auctions.sql").executeUpdate();
-				result += new DBStatementBuilder(con, "sql/v6/alter_player_items.sql").executeUpdate();
-			} else if(curVersion == DB_VERSION) {
-				plugin.getLogger().info("Database version is up to date");
-			} else {
-				plugin.getLogger().warning("Unknown database version: " + curVersion);
+			switch (version) {
+				case 1 -> result += createTables(con, SCHEMA_V1);
+				case 2 -> {
+					// create_items.sql declares amount itself nowadays, so on a database
+					// that walked the full chain this ALTER would hit "duplicate column name"
+					if(!hasColumn(con, "items", "amount"))
+						result += new DBStatementBuilder(con, "sql/v2/migrate_items.sql").executeUpdate();
+				}
+				case 4 -> {
+					result += createTables(con, SCHEMA_V4);
+					result += new DBStatementBuilder(con, "sql/v4/seed_player_auction_ids.sql").executeUpdate();
+				}
+				case 5 -> result += createTables(con, SCHEMA_V5);
+				case 6 -> {
+					// No schema change - this version was only bumped to re-run version 5,
+					// which never applied because the old migration chain skipped it.
+				}
+				case 7 -> {
+					// The v4 create scripts already declare owner_name nowadays, so on a
+					// database that walked the full chain the column is present and these
+					// ALTERs would fail with "duplicate column name".
+					if(!hasColumn(con, "player_auctions", "owner_name"))
+						result += new DBStatementBuilder(con, "sql/v6/alter_player_auctions.sql").executeUpdate();
+					if(!hasColumn(con, "player_items", "owner_name"))
+						result += new DBStatementBuilder(con, "sql/v6/alter_player_items.sql").executeUpdate();
+				}
+				default -> {
+					plugin.getLogger().warning("No migration defined for database version: " + version);
+					return false;
+				}
 			}
 
 			con.commit();
 			if(result > 0)
-				plugin.getLogger().info("Created " + result + " tables");
+				plugin.getLogger().info("Applied " + result + " statements for database version " + version);
+			return true;
 		} catch (SQLException | IOException e) {
-			plugin.getLogger().warning("Failed to setup database: " + e.getMessage());
+			plugin.getLogger().warning("Failed to migrate database to version " + version + ": " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	private int createTables(Connection con, String[] scripts) throws SQLException, IOException {
+		int result = 0;
+		for (String script : scripts) {
+			result += new DBStatementBuilder(con, script).executeUpdate();
+		}
+		return result;
+	}
+
+	/**
+	 * Re-runs every create script once the version chain is done.
+	 * <p>
+	 * Databases that were set up while the old migration chain was in place can sit at a
+	 * high version number without ever having received the tables of the steps in between,
+	 * and the version chain alone would never revisit them. Every script here is a
+	 * CREATE TABLE IF NOT EXISTS, so this is a no-op on a healthy database.
+	 */
+	private void ensureSchema() {
+		try (Connection con = getConnection()) {
+			con.setAutoCommit(false);
+			createTables(con, SCHEMA_V1);
+			createTables(con, SCHEMA_V4);
+			createTables(con, SCHEMA_V5);
+			con.commit();
+		} catch (SQLException | IOException e) {
+			plugin.getLogger().warning("Failed to verify schema: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
-	private boolean upNbtVersion(int fromVersion, int toVersion) {
+	/**
+	 * Whether the given table already has the given column. Used to keep ALTER steps
+	 * idempotent instead of relying on the create scripts and the ALTERs never overlapping.
+	 */
+	private boolean hasColumn(Connection con, String table, String column) throws SQLException {
+		try (ResultSet set = con.getMetaData().getColumns(null, null, table, column)) {
+			return set.next();
+		}
+	}
+
+	/**
+	 * Runs the NBT data fixer over every table that stores serialized items.
+	 *
+	 * @param tables (select, update) sql resource pairs; the select must expose {@code id}
+	 *               and {@code item_data}, the update takes (item_data, id)
+	 * @return whether a rollback is needed, i.e. whether the step failed
+	 */
+	private boolean upNbtVersion(int fromVersion, int toVersion, String[][] tables) {
 		int updated = 0;
 
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
 
-			// Update Items
-			try (ResultSet set = new DBStatementBuilder(con, "sql/select_items.sql").executeQuery()) {
-				while (set.next()) {
-					int id = set.getInt("id");
-					String oldData = set.getString("item_data");
+			for (String[] table : tables) {
+				String selectSql = table[0];
+				String updateSql = table[1];
 
-					// 2. Parse NBT
-					ReadWriteNBT nbt = NBT.parseNBT(oldData);
+				try (ResultSet set = new DBStatementBuilder(con, selectSql).executeQuery()) {
+					while (set.next()) {
+						int id = set.getInt("id");
+						String oldData = set.getString("item_data");
+						if(oldData == null)
+							continue;
 
-					// 3. Fix the NBT using DataFixerUtil
-					ReadWriteNBT fixedNbt = DataFixerUtil.fixUpItemData(nbt, fromVersion, toVersion);
+						// Parse NBT, fix it up, write it back
+						ReadWriteNBT nbt = NBT.parseNBT(oldData);
+						ReadWriteNBT fixedNbt = DataFixerUtil.fixUpItemData(nbt, fromVersion, toVersion);
 
-					// 4. Update the auction with new NBT
-					new DBStatementBuilder(con, "sql/v3/update_items_nbt.sql")
-							.setString(1, fixedNbt.toString())
-							.setInt(2, id)
-							.executeUpdate();
+						new DBStatementBuilder(con, updateSql)
+								.setString(1, fixedNbt.toString())
+								.setInt(2, id)
+								.executeUpdate();
 
-					updated++;
+						updated++;
+					}
 				}
 			}
 
-			// Update Auctions
-			try (ResultSet set = new DBStatementBuilder(con, "sql/select_auctions.sql").executeQuery()) {
-				while (set.next()) {
-					int id = set.getInt("id");
-					String oldData = set.getString("item_data");
-
-					// 2. Parse NBT
-					ReadWriteNBT nbt = NBT.parseNBT(oldData);
-
-					// 3. Fix the NBT using DataFixerUtil
-					ReadWriteNBT fixedNbt = DataFixerUtil.fixUpItemData(nbt, fromVersion, toVersion);
-
-					// 4. Update the auction with new NBT
-					new DBStatementBuilder(con, "sql/v3/update_auctions_nbt.sql")
-							.setString(1, fixedNbt.toString())
-							.setInt(2, id)
-							.executeUpdate();
-
-					updated++;
-				}
-			}
-
-			// Update Winnings
-			try (ResultSet set = new DBStatementBuilder(con, "sql/v3/select_all_winnings.sql").executeQuery()) {
-				while (set.next()) {
-					int id = set.getInt("id");
-					String oldData = set.getString("item_data");
-
-					// 2. Parse NBT
-					ReadWriteNBT nbt = NBT.parseNBT(oldData);
-
-					// 3. Fix the NBT using DataFixerUtil
-					ReadWriteNBT fixedNbt = DataFixerUtil.fixUpItemData(nbt, fromVersion, toVersion);
-
-					// 4. Update the auction with new NBT
-					new DBStatementBuilder(con, "sql/v3/update_winnings_nbt.sql")
-							.setString(1, fixedNbt.toString())
-							.setInt(2, id)
-							.executeUpdate();
-					updated++;
-
-				}
-			}
 			con.commit();
 		} catch (SQLException | IOException e) {
-			plugin.getLogger().warning("Failed to create version table: " + e.getMessage());
+			plugin.getLogger().warning("Failed to update NBT: " + e.getMessage());
 			e.printStackTrace();
 			return true;
 		} catch (NoSuchFieldException | IllegalAccessException e) {

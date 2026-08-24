@@ -1,0 +1,11 @@
+-- Laesst die IDs der Spieler-Auktionen bei 1.000.000 beginnen, damit sie sich von
+-- den Server-Auktions-IDs unterscheiden.
+--
+-- Stand vorher am Ende von create_player_auctions.sql und wurde dort nie ausgefuehrt:
+-- PreparedStatement fuehrt nur das erste Statement einer Datei aus. Das dortige
+-- ON CONFLICT(name) haette ohnehin nicht funktioniert, da sqlite_sequence keinen
+-- Unique-Constraint auf name hat.
+--
+-- Ein einfaches INSERT genuegt: an dieser Stelle der Migration wurde player_auctions
+-- gerade erst angelegt, es kann also noch keine sqlite_sequence-Zeile dafuer geben.
+INSERT INTO sqlite_sequence (name, seq) VALUES ('player_auctions', 999999);

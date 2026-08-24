@@ -55,9 +55,13 @@ public class PickableItem extends IdItem {
 	}
 
 	/**
-	 * Strips the internal slot marker before an item is handed back to a player, so that
-	 * no plugin data leaks out of the gui. InvUI 2 clones items on render, so this is
-	 * applied to the copy that actually leaves the inventory.
+	 * Strips the slot marker that InvUI stamps onto rendered items.
+	 * <p>
+	 * {@code AbstractWindow} writes a "slot" key into the item's persistent data - InvUI 1
+	 * via ItemMeta, InvUI 2 via {@code ItemStack#editPersistentDataContainer} - namespaced
+	 * with the plugin InvUI was initialised with, so it shows up as
+	 * {@code phoenixschwarzmarkt:slot}. Without stripping it the marker travels with the
+	 * item into player inventories and, from there, back into the database.
 	 */
 	protected ItemStack stripInternalData(ItemStack stack) {
 		if(stack == null || stack.getType() == Material.AIR)
@@ -77,8 +81,9 @@ public class PickableItem extends IdItem {
 	}
 
 	protected void handlePlace(@NotNull Player player, @NotNull ItemStack cursor) {
-		ItemStack previous = getCleanItem();
-		item = cursor.clone();
+		ItemStack previous = stripInternalData(getCleanItem());
+		// Stripped on the way in as well, so the marker never reaches the database
+		item = stripInternalData(cursor.clone());
 		if(tryAdd != null && tryAdd.apply(this)) {
 			player.setItemOnCursor(null);
 			if(previous != null && previous.getType() != Material.AIR) {

@@ -14,9 +14,14 @@ Supports server- and player-auctions, custom GUIs, cron-based scheduling and com
 - Full audit log for every bid 
 
 ## Requirements
-- Paper 26.2+ (requires Java 25)
+- Paper **or Folia** 26.2+ (requires Java 25)
 - [Vault](https://www.spigotmc.org/resources/vault.34315/)
 - [LuckPerms](https://www.spigotmc.org/resources/luckperms.28140/)
+
+> **Running on Folia:** the plugin uses the regionised schedulers, which Paper ships
+> as well - the same build runs on both. Your economy and permission plugins have to
+> declare `folia-supported` too, otherwise Folia refuses to load them and the black
+> market shuts itself down for lack of an economy provider.
 
 > **Upgrading from a 1.21.x install:** the stored items are migrated to the 26.2
 > item format on first start (database version 8). Back up `schwarzmarkt.db`

@@ -2,6 +2,7 @@ name: PhoenixSchwarzmarkt
 version: '${version}'
 main: com.bocktom.schwarzmarkt.Schwarzmarkt
 api-version: '26.2'
+folia-supported: true
 depend:
   - Vault
   - LuckPerms

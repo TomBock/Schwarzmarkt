@@ -170,7 +170,10 @@ public class AuctionManager {
 
 			if(bids != null && !bids.isEmpty()) {
 				bids.forEach((bidder, amount) -> {
-					if(auction.highestBidder != bidder) {
+					// Objects.equals, not !=: UUIDs coming out of the database are fresh
+					// instances, so the reference check never matched and every bidder
+					// passed through. highestBidder may be null when nobody bid.
+					if(!Objects.equals(auction.highestBidder, bidder)) {
 						bidsToReturn.merge(bidder, amount, Integer::sum);
 					}
 				});

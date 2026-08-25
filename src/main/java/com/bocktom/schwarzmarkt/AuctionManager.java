@@ -15,12 +15,14 @@ import org.bukkit.inventory.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AuctionManager {
 	private static final int BID_TIME = 60 * 2; // 2 Minutes for players to bid via command
 
 	private final Schwarzmarkt plugin;
-	private final Map<Player, AuctionItem> biddingPlayers  = new HashMap<>();
+	/** Accessed from command handling and from the bidding timeout task; see registerForBidding. */
+	private final Map<Player, AuctionItem> biddingPlayers  = new ConcurrentHashMap<>();
 	private final Random random = new Random();
 
 	public AuctionManager() {
@@ -349,7 +351,10 @@ public class AuctionManager {
 	public void registerForBidding(Player player, AuctionItem auction) {
 		biddingPlayers.put(player, auction);
 
-		Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+		// Runs on the main thread: the task only touches biddingPlayers and does no
+		// blocking work, so there is no reason to hand it to an async worker - which is
+		// what used to race against the command handler reading the same map.
+		Bukkit.getScheduler().runTaskLater(plugin, () -> {
 
 			// Check if player has changed auction
 			AuctionItem curAuction = biddingPlayers.getOrDefault(player, new ServerAuctionItem(-1));

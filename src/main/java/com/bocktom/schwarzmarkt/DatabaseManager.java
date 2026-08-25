@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Properties;
+import org.sqlite.SQLiteConfig;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -75,6 +77,20 @@ public class DatabaseManager {
 			{"sql/v8/select_all_notsold.sql", "sql/v8/update_notsold_nbt.sql"},
 			{"sql/v8/select_all_item_cooldown.sql", "sql/v8/update_item_cooldown_nbt.sql"},
 	};
+
+	/**
+	 * SQLite serialises writers, so a second thread arriving mid-write gets SQLITE_BUSY
+	 * immediately unless it is told to wait. That never mattered while everything ran on
+	 * the single server thread; it does now that the join lookups are async and Folia
+	 * hands commands to several region threads.
+	 */
+	private static final Properties CONNECTION_PROPERTIES = busyTimeout(5000);
+
+	private static Properties busyTimeout(int millis) {
+		SQLiteConfig config = new SQLiteConfig();
+		config.setBusyTimeout(millis);
+		return config.toProperties();
+	}
 
 	private final Schwarzmarkt plugin;
 	private String dbUrl;
@@ -927,7 +943,7 @@ public class DatabaseManager {
 	}
 
 	public Connection getConnection() throws SQLException {
-		return DriverManager.getConnection(this.dbUrl);
+		return DriverManager.getConnection(this.dbUrl, CONNECTION_PROPERTIES);
 	}
 
 	public List<PlayerDbItem> getPlayerItems(UUID playerUuid) {

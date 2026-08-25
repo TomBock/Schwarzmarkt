@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class PlayerListener implements Listener {
 
@@ -20,9 +21,9 @@ public class PlayerListener implements Listener {
 		UUID playerUuid = player.getUniqueId();
 
 		// Four database reads per join. The notifications go out delayed anyway, so none
-		// of this has to hold up the main thread while the player is connecting.
-		Bukkit.getScheduler().runTaskAsynchronously(Schwarzmarkt.plugin,
-				() -> notifyOnJoin(player, playerUuid));
+		// of this has to hold up the tick thread while the player is connecting.
+		Bukkit.getAsyncScheduler().runNow(Schwarzmarkt.plugin,
+				task -> notifyOnJoin(player, playerUuid));
 	}
 
 	private void notifyOnJoin(Player player, UUID playerUuid) {
@@ -49,9 +50,20 @@ public class PlayerListener implements Listener {
 
 	private void sendMessage(Player player, String msg) {
 		int delay = Config.msg.get.getInt("onjoin.delay");
-		Bukkit.getScheduler().runTaskLaterAsynchronously(Schwarzmarkt.plugin, () -> {
+
+		// The delay is configured in seconds; the async scheduler takes a TimeUnit
+		// directly, so there is no tick conversion any more. It also rejects a delay of
+		// zero, hence the branch for an unset or disabled onjoin.delay.
+		Runnable send = () -> {
 			if(player != null && player.isOnline())
 				player.sendMessage(Component.text(msg));
-		}, 20L * delay);
+		};
+
+		if(delay <= 0) {
+			Bukkit.getAsyncScheduler().runNow(Schwarzmarkt.plugin, task -> send.run());
+		} else {
+			Bukkit.getAsyncScheduler().runDelayed(Schwarzmarkt.plugin, task -> send.run(),
+					delay, TimeUnit.SECONDS);
+		}
 	}
 }

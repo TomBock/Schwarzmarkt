@@ -2,7 +2,6 @@ package com.bocktom.schwarzmarkt.inv.items;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.util.InvUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -87,10 +86,12 @@ public class PickableItem extends IdItem {
 		if(tryAdd != null && tryAdd.apply(this)) {
 			player.setItemOnCursor(null);
 			if(previous != null && previous.getType() != Material.AIR) {
-				Bukkit.getScheduler().runTask(Schwarzmarkt.plugin, () -> {
+				// Entity scheduler: touching a player's inventory has to happen on the
+				// thread owning that player, which under Folia is their region's.
+				player.getScheduler().run(Schwarzmarkt.plugin, task -> {
 					player.getInventory().addItem(previous);
 					notifyWindows();
-				});
+				}, null);
 			}
 		} else {
 			item = previous;
@@ -111,13 +112,13 @@ public class PickableItem extends IdItem {
 			// Subclasses clean the item (e.g. strip setup lore) before delegating here
 			ItemStack picked = handOverItem ? stripInternalData(item == null ? null : item.clone()) : null;
 			id = -1;
-			Bukkit.getScheduler().runTask(Schwarzmarkt.plugin, () -> {
+			player.getScheduler().run(Schwarzmarkt.plugin, task -> {
 				if(picked != null && picked.getType() != Material.AIR) {
 					player.setItemOnCursor(picked);
 				}
 				item = new ItemStack(Material.AIR);
 				notifyWindows();
-			});
+			}, null);
 			return true;
 		}
 		return false;

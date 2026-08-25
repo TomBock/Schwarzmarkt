@@ -351,16 +351,16 @@ public class AuctionManager {
 	public void registerForBidding(Player player, AuctionItem auction) {
 		biddingPlayers.put(player, auction);
 
-		// Runs on the main thread: the task only touches biddingPlayers and does no
-		// blocking work, so there is no reason to hand it to an async worker - which is
-		// what used to race against the command handler reading the same map.
-		Bukkit.getScheduler().runTaskLater(plugin, () -> {
+		// Global region scheduler: the task only touches biddingPlayers and does no
+		// blocking work. It is not tied to a player's region, so the global tick thread
+		// is the right place - and it is the same on Paper and on Folia.
+		Bukkit.getGlobalRegionScheduler().runDelayed(plugin, task -> {
 
 			// Check if player has changed auction
 			AuctionItem curAuction = biddingPlayers.getOrDefault(player, new ServerAuctionItem(-1));
 			if(auction.id != curAuction.id) return;
 
 			biddingPlayers.remove(player);
-		}, 20 * BID_TIME);
+		}, 20L * BID_TIME);
 	}
 }

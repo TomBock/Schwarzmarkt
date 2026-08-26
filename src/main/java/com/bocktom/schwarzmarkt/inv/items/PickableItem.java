@@ -98,9 +98,18 @@ public class PickableItem extends IdItem {
 	}
 
 	protected boolean handlePickup(@NotNull Player player) {
+		return handlePickup(player, true);
+	}
+
+	/**
+	 * @param handOverItem whether the item should end up on the player's cursor. Titles are
+	 *                     consumed in exchange for a permission and must not be handed out,
+	 *                     otherwise the player keeps the name tag on top of the title.
+	 */
+	protected boolean handlePickup(@NotNull Player player, boolean handOverItem) {
 		if(tryRemove != null && tryRemove.apply(this)) {
 			// Subclasses clean the item (e.g. strip setup lore) before delegating here
-			ItemStack picked = stripInternalData(item == null ? null : item.clone());
+			ItemStack picked = handOverItem ? stripInternalData(item == null ? null : item.clone()) : null;
 			id = -1;
 			Bukkit.getScheduler().runTask(Schwarzmarkt.plugin, () -> {
 				if(picked != null && picked.getType() != Material.AIR) {

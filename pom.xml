@@ -6,7 +6,7 @@
 
     <groupId>com.bocktom</groupId>
     <artifactId>phoenixschwarzmarkt</artifactId>
-    <version>3.0</version>
+    <version>3.0.1</version>
     <packaging>jar</packaging>
 
     <properties>

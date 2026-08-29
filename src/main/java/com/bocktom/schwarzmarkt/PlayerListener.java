@@ -19,6 +19,13 @@ public class PlayerListener implements Listener {
 		Player player = event.getPlayer();
 		UUID playerUuid = player.getUniqueId();
 
+		// Four database reads per join. The notifications go out delayed anyway, so none
+		// of this has to hold up the main thread while the player is connecting.
+		Bukkit.getScheduler().runTaskAsynchronously(Schwarzmarkt.plugin,
+				() -> notifyOnJoin(player, playerUuid));
+	}
+
+	private void notifyOnJoin(Player player, UUID playerUuid) {
 		boolean hasWinnings = !Schwarzmarkt.db.getWinnings(playerUuid).isEmpty();
 		boolean hasNotSold = !Schwarzmarkt.db.getNotSold(playerUuid).isEmpty();
 		if(hasWinnings && hasNotSold) {

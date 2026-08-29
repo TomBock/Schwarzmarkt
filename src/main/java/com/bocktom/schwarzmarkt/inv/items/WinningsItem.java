@@ -7,7 +7,7 @@ import com.bocktom.schwarzmarkt.util.MSG;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
+import xyz.xenondevs.invui.Click;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
@@ -41,17 +41,16 @@ public class WinningsItem extends PickableItem {
 	}
 
 	@Override
-	protected boolean handlePickup(@NotNull InventoryClickEvent event) {
+	protected boolean handlePickup(@NotNull Player player) {
 		if(isTitle) {
-			return handleTitle(event);
+			return handleTitle(player);
 		} else {
-			return super.handlePickup(event);
+			return super.handlePickup(player);
 		}
 	}
 
-	private boolean handleTitle(@NotNull InventoryClickEvent event) {
-		event.setCancelled(true);
-		Player player = (Player) event.getWhoClicked();
+	private boolean handleTitle(@NotNull Player player) {
+		// InvUI 2 cancels item clicks itself, so the explicit setCancelled calls are gone
 
 		if(isTitleAssigned) {
 			player.sendMessage(MSG.get("winnings.title.assigned"));
@@ -64,18 +63,13 @@ public class WinningsItem extends PickableItem {
 				return;
 			}
 
-			if(!super.handlePickup(event))
+			// false: der Titel wird gegen die Permission eingetauscht, das Nametag
+			// selbst darf der Spieler nicht behalten
+			if(!super.handlePickup(player, false))
 				return;
 
 			player.sendMessage(MSG.get("winnings.title.onclick", "%titel%", title));
 			isTitleAssigned = true;
-			event.setCancelled(true);
-
-			// Double removal of titles for duplicate item glitch
-			// see https://discord.com/channels/506865081162661919/1436816608344539156
-			//Bukkit.getScheduler().runTaskLater(Schwarzmarkt.plugin, () -> {
-			//	player.getInventory().removeItem(item);
-			//}, 10L);
 		});
 		return true;
 	}

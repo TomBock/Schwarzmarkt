@@ -4,7 +4,7 @@ import com.bocktom.schwarzmarkt.util.ItemUtil;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
+import xyz.xenondevs.invui.Click;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
@@ -32,21 +32,21 @@ public abstract class SetupItem extends PickableItem {
 	}
 
 	@Override
-	public void handleClick(@NotNull ClickType clicktype, @NotNull Player player, @NotNull InventoryClickEvent event) {
+	public void handleClick(@NotNull ClickType clicktype, @NotNull Player player, @NotNull Click click) {
 		if(clicktype.isLeftClick()) {
-			super.handleClick(clicktype, player, event);
+			super.handleClick(clicktype, player, click);
 			return;
 		}
 		if(clicktype.isRightClick()) {
-			handleRightClick(event);
+			handleRightClick(clicktype);
 		}
 	}
 
-	protected void handleRightClick(@NotNull InventoryClickEvent event) {
+	protected void handleRightClick(@NotNull ClickType clicktype) {
 		if(item == null || item.getType() == Material.AIR)
 			return;
 
-		int change = event.isShiftClick() ? getSubtraction() : getAddition();
+		int change = clicktype.isShiftClick() ? getSubtraction() : getAddition();
 
 		if(amount + change < 0)
 			return;
@@ -67,15 +67,15 @@ public abstract class SetupItem extends PickableItem {
 	protected abstract int getSubtraction();
 
 	@Override
-	protected void handlePlace(@NotNull InventoryClickEvent event) {
-		super.handlePlace(event);
+	protected void handlePlace(@NotNull Player player, @NotNull ItemStack cursor) {
+		super.handlePlace(player, cursor);
 		addLore();
 	}
 
 	@Override
-	protected boolean handlePickup(@NotNull InventoryClickEvent event) {
+	protected boolean handlePickup(@NotNull Player player) {
 		item = getCleanItem();
-		return super.handlePickup(event);
+		return super.handlePickup(player);
 	}
 
 	protected void addLore() {

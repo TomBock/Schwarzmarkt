@@ -7,14 +7,23 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import xyz.xenondevs.invui.Click;
 import xyz.xenondevs.invui.InvUI;
 
 import java.util.function.Function;
 
+/**
+ * An item the player can physically place into and take out of the gui.
+ * <p>
+ * InvUI 2 no longer hands the {@code InventoryClickEvent} to items - {@link Click} only
+ * carries the player and the click type, and every click on an item is cancelled by the
+ * library. Place and pickup are therefore driven off the player's cursor here instead of
+ * off {@code InventoryAction}, and the item is moved explicitly rather than by letting
+ * vanilla run through an uncancelled event.
+ */
 public class PickableItem extends IdItem {
 	public static final NamespacedKey SLOT_KEY = new NamespacedKey(InvUI.getInstance().getPlugin(), "slot");
 
@@ -28,48 +37,58 @@ public class PickableItem extends IdItem {
 	}
 
 	@Override
-	public void handleClick(@NotNull ClickType clicktype, @NotNull Player player, @NotNull InventoryClickEvent event) {
+	public void handleClick(@NotNull ClickType clicktype, @NotNull Player player, @NotNull Click click) {
 
-		if(InvUtil.isPlaceAction(event.getAction(), isPartialClickAllowed())) {
+		ItemStack cursor = player.getItemOnCursor();
+		boolean hasCursor = cursor != null && cursor.getType() != Material.AIR;
 
-			handlePlace(event);
+		if(hasCursor && InvUtil.isPlaceClick(clicktype, isPartialClickAllowed())) {
+
+			handlePlace(player, cursor);
 			notifyWindows();
 
-		} else if(InvUtil.isPickupAction(event.getAction(), isPartialClickAllowed())) {
+		} else if(!hasCursor && InvUtil.isPickupClick(clicktype, isPartialClickAllowed())) {
 
-			handlePickup(event);
+			handlePickup(player);
 			notifyWindows();
-
-			removeSlotDataFromClonedItem(event);
 		}
 	}
 
 	/**
-	 * Removes slot data that InvUI leaves in. Also, items are cloned by InvUI on notifyWindows,
-	 * so we need to load the item directly from the inventory slot.
+	 * Strips the slot marker that InvUI stamps onto rendered items.
+	 * <p>
+	 * {@code AbstractWindow} writes a "slot" key into the item's persistent data - InvUI 1
+	 * via ItemMeta, InvUI 2 via {@code ItemStack#editPersistentDataContainer} - namespaced
+	 * with the plugin InvUI was initialised with, so it shows up as
+	 * {@code phoenixschwarzmarkt:slot}. Without stripping it the marker travels with the
+	 * item into player inventories and, from there, back into the database.
 	 */
-	private void removeSlotDataFromClonedItem(@NotNull InventoryClickEvent event) {
-		ItemStack invUiClonedItem = event.getInventory().getItem(event.getSlot());
-		if(invUiClonedItem != null) {
-			ItemMeta meta = invUiClonedItem.getItemMeta();
-			meta.getPersistentDataContainer().remove(SLOT_KEY);
-			invUiClonedItem.setItemMeta(meta);
-		}
+	protected ItemStack stripInternalData(ItemStack stack) {
+		if(stack == null || stack.getType() == Material.AIR)
+			return stack;
+
+		ItemMeta meta = stack.getItemMeta();
+		if(meta == null)
+			return stack;
+
+		meta.getPersistentDataContainer().remove(SLOT_KEY);
+		stack.setItemMeta(meta);
+		return stack;
 	}
 
 	protected boolean isPartialClickAllowed() {
 		return true;
 	}
 
-	protected void handlePlace(@NotNull InventoryClickEvent event) {
-		ItemStack previous = getCleanItem();
-		item = event.getCursor();
+	protected void handlePlace(@NotNull Player player, @NotNull ItemStack cursor) {
+		ItemStack previous = stripInternalData(getCleanItem());
+		// Stripped on the way in as well, so the marker never reaches the database
+		item = stripInternalData(cursor.clone());
 		if(tryAdd != null && tryAdd.apply(this)) {
-			event.setCancelled(true);
-			event.setCursor(new ItemStack(Material.AIR));
+			player.setItemOnCursor(null);
 			if(previous != null && previous.getType() != Material.AIR) {
 				Bukkit.getScheduler().runTask(Schwarzmarkt.plugin, () -> {
-					event.getWhoClicked().getInventory().addItem(previous);
+					player.getInventory().addItem(previous);
 					notifyWindows();
 				});
 			}
@@ -78,11 +97,24 @@ public class PickableItem extends IdItem {
 		}
 	}
 
-	protected boolean handlePickup(@NotNull InventoryClickEvent event) {
+	protected boolean handlePickup(@NotNull Player player) {
+		return handlePickup(player, true);
+	}
+
+	/**
+	 * @param handOverItem whether the item should end up on the player's cursor. Titles are
+	 *                     consumed in exchange for a permission and must not be handed out,
+	 *                     otherwise the player keeps the name tag on top of the title.
+	 */
+	protected boolean handlePickup(@NotNull Player player, boolean handOverItem) {
 		if(tryRemove != null && tryRemove.apply(this)) {
-			event.setCancelled(false);
+			// Subclasses clean the item (e.g. strip setup lore) before delegating here
+			ItemStack picked = handOverItem ? stripInternalData(item == null ? null : item.clone()) : null;
 			id = -1;
 			Bukkit.getScheduler().runTask(Schwarzmarkt.plugin, () -> {
+				if(picked != null && picked.getType() != Material.AIR) {
+					player.setItemOnCursor(picked);
+				}
 				item = new ItemStack(Material.AIR);
 				notifyWindows();
 			});

@@ -6,12 +6,14 @@
 
     <groupId>com.bocktom</groupId>
     <artifactId>phoenixschwarzmarkt</artifactId>
-    <version>2.12</version>
+    <version>3.0.1</version>
     <packaging>jar</packaging>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <paper.version>26.2.build.116-stable</paper.version>
 
         <!-- Custom -->
         <server.dir>D:/dev/.mcdev/static/server_sp_21_9</server.dir>
@@ -25,7 +27,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
-                        <version>3.6.0</version>
+                        <version>3.6.2</version>
                         <executions>
                             <execution>
                                 <id>shade</id>
@@ -65,7 +67,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.6.2</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -155,7 +157,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.11-R0.1-SNAPSHOT</version>
+            <version>${paper.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -170,7 +172,17 @@
         <dependency>
             <groupId>de.tr7zw</groupId>
             <artifactId>item-nbt-api</artifactId>
-            <version>2.15.5</version>
+            <version>2.16.0</version>
+        </dependency>
+
+        <!-- Annotations: kamen bis InvUI 1.x transitiv im Compile-Classpath mit.
+             InvUI 2 deklariert sie nur noch als runtime, Paper 26.2 bringt weder
+             org.jetbrains.annotations noch javax.annotation mit. -->
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>26.0.2</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- LuckPerms -->
@@ -182,20 +194,12 @@
         </dependency>
 
         <!-- Inventory GUI -->
+        <!-- InvUI 2.x ist ein einzelnes Artefakt: die inventory-access-rXX NMS-Bruecken
+             sind entfallen, die GUI laeuft jetzt rein ueber die Bukkit-API. -->
         <dependency>
             <groupId>xyz.xenondevs.invui</groupId>
-            <artifactId>invui-core</artifactId>
-            <version>1.49</version>
-        </dependency>
-        <dependency>
-            <groupId>xyz.xenondevs.invui</groupId>
-            <artifactId>inventory-access</artifactId>
-            <version>1.49</version>
-        </dependency>
-        <dependency>
-            <groupId>xyz.xenondevs.invui</groupId>
-            <artifactId>inventory-access-r26</artifactId>
-            <version>1.49</version>
+            <artifactId>invui</artifactId>
+            <version>2.3.1</version>
         </dependency>
 
         <!-- Vault -->

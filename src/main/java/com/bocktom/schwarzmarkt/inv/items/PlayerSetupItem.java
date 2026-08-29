@@ -4,7 +4,7 @@ import com.bocktom.schwarzmarkt.util.ItemUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
+import xyz.xenondevs.invui.Click;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
@@ -34,8 +34,8 @@ public class PlayerSetupItem extends SetupItem {
 	}
 
 	@Override
-	protected void handlePlace(@NotNull InventoryClickEvent event) {
-		super.handlePlace(event);
+	protected void handlePlace(@NotNull Player player, @NotNull ItemStack cursor) {
+		super.handlePlace(player, cursor);
 		customAddLore();
 	}
 
@@ -70,11 +70,11 @@ public class PlayerSetupItem extends SetupItem {
 	}
 
 	@Override
-	public void handleClick(@NotNull ClickType clicktype, @NotNull Player player, @NotNull InventoryClickEvent event) {
+	public void handleClick(@NotNull ClickType clicktype, @NotNull Player player, @NotNull Click click) {
 		if(inAuction) {
 			player.sendMessage(MSG.get("playersetup.inauction"));
 		} else {
-			super.handleClick(clicktype, player, event);
+			super.handleClick(clicktype, player, click);
 		}
 	}
 

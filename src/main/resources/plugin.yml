@@ -1,7 +1,7 @@
 name: PhoenixSchwarzmarkt
 version: '${version}'
 main: com.bocktom.schwarzmarkt.Schwarzmarkt
-api-version: '1.21'
+api-version: '26.2'
 depend:
   - Vault
   - LuckPerms

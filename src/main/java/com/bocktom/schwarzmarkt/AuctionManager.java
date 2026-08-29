@@ -13,7 +13,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class AuctionManager {
@@ -191,10 +191,13 @@ public class AuctionManager {
 		OfflinePlayer owner = Bukkit.getOfflinePlayer(auction.ownerId);
 
 		int revenue = (int) Math.ceil(((double) auction.highestBid) * (1.0-Config.gui.get.getDouble("playerauction.servercut")));
-		boolean depositResult = Schwarzmarkt.economy.depositMoney(owner, revenue + auction.deposit, true);
-		if(!depositResult) {
-			PersistentLogger.logDepositFailed(true, owner, auction.highestBid);
-		}
+
+		// Economy#depositMoney already writes the DEPOSIT FAILED entry, and it writes the
+		// amount that was actually attempted (revenue plus deposit). Logging again here
+		// produced a second entry for the same failure carrying the highest bid instead,
+		// so the log showed two different amounts for one payout and left it unclear
+		// which one has to be paid by hand.
+		Schwarzmarkt.economy.depositMoney(owner, revenue + auction.deposit, true);
 
 		// Inform directly
 		Player onlineOwner = Bukkit.getPlayer(auction.ownerId);

@@ -8,6 +8,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Optional;
 
@@ -58,6 +60,28 @@ public class Config {
 			}
 
 			this.get = YamlConfiguration.loadConfiguration(file);
+			applyDefaults(configFile);
+		}
+
+		/**
+		 * Backs the config on disk with the one bundled in the jar.
+		 * <p>
+		 * The default file is only ever copied when none exists, so a server that has been
+		 * running for a while never sees keys added in a later version - a lookup would come
+		 * back empty and the feature behind it would silently do nothing. Registering the
+		 * bundled config as defaults makes those keys resolve without touching the file on
+		 * disk, which keeps the admin's edits and comments intact.
+		 */
+		private void applyDefaults(String configName) {
+			try (InputStream inputStream = plugin.getResource(configName)) {
+				if (inputStream == null)
+					return;
+
+				get.setDefaults(YamlConfiguration.loadConfiguration(
+						new InputStreamReader(inputStream, StandardCharsets.UTF_8)));
+			} catch (IOException e) {
+				plugin.getLogger().warning("Could not read default config file: " + configName);
+			}
 		}
 
 		private void copyDefaultConfig(String configName) {

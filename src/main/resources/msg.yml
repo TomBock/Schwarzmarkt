@@ -35,6 +35,10 @@ auction:
       - ""
       - "§7Aktuelles Gebot: §e%meingebot%"    #Nur sichtbar wenn der Spieler geboten hat
       - "§7Klicke hier um zu bieten"
+    titleowned:
+      - "§7Kaufbarer Titel"
+      - ""
+      - "§aDiesen Titel besitzt du bereits"
     player:
       - "§7Aktuelle Gebote: §e%gebotspanne%"  #Nur sichtbar wenn es Gebote gibt
       - "§7Mindestgebot: §e%mindestgebot%"    #Nur sichtbar wenn es keine Gebote gibt
@@ -77,4 +81,5 @@ bid:
   noauction: "§cDu hast keine Auktion ausgewählt"
   success: "§aDu hast erfolgreich §e%amount% §afür %item% §ageboten"
   ownauction: "§cDu kannst nicht auf deine eigene Auktion bieten"
+  titleowned: "§cDiesen Titel besitzt du bereits"
   toosmall: "§cDein Gebot ist zu niedrig. Das Mindestgebot beträgt §e%minbid%"

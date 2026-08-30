@@ -106,8 +106,22 @@ public class InvUtil {
 		return item.getType() == Material.NAME_TAG && item.hasItemMeta() && item.getItemMeta().hasLore();
 	}
 
+	/**
+	 * The permission a title grants, or null for anything that is not a title.
+	 * <p>
+	 * {@link #createTitleItem} writes it into the last lore line with a colour code in
+	 * front, which has to come off again before the node can be used.
+	 */
 	public static String getTitlePerm(ItemStack item) {
-		return item.getItemMeta().getLore().getLast();
+		if(item == null || !isTitleItem(item))
+			return null;
+
+		List<String> lore = ItemUtil.getLore(item.getItemMeta());
+		if(lore.isEmpty())
+			return null;
+
+		String perm = ItemUtil.removeLegacyColorCodes(lore.getLast());
+		return perm.isBlank() ? null : perm;
 	}
 
 	public static List<ItemStack> getWeighedRandomSelection(List<DbItem> items, int limit, Function<DbItem, ItemStack> itemMapper) {

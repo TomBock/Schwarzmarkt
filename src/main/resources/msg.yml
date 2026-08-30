@@ -81,4 +81,5 @@ bid:
   noauction: "§cDu hast keine Auktion ausgewählt"
   success: "§aDu hast erfolgreich §e%amount% §afür %item% §ageboten"
   ownauction: "§cDu kannst nicht auf deine eigene Auktion bieten"
+  titleowned: "§cDiesen Titel besitzt du bereits"
   toosmall: "§cDein Gebot ist zu niedrig. Das Mindestgebot beträgt §e%minbid%"

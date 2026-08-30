@@ -290,6 +290,16 @@ public class AuctionManager {
 		// Server vs. Player Auction
 		boolean isServerAuction = auction.isServerAuction();
 		if(isServerAuction) {
+
+			ServerAuctionItem serverAuction = (ServerAuctionItem) auction;
+
+			// Checked again rather than trusting the flag from the gui: the player may have
+			// been granted the title in the two minutes the selection stays registered.
+			if(serverAuction.isTitle() && TitleUtil.owns(player, serverAuction.titlePerm)) {
+				player.sendMessage(MSG.get("bid.titleowned"));
+				return;
+			}
+
 			if(!Schwarzmarkt.db.isServerAuctionRunning(auction.id)) {
 				player.sendMessage(MSG.get("bid.notrunning"));
 				return;

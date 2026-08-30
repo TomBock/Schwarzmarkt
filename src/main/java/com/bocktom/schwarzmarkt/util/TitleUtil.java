@@ -2,7 +2,7 @@ package com.bocktom.schwarzmarkt.util;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import net.luckperms.api.model.user.User;
-import net.luckperms.api.util.Tristate;
+import net.luckperms.api.node.NodeType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -23,12 +23,17 @@ public class TitleUtil {
 	private TitleUtil() {}
 
 	/**
-	 * Whether the permission has actually been granted to the player.
+	 * Whether the title's permission node is actually assigned to the player.
 	 * <p>
-	 * Deliberately not {@code Player#hasPermission}: an operator, or anyone holding a
-	 * wildcard, passes that check for every permission there is and would find themselves
-	 * locked out of bidding on every title. LuckPerms reports TRUE only for a node that was
-	 * really assigned.
+	 * Neither {@code Player#hasPermission} nor LuckPerms' {@code checkPermission} answers
+	 * that question. Both report what a permission <i>resolves to</i>: an operator or the
+	 * holder of a wildcard comes back positive for every title there is, and the only way
+	 * to read as "not owned" is an explicit deny. What is wanted here is whether the node
+	 * was handed out, so the player's nodes are inspected directly.
+	 * <p>
+	 * Inherited nodes are included, so a title granted through a group counts. A wildcard
+	 * does not, because it is a node in its own right and never equals a concrete title
+	 * permission.
 	 */
 	public static boolean hasTitlePermission(Player player, String perm) {
 		if(perm == null || perm.isBlank())
@@ -38,7 +43,10 @@ public class TitleUtil {
 		if(user == null)
 			return false;
 
-		return user.getCachedData().getPermissionData().checkPermission(perm) == Tristate.TRUE;
+		return user.resolveDistinctInheritedNodes(user.getQueryOptions()).stream()
+				.filter(NodeType.PERMISSION::matches)
+				.map(NodeType.PERMISSION::cast)
+				.anyMatch(node -> node.getValue() && node.getPermission().equalsIgnoreCase(perm));
 	}
 
 	/**

@@ -6,6 +6,7 @@ import com.bocktom.schwarzmarkt.inv.items.PlayerAuctionItem;
 import com.bocktom.schwarzmarkt.inv.items.ServerAuctionItem;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
+import com.bocktom.schwarzmarkt.util.TitleUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -14,6 +15,8 @@ import xyz.xenondevs.invui.item.Item;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
 
 public class AuctionInventory extends ConfigInventory {
 
@@ -53,8 +56,13 @@ public class AuctionInventory extends ConfigInventory {
 		List<Auction> auctions = Schwarzmarkt.db.getServerAuctions();
 		Map<Integer, Integer> bidsPerAuction = Schwarzmarkt.db.getServerAuctionBids(player.getUniqueId());
 
+		// One winnings lookup for the whole gui rather than one per title on offer
+		Set<String> unclaimedTitles = TitleUtil.getUnclaimedTitlePerms(player.getUniqueId());
+		Predicate<String> ownsTitle = perm -> unclaimedTitles.contains(perm)
+				|| TitleUtil.hasTitlePermission(player, perm);
+
 		return InvUtil.createItems(auctions,
-				auction -> new ServerAuctionItem(auction.id, auction.item, bidsPerAuction.getOrDefault(auction.id, 0), this::onBid));
+				auction -> new ServerAuctionItem(auction.id, auction.item, bidsPerAuction.getOrDefault(auction.id, 0), ownsTitle, this::onBid));
 	}
 
 	@Override

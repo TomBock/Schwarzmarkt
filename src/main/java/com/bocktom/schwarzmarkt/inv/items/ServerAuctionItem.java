@@ -26,11 +26,14 @@ public class ServerAuctionItem extends AuctionItem {
 
 		List<String> lore = ItemUtil.getLore(meta);
 
-		if(InvUtil.isTitleItem(item)) {
+		// A title carries its permission in the last lore line, which must never reach the
+		// player - its lore is replaced wholesale by the title block from the config.
+		boolean isTitle = InvUtil.isTitleItem(item);
+		if(isTitle) {
 			lore.clear();
 		}
 
-		List<String> raw = MSG.getList("auction.item.lore.server");
+		List<String> raw = MSG.getList(isTitle ? "auction.item.lore.title" : "auction.item.lore.server");
 		for (String line : raw) {
 			if(line.contains("%meingebot%")) {
 				if(currentBid > 0) {

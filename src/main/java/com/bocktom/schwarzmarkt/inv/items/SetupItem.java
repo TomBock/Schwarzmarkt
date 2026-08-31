@@ -73,9 +73,9 @@ public abstract class SetupItem extends PickableItem {
 	}
 
 	@Override
-	protected boolean handlePickup(@NotNull Player player) {
+	protected boolean handlePickup(@NotNull Player player, @NotNull ClickType clickType) {
 		item = getCleanItem();
-		return super.handlePickup(player);
+		return super.handlePickup(player, clickType);
 	}
 
 	protected void addLore() {

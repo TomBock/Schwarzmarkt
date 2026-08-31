@@ -7,6 +7,7 @@ import com.bocktom.schwarzmarkt.util.MSG;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import xyz.xenondevs.invui.Click;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -41,15 +42,15 @@ public class WinningsItem extends PickableItem {
 	}
 
 	@Override
-	protected boolean handlePickup(@NotNull Player player) {
+	protected boolean handlePickup(@NotNull Player player, @NotNull ClickType clickType) {
 		if(isTitle) {
-			return handleTitle(player);
+			return handleTitle(player, clickType);
 		} else {
-			return super.handlePickup(player);
+			return super.handlePickup(player, clickType);
 		}
 	}
 
-	private boolean handleTitle(@NotNull Player player) {
+	private boolean handleTitle(@NotNull Player player, @NotNull ClickType clickType) {
 		// InvUI 2 cancels item clicks itself, so the explicit setCancelled calls are gone
 
 		if(isTitleAssigned) {
@@ -65,7 +66,7 @@ public class WinningsItem extends PickableItem {
 
 			// false: der Titel wird gegen die Permission eingetauscht, das Nametag
 			// selbst darf der Spieler nicht behalten
-			if(!super.handlePickup(player, false))
+			if(!super.handlePickup(player, clickType, false))
 				return;
 
 			player.sendMessage(MSG.get("winnings.title.onclick", "%titel%", title));

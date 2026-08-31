@@ -2,6 +2,7 @@ package com.bocktom.schwarzmarkt.inv.items;
 
 import com.bocktom.schwarzmarkt.Schwarzmarkt;
 import com.bocktom.schwarzmarkt.util.InvUtil;
+import com.bocktom.schwarzmarkt.util.PersistentLogger;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -48,7 +49,7 @@ public class PickableItem extends IdItem {
 
 		} else if(!hasCursor && InvUtil.isPickupClick(clicktype, isPartialClickAllowed())) {
 
-			handlePickup(player);
+			handlePickup(player, clicktype);
 			notifyWindows();
 		}
 	}
@@ -98,8 +99,8 @@ public class PickableItem extends IdItem {
 		}
 	}
 
-	protected boolean handlePickup(@NotNull Player player) {
-		return handlePickup(player, true);
+	protected boolean handlePickup(@NotNull Player player, @NotNull ClickType clickType) {
+		return handlePickup(player, clickType, true);
 	}
 
 	/**
@@ -107,21 +108,49 @@ public class PickableItem extends IdItem {
 	 *                     consumed in exchange for a permission and must not be handed out,
 	 *                     otherwise the player keeps the name tag on top of the title.
 	 */
-	protected boolean handlePickup(@NotNull Player player, boolean handOverItem) {
+	protected boolean handlePickup(@NotNull Player player, @NotNull ClickType clickType, boolean handOverItem) {
 		if(tryRemove != null && tryRemove.apply(this)) {
 			// Subclasses clean the item (e.g. strip setup lore) before delegating here
 			ItemStack picked = handOverItem ? stripInternalData(item == null ? null : item.clone()) : null;
+			boolean toInventory = clickType == ClickType.SHIFT_LEFT;
 			id = -1;
 			player.getScheduler().run(Schwarzmarkt.plugin, task -> {
 				if(picked != null && picked.getType() != Material.AIR) {
-					player.setItemOnCursor(picked);
+					handOver(player, picked, toInventory);
 				}
 				item = new ItemStack(Material.AIR);
 				notifyWindows();
-			}, null);
+			}, () -> {
+				// The row is deleted by now and the player is gone before the handover, so
+				// all that is left is a record of what has to be restored by hand.
+				if(picked != null && picked.getType() != Material.AIR)
+					PersistentLogger.logPickupLost(player, picked);
+			});
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Puts the item where vanilla would have put it: a shift click moves it into the
+	 * inventory, a plain click takes it onto the cursor.
+	 * <p>
+	 * InvUI 2 cancels every click on an item, so that split has to be made here. Without it
+	 * a shift click ended up on the cursor as well - a player who shift clicks never looks
+	 * there, closes the window, and the item drops at their feet unnoticed while its
+	 * database row is already gone.
+	 * <p>
+	 * Whatever does not fit is dropped rather than discarded, for the same reason: at this
+	 * point the item exists nowhere else.
+	 */
+	private void handOver(@NotNull Player player, @NotNull ItemStack stack, boolean toInventory) {
+		if(!toInventory && player.getItemOnCursor().getType() == Material.AIR) {
+			player.setItemOnCursor(stack);
+			return;
+		}
+
+		for (ItemStack rest : player.getInventory().addItem(stack).values())
+			player.getWorld().dropItem(player.getEyeLocation(), rest);
 	}
 
 	public ItemStack getCleanItem() {

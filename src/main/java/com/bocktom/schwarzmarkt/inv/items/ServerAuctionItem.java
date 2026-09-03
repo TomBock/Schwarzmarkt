@@ -1,10 +1,12 @@
 package com.bocktom.schwarzmarkt.inv.items;
 
+import com.bocktom.schwarzmarkt.util.Config;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.ItemUtil;
 import com.bocktom.schwarzmarkt.util.MSG;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -52,10 +54,8 @@ public class ServerAuctionItem extends AuctionItem {
 		if(isTitle()) {
 			lore.clear();
 
-			if(titleOwned) {
-				// Readable at a glance in a full gui, without hovering every single name tag
-				meta.setEnchantmentGlintOverride(true);
-			}
+			if(titleOwned)
+				markOwned(meta);
 		}
 
 		List<String> raw = MSG.getList(getLoreKey());
@@ -72,6 +72,36 @@ public class ServerAuctionItem extends AuctionItem {
 
 		ItemUtil.setLoreWithoutEvents(meta, lore);
 		item.setItemMeta(meta);
+	}
+
+	/**
+	 * Marks an owned title so it reads at a glance in a full gui, without hovering every
+	 * single name tag.
+	 * <p>
+	 * The item shown in the auction is a display copy, so a texture set here never travels
+	 * anywhere - and an owned title cannot be bought, so it never leaves the gui either.
+	 * <p>
+	 * Both settings are optional. Without a custommodeldata entry only the glint is applied,
+	 * which is what happened before this was configurable. The glint is worth keeping even
+	 * with a texture in place: a player without the resource pack would otherwise see a
+	 * plain name tag. The lore says so in either case.
+	 */
+	private void markOwned(ItemMeta meta) {
+		String modelData = Config.gui.get.getString("auction.item.titleowned.custommodeldata");
+
+		if(modelData != null && !modelData.isBlank()) {
+			CustomModelDataComponent component = meta.getCustomModelDataComponent();
+			try {
+				component.setFloats(List.of(Float.parseFloat(modelData.trim())));
+			} catch (NumberFormatException e) {
+				// Packs may select on strings instead of numbers
+				component.setStrings(List.of(modelData.trim()));
+			}
+			meta.setCustomModelDataComponent(component);
+		}
+
+		if(Config.gui.get.getBoolean("auction.item.titleowned.glint", true))
+			meta.setEnchantmentGlintOverride(true);
 	}
 
 	private String getLoreKey() {

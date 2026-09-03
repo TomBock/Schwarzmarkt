@@ -1,4 +1,10 @@
 auction:
+  # Darstellung eines Titels, den der Spieler bereits besitzt.
+  # custommodeldata bleibt ohne Eintrag aus - eine Zahl wird als float gesetzt,
+  # alles andere als string, je nachdem worauf das Resourcepack selektiert.
+  item.titleowned:
+    #custommodeldata: 1001
+    glint: true
   items: 3
   randomitems:
     1: 50

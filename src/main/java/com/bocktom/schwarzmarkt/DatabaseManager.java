@@ -26,7 +26,7 @@ import static org.bukkit.Bukkit.getLogger;
 
 public class DatabaseManager {
 
-	private static final int DB_VERSION = 8;
+	private static final int DB_VERSION = 9;
 	// 2 = fixed
 	// 3 = 1.21.5
 	// 4 = added player auctions
@@ -34,6 +34,7 @@ public class DatabaseManager {
 	// 6 = try again
 	// 7 = name for player auctions
 	// 8 = 26.2 item format
+	// 9 = 26.3 item format
 
 	/**
 	 * Tables holding serialized items, as (select, update) sql resource pairs.
@@ -77,6 +78,9 @@ public class DatabaseManager {
 			{"sql/v8/select_all_notsold.sql", "sql/v8/update_notsold_nbt.sql"},
 			{"sql/v8/select_all_item_cooldown.sql", "sql/v8/update_item_cooldown_nbt.sql"},
 	};
+
+	/** 26.3 touches the same seven item tables as the 26.2 step. */
+	private static final String[][] NBT_TABLES_V9 = NBT_TABLES_V8;
 
 	/**
 	 * SQLite serialises writers, so a second thread arriving mid-write gets SQLITE_BUSY
@@ -148,10 +152,13 @@ public class DatabaseManager {
 
 		// Item format steps rewrite row data and manage their own transaction
 		if(version == 3) {
-			return !upNbtVersion(DataFixerUtil.VERSION1_21_3, DataFixerUtil.VERSION1_21_5, NBT_TABLES_V3);
+			return upNbtVersion(version, DataFixerUtil.VERSION1_21_3, DataFixerUtil.VERSION1_21_5, NBT_TABLES_V3);
 		}
 		if(version == 8) {
-			return !upNbtVersion(DataFixerUtil.VERSION1_21R7, DataFixerUtil.VERSION_26_2, NBT_TABLES_V8);
+			return upNbtVersion(version, DataFixerUtil.VERSION1_21R7, DataFixerUtil.VERSION_26_2, NBT_TABLES_V8);
+		}
+		if(version == 9) {
+			return upNbtVersion(version, DataFixerUtil.VERSION_26_2, DataFixerUtil.VERSION_26_3, NBT_TABLES_V9);
 		}
 
 		try (Connection con = getConnection()) {
@@ -242,70 +249,34 @@ public class DatabaseManager {
 	}
 
 	/**
-	 * Runs the NBT data fixer over every table that stores serialized items.
+	 * Runs the NBT data fixer over every table that stores serialized items and records
+	 * {@code schemaVersion} in the same transaction.
 	 *
 	 * @param fromVersion fallback source version for rows whose nbt carries no DataVersion
 	 * @param tables (select, update) sql resource pairs; the select must expose {@code id}
 	 *               and {@code item_data}, the update takes (item_data, id)
-	 * @return whether a rollback is needed, i.e. whether the step failed
+	 * @return whether the step succeeded; on failure the database is left untouched
 	 */
-	private boolean upNbtVersion(int fromVersion, int toVersion, String[][] tables) {
-		int updated = 0;
-		int skipped = 0;
-
-		try (Connection con = getConnection()) {
-			con.setAutoCommit(false);
-
-			for (String[] table : tables) {
-				String selectSql = table[0];
-				String updateSql = table[1];
-
-				try (ResultSet set = new DBStatementBuilder(con, selectSql).executeQuery()) {
-					while (set.next()) {
-						int id = set.getInt("id");
-						String oldData = set.getString("item_data");
-						if(oldData == null)
-							continue;
-
-						ReadWriteNBT nbt = NBT.parseNBT(oldData);
-
-						// Rows are not all written by the same server version: the last item
-						// format step was 1.21.5, everything stored since then carries the
-						// version that was running at the time. Trusting a single source
-						// version would skip the fixes an older row still needs, so each row
-						// is fixed from the DataVersion it carries.
-						Integer storedVersion = nbt.hasTag("DataVersion") ? nbt.getInteger("DataVersion") : null;
-						int itemVersion = storedVersion != null ? storedVersion : fromVersion;
-
-						if(itemVersion >= toVersion) {
-							skipped++;
-							continue;
-						}
-
-						ReadWriteNBT fixedNbt = DataFixerUtil.fixUpItemData(nbt, itemVersion, toVersion);
-
-						new DBStatementBuilder(con, updateSql)
-								.setString(1, fixedNbt.toString())
-								.setInt(2, id)
-								.executeUpdate();
-
-						updated++;
-					}
-				}
-			}
-
-			con.commit();
-		} catch (SQLException | IOException e) {
-			plugin.getLogger().warning("Failed to update NBT: " + e.getMessage());
-			e.printStackTrace();
-			return true;
-		} catch (NoSuchFieldException | IllegalAccessException e) {
-			plugin.getLogger().warning("Failed to update NBT: " + e.getMessage());
-			e.printStackTrace();
-			return true;
+	private boolean upNbtVersion(int schemaVersion, int fromVersion, int toVersion, String[][] tables) {
+		// The data fixer can only lift items up to the version of the running server.
+		// Fixing "up" to a newer version would leave rows claiming a DataVersion they were
+		// never converted to, and the step would then skip them for good.
+		int serverVersion = DataFixerUtil.getCurrentVersion();
+		if(serverVersion < toVersion) {
+			plugin.getLogger().severe("Item format step to DataVersion " + toVersion + " needs a server on that version, running " + serverVersion);
+			return false;
 		}
-		plugin.getLogger().info("Updated " + updated + " items to NBT version " + toVersion
-				+ (skipped > 0 ? " (" + skipped + " already current or newer)" : ""));
+
+		ItemDataMigration migration = new ItemDataMigration(tables, fromVersion, toVersion, new NbtApiItemDataFixer());
+		try (Connection con = getConnection()) {
+			ItemDataMigration.Result result = migration.run(con, schemaVersion);
+			plugin.getLogger().info("Updated " + result.updated() + " items to NBT version " + toVersion
+					+ (result.skipped() > 0 ? " (" + result.skipped() + " already current or newer)" : ""));
+			return true;
+		} catch (ItemDataMigration.MigrationException | SQLException e) {
+			plugin.getLogger().warning("Failed to update NBT: " + e.getMessage());
+			e.printStackTrace();
+		}
 		return false;
 	}
 

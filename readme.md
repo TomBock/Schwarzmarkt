@@ -26,6 +26,9 @@ Supports server- and player-auctions, custom GUIs, cron-based scheduling and com
 > **Upgrading from a 1.21.x install:** the stored items are migrated to the 26.2
 > item format on first start (database version 8). Back up `schwarzmarkt.db`
 > before the first launch - the migration rewrites item data in place.
+> Coming from a 26.2 install, the items are lifted to the 26.3 format the same way
+> (database version 9). Either step runs as one transaction: if a single item cannot
+> be converted, nothing is changed and the step is retried on the next start.
 
 ## Commands
 ### User Commands

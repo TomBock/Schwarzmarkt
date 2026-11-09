@@ -15,7 +15,10 @@ public class DBStatementBuilder {
 
 	public DBStatementBuilder(Connection con, String sqlFile) throws SQLException, IOException {
 
-		InputStream input = Schwarzmarkt.plugin.getResource(sqlFile);
+		// Without a loaded plugin (unit tests) the scripts come straight from the classpath
+		InputStream input = Schwarzmarkt.plugin != null
+				? Schwarzmarkt.plugin.getResource(sqlFile)
+				: DBStatementBuilder.class.getClassLoader().getResourceAsStream(sqlFile);
 		if(input == null)
 			throw new IOException("Resource not found: " + sqlFile);
 		String sql = new String(input.readAllBytes());

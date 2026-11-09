@@ -14,7 +14,7 @@ Supports server- and player-auctions, custom GUIs, cron-based scheduling and com
 - Full audit log for every bid 
 
 ## Requirements
-- Paper **or Folia** 26.2+ (requires Java 25)
+- Paper **or Folia** 26.3+ (requires Java 25)
 - [Vault](https://www.spigotmc.org/resources/vault.34315/)
 - [LuckPerms](https://www.spigotmc.org/resources/luckperms.28140/)
 

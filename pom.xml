@@ -13,7 +13,7 @@
         <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <paper.version>26.2.build.116-stable</paper.version>
+        <paper.version>26.3.build.245-stable</paper.version>
 
         <!-- Custom -->
         <server.dir>D:/dev/.mcdev/static/server_sp_21_9</server.dir>

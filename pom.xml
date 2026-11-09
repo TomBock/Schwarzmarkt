@@ -172,7 +172,7 @@
         <dependency>
             <groupId>de.tr7zw</groupId>
             <artifactId>item-nbt-api</artifactId>
-            <version>2.16.0</version>
+            <version>2.16.1</version>
         </dependency>
 
         <!-- Annotations: kamen bis InvUI 1.x transitiv im Compile-Classpath mit.
@@ -194,12 +194,11 @@
         </dependency>
 
         <!-- Inventory GUI -->
-        <!-- InvUI 2.x ist ein einzelnes Artefakt: die inventory-access-rXX NMS-Bruecken
-             sind entfallen, die GUI laeuft jetzt rein ueber die Bukkit-API. -->
+        <!-- InvUI 2.4 supports Minecraft 26.3. -->
         <dependency>
             <groupId>xyz.xenondevs.invui</groupId>
             <artifactId>invui</artifactId>
-            <version>2.3.1</version>
+            <version>2.4.0</version>
         </dependency>
 
         <!-- Vault -->

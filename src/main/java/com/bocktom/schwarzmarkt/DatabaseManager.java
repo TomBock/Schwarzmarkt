@@ -26,7 +26,7 @@ import static org.bukkit.Bukkit.getLogger;
 
 public class DatabaseManager {
 
-	private static final int DB_VERSION = 9;
+	static final int DB_VERSION = 9;
 	// 2 = fixed
 	// 3 = 1.21.5
 	// 4 = added player auctions
@@ -80,7 +80,7 @@ public class DatabaseManager {
 	};
 
 	/** 26.3 touches the same seven item tables as the 26.2 step. */
-	private static final String[][] NBT_TABLES_V9 = NBT_TABLES_V8;
+	static final String[][] NBT_TABLES_V9 = NBT_TABLES_V8;
 
 	/**
 	 * SQLite serialises writers, so a second thread arriving mid-write gets SQLITE_BUSY

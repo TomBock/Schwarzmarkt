@@ -5,6 +5,7 @@ import com.bocktom.schwarzmarkt.util.Config;
 import com.bocktom.schwarzmarkt.util.InvUtil;
 import com.bocktom.schwarzmarkt.util.PersistentLogger;
 import de.tr7zw.changeme.nbtapi.NBT;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -93,7 +94,8 @@ public final class Schwarzmarkt extends JavaPlugin {
 		sender.sendMessage("§aAuctions active: " + auctions.size());
 		for (Auction auction : auctions) {
 			Map<UUID, Integer> bids = db.getServerAuctionBids(auction.id);
-			StringBuilder msg = new StringBuilder("Auction " + auction.id + " for " + InvUtil.getName(auction.item));
+			String itemName = PlainTextComponentSerializer.plainText().serialize(InvUtil.getName(auction.item));
+			StringBuilder msg = new StringBuilder("Auction " + auction.id + " for " + itemName);
 
 			for (Map.Entry<UUID, Integer> bidEntry : bids.entrySet()) {
 				msg.append("\n  §8").append(Bukkit.getOfflinePlayer(bidEntry.getKey()).getName()).append(": §e").append(bidEntry.getValue());

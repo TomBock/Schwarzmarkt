@@ -169,6 +169,9 @@
         </dependency>
 
         <!-- NBT-Api -->
+        <!-- 2.16.1 is the minimum for 26.3: it knows DataVersion 5023 (VERSION_26_3) and
+             resolves CraftItemStack#asCraftMirror at runtime, falling back to asBukkitMirror
+             (tr7zw/Item-NBT-API#360). Shaded and relocated to com.bocktom.shades.nbtapi. -->
         <dependency>
             <groupId>de.tr7zw</groupId>
             <artifactId>item-nbt-api</artifactId>
